@@ -5,7 +5,5 @@ import { useUser } from "@auth0/nextjs-auth0"
 export default function Home() {
   const { user, isLoading, error } = useUser()
 
-  console.log(user)
-
-  return <a href="/auth/logout">Log out</a>
+  return <a href={`/auth/logout`}>Log out</a>
 }
