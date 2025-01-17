@@ -48,7 +48,7 @@ type DeviceType = {
 }
 
 interface DeviceContextType {
-
+    deviceList: DeviceType[]
 }
 
 const DevicesContext = React.createContext<DeviceContextType | null>(null)
