@@ -1,4 +1,5 @@
 import React from 'react'
+import { useSocket } from './socket';
  
 export interface User {
     sub: string;
@@ -53,10 +54,36 @@ interface DeviceContextType {
 
 const DevicesContext = React.createContext<DeviceContextType | null>(null)
 
-const Devices = () => {
-  return (
-    <div>Devices</div>
-  )
+// Custom hook to use socket context with type safety
+export const useDevices = (): DeviceContextType => {
+  const context = React.useContext(DevicesContext);
+  if (!context) {
+    throw new Error('useDevices must be used within a DevicesProvider');
+  }
+  return context;
+};
+
+interface DevicesProviderProps {
+  children: React.ReactNode;
 }
 
-export default Devices
+const DevicesProvider = ({children}: DevicesProviderProps) => {
+    const [deviceList, setDeviceList] = React.useState<DeviceType[]>([])
+    const {isConnected, on} = useSocket()
+
+    const value: DeviceContextType = {
+        deviceList
+    }
+
+    React.useEffect(()=>{
+        on<DeviceType[]>("getDeviceList", (data)=>{
+            setDeviceList(data)
+        })
+    },[])
+
+    return <DevicesContext.Provider value={value}>
+        {children}
+    </DevicesContext.Provider>
+}
+
+export default DevicesProvider

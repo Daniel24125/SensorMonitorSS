@@ -2,6 +2,7 @@
 
 import React, { createContext, useContext, useEffect, useState } from 'react';
 import { Socket, io } from 'socket.io-client';
+import DevicesProvider from './devices';
 
 // Define types for the socket context
 interface SocketContextType {
@@ -119,7 +120,9 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
 
   return (
     <SocketContext.Provider value={value}>
-      {children}
+        <DevicesProvider>
+            {children}
+        </DevicesProvider>
     </SocketContext.Provider>
   );
 };
