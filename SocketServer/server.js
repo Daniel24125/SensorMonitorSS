@@ -34,6 +34,36 @@ let experimentStatus = {
     startTime: null,
     currentConfiguration: null
 };
+// let deviceList=[]
+let deviceList=[
+    {
+        id: "wojnfvowejknfowef", 
+        name: "pH Monitor Device",
+        createdAt: new Date().toJSON(),
+        isConnected: true,
+        status: "ready",
+        locations: [
+            {
+                id: "sdkjvbirkejwbvweiojrg",
+                name: "R1",
+                createdAt: new Date().toJSON(),
+                sensor: [
+                    {
+                        id: "wfwefvwecvwevwev",
+                        mode: "acidic",
+                        margin: 0.1,
+                        maxValveTimeOpen: 30,
+                        targetPh: 7.0,
+                        probePort: 17,
+                        valvePort: 18,
+                        checkInterval: 5,
+                        createdAt: new Date().toJSON()
+                    }
+                ],
+            }
+        ]
+    }
+]
 
 // Command validation
 const validateCommand = (command, params) => {
@@ -71,6 +101,8 @@ const registerWebClient = socket =>{
         rpiConnected: !!rpiSocket,
         experimentStatus
     });
+
+    socket.emit('getDeviceList', deviceList);
 }
 
 const parseCommands = (socket, data)=>{
@@ -109,7 +141,7 @@ const parseCommands = (socket, data)=>{
 
 io.on('connection', (socket) => {
     console.log('New connection:', socket.id);
-
+   
     // Register client type
     socket.on('register_client', (clientType) => {
         if (clientType === 'rpi') {
@@ -156,6 +188,7 @@ io.on('connection', (socket) => {
 
     // Handle disconnection
     socket.on('disconnect', () => {
+        console.log("Client Disconnected")
         if (socket === rpiSocket) {
             console.log('RPi disconnected');
             rpiSocket = null;

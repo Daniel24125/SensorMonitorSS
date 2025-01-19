@@ -24,8 +24,8 @@ type PhSensorType = {
     valvePort: number 
     checkInterval: number
     createdAt: string
-    updatedAt: string
-    updatedBy: User
+    updatedAt?: string
+    updatedBy?: User
 }
 
 type TemperatureSensorType = {}
@@ -36,15 +36,17 @@ type LocationType = {
     id: string
     name: string
     createdAt: string
-    lastUpdatedAt: string
+    lastUpdatedAt?: string
     sensor: SensorType[]
 }
 
-type DeviceType = {
+export type DeviceType = {
     id: string
     name: string
     createdAt: string
-    lastUpdatedAt: string
+    lastUpdatedAt?: string
+    isConnected: boolean
+    status: "ready" | "busy"
     locations: LocationType[]
 }
 
@@ -69,17 +71,21 @@ interface DevicesProviderProps {
 
 const DevicesProvider = ({children}: DevicesProviderProps) => {
     const [deviceList, setDeviceList] = React.useState<DeviceType[]>([])
-    const {isConnected, on} = useSocket()
+    const {on, emit, isConnected} = useSocket()
 
     const value: DeviceContextType = {
         deviceList
     }
 
     React.useEffect(()=>{
-        on<DeviceType[]>("getDeviceList", (data)=>{
-            setDeviceList(data)
-        })
-    },[])
+        if(isConnected){
+            emit("register_client", "web")
+            on<DeviceType[]>("getDeviceList", (data)=>{
+                setDeviceList(data)
+            })
+        }
+    },[isConnected])
+
 
     return <DevicesContext.Provider value={value}>
         {children}

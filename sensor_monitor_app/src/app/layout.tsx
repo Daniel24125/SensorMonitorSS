@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import "./globals.css";
 import { auth0 } from "@/lib/auth0";
 import { redirect } from "next/navigation";
-import Navigation from "./components/Navigation";
+import Navigation from "./components/template/Navigation";
 import { ThemeProvider } from "@/components/theme-provider";
-import Topbar from "./components/Topbar";
+import Topbar from "./components/template/topbar/Topbar";
 import { SocketProvider } from "@/contexts/socket";
 
 
@@ -34,9 +34,11 @@ export default async function RootLayout({
             >
               <main className="bg-background p-3 flex h-screen">
                 <Navigation/>
-                <div className="w-full">
+                <div className="w-full flex flex-col">
                   <Topbar/>
-                  {children}
+                  <section id="content" className="flex flex-col items-start justify-start h-full w-full px-3 flex-grow flex-shrink basis-auto" >
+                    {children}
+                  </section>
                 </div>
               </main>
           </ThemeProvider>

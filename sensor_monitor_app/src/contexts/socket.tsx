@@ -1,8 +1,9 @@
 "use client"
 
-import React, { createContext, useContext, useEffect, useState } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { Socket, io } from 'socket.io-client';
 import DevicesProvider from './devices';
+import { NoProjectsIlustration } from '@/components/ui/ilustrations';
 
 // Define types for the socket context
 interface SocketContextType {
@@ -44,16 +45,27 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
+  useEffect(()=>{
+    if(socket){
+      socket.on("getDeviceList", data=>{
+        console.log(data)
+      })
+    }
+  },[])
+
   useEffect(() => {
     // Initialize socket connection
     const socketInstance: Socket = io(url, {
       ...options,
       autoConnect: true,
       reconnection: true,
+      transports: ['websocket'],
     });
+
 
     // Set up event listeners
     socketInstance.on('connect', () => {
+      console.log('Socket connected with ID:', socketInstance.id);
       setIsConnected(true);
       setError(null);
     });
@@ -77,11 +89,39 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
   }, [url]);
 
   // Helper functions with type safety
-  const emit = <T,>(event: string, data?: T): void => {
-    if (socket) {
-      socket.emit(event, data);
-    }
-  };
+  const emit = useCallback(async <T,>(event: string, data: T): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      if (!socket) {
+        const error = 'Socket instance not available';
+        console.error(error);
+        reject(new Error(error));
+        return;
+      }
+
+      if (!isConnected) {
+        const error = 'Socket is not connected';
+        console.error(error);
+        reject(new Error(error));
+        return;
+      }
+
+      try {
+        console.log(`Emitting ${event}:`, data);
+        socket.emit(event, data, (error: any) => {
+          if (error) {
+            console.error('Emit error:', error);
+            reject(error);
+          } else {
+            console.log(`Successfully emitted ${event}`);
+            resolve();
+          }
+        });
+      } catch (error) {
+        console.error('Emit error:', error);
+        reject(error);
+      }
+    });
+  }, [socket, isConnected]);
 
   const on = <T,>(event: string, callback: (data: T) => void): void => {
     if (socket) {
@@ -121,6 +161,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
   return (
     <SocketContext.Provider value={value}>
         <DevicesProvider>
+          
             {children}
         </DevicesProvider>
     </SocketContext.Provider>

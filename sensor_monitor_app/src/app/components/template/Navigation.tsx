@@ -3,7 +3,7 @@ import { LayoutDashboard, LucideProps, Menu, RadioReceiver, SquareDashedKanban, 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React from 'react'
-import { ThemeToggleButton } from './ThemeToggleButton'
+import { ThemeToggleButton } from './topbar/ThemeToggleButton'
 import { Button } from '@/components/ui/button'
 import { useUser } from '@auth0/nextjs-auth0'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
@@ -28,9 +28,9 @@ const Navigation = () => {
       <nav style={{
         width: expand ? 240 : 60,
         borderRadius: expand ? 10 : "100px",
-        transitionDelay: expand ? "300ms" : "0",
+        transitionDelay: expand ? "0" : "300ms",
         padding: expand ? 20 : 14
-      }} className={`mr-5 py-3 bg-[#131315] h-full flex flex-col items-center transition-all duration-300`}>
+      }} className={`mr-5 py-3 bg-secondary-background h-full flex flex-col items-center transition-all duration-300`}>
         <NavigationHeader/>
         <div style={{
           transitionDelay: expand ? "300ms" : "0",
