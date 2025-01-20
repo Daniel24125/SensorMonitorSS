@@ -32,12 +32,6 @@ const DeviceWidget = () => {
             </div>
             <ScrollArea className='w-full h-full flex flex-col gap-5'>
                 {deviceList.map(d=><DeviceCardComponent key={d.id} device={d}/>)}
-                {deviceList.map(d=><DeviceCardComponent key={d.id} device={d}/>)}
-                {deviceList.map(d=><DeviceCardComponent key={d.id} device={d}/>)}
-                {deviceList.map(d=><DeviceCardComponent key={d.id} device={d}/>)}
-                {deviceList.map(d=><DeviceCardComponent key={d.id} device={d}/>)}
-                {deviceList.map(d=><DeviceCardComponent key={d.id} device={d}/>)}
-                {deviceList.map(d=><DeviceCardComponent key={d.id} device={d}/>)}
             </ScrollArea>
         </WidgetCard>
     )
