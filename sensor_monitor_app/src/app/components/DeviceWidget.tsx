@@ -4,6 +4,7 @@ import WidgetCard from './ui/WidgetCard'
 import { DeviceType, useDevices } from '@/contexts/devices'
 import { Button } from '@/components/ui/button'
 import { ExternalLink, Plus, RadioReceiver, ToggleLeft, ToggleRight } from 'lucide-react'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 const deviceIconColors = {
     "ready": "#2ECC71",
@@ -29,7 +30,15 @@ const DeviceWidget = () => {
                     </Button>
                 </div>
             </div>
-            {deviceList.map(d=><DeviceCardComponent key={d.id} device={d}/>)}
+            <ScrollArea className='w-full h-full flex flex-col gap-5'>
+                {deviceList.map(d=><DeviceCardComponent key={d.id} device={d}/>)}
+                {deviceList.map(d=><DeviceCardComponent key={d.id} device={d}/>)}
+                {deviceList.map(d=><DeviceCardComponent key={d.id} device={d}/>)}
+                {deviceList.map(d=><DeviceCardComponent key={d.id} device={d}/>)}
+                {deviceList.map(d=><DeviceCardComponent key={d.id} device={d}/>)}
+                {deviceList.map(d=><DeviceCardComponent key={d.id} device={d}/>)}
+                {deviceList.map(d=><DeviceCardComponent key={d.id} device={d}/>)}
+            </ScrollArea>
         </WidgetCard>
     )
 }
@@ -40,9 +49,7 @@ const DeviceCardComponent = ({device}:{device: DeviceType})=>{
         return !device.isConnected ? deviceIconColors.disconnected : deviceIconColors[device.status]
     },[device.isConnected, device.status])
 
-  
-
-    return <div className='bg-card w-full h-20 p-3 rounded-xl flex'>
+    return <div className='bg-card w-full h-20 p-3 rounded-xl flex mb-5'>
         <div style={{
             backgroundColor: `${colorStatus}4D`,
             borderColor: `${colorStatus}33`,
