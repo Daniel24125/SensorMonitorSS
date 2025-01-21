@@ -6,6 +6,7 @@ import Navigation from "./components/template/Navigation";
 import { ThemeProvider } from "@/components/theme-provider";
 import Topbar from "./components/template/topbar/Topbar";
 import { SocketProvider } from "@/contexts/socket";
+import { Toaster } from "@/components/ui/toaster";
 
 
 export const metadata: Metadata = {
@@ -40,6 +41,7 @@ export default async function RootLayout({
                     {children}
                   </section>
                 </div>
+                <Toaster/>
               </main>
           </ThemeProvider>
         </SocketProvider>

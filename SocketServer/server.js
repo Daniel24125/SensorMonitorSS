@@ -10,23 +10,6 @@ const io = require('socket.io')(http, {
 });
 const PORT = process.env.PORT || 8000;
 
-// // Authentication middleware
-// const authenticateToken = (socket, next) => {
-//     const token = socket.handshake.auth.token;
-//     if (!token) {
-//         return next(new Error('Authentication required'));
-//     }
-
-//     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-//         if (err) return next(new Error('Invalid token'));
-//         socket.user = decoded;
-//         next();
-//     });
-// };
-
-// // Apply authentication to socket connections
-// io.use(authenticateToken);
-
 // Track RPi connection and experiment status
 let rpiSocket = null;
 let experimentStatus = {
@@ -34,36 +17,7 @@ let experimentStatus = {
     startTime: null,
     currentConfiguration: null
 };
-// let deviceList=[]
-let deviceList=[
-    {
-        id: "wojnfvowejknfowef", 
-        name: "pH Monitor Device",
-        createdAt: new Date().toJSON(),
-        isConnected: true,
-        status: "ready",
-        locations: [
-            {
-                id: "sdkjvbirkejwbvweiojrg",
-                name: "R1",
-                createdAt: new Date().toJSON(),
-                sensor: [
-                    {
-                        id: "wfwefvwecvwevwev",
-                        mode: "acidic",
-                        margin: 0.1,
-                        maxValveTimeOpen: 30,
-                        targetPh: 7.0,
-                        probePort: 17,
-                        valvePort: 18,
-                        checkInterval: 5,
-                        createdAt: new Date().toJSON()
-                    }
-                ],
-            }
-        ]
-    }
-]
+let connectedDevices = {}
 
 // Command validation
 const validateCommand = (command, params) => {
@@ -79,30 +33,18 @@ const validateCommand = (command, params) => {
 };
 
 const registerRpi = socket=>{
-    if (rpiSocket) {
+    if (connectedDevices[socket.id]) {
         // Disconnect existing RPi connection
-        rpiSocket.disconnect(true);
+        socket.disconnect(true);
+        delete connectedDevices[socket.id]
     }
     console.log('RPi registered:', socket.id);
-    rpiSocket = socket;
-    // Notify all web clients of RPi connection
-    io.to('web_clients').emit('rpi_status_change', {
-        status: 'connected',
-        experimentStatus
-    });
 }
 
 const registerWebClient = socket =>{
     console.log('Web client registered:', socket.id);
     socket.join('web_clients');
-    
-    // Send current status to new web client
-    socket.emit('initial_state', {
-        rpiConnected: !!rpiSocket,
-        experimentStatus
-    });
-
-    socket.emit('getDeviceList', deviceList);
+    socket.emit('get_connected_devices', Object.values(connectedDevices));
 }
 
 const parseCommands = (socket, data)=>{
@@ -139,6 +81,40 @@ const parseCommands = (socket, data)=>{
     });
 }
 
+const handleDeviceRegistration = (config, deviceID, socketID) =>{
+    if(!connectedDevices.hasOwnProperty(deviceID)){
+        connectedDevices[deviceID] = {...config, socketID}
+    }else{
+        connectedDevices[deviceID] = {
+            ...connectedDevices[deviceID],
+            status: "ready",
+            socketID
+        }
+    }
+
+    io.to('web_clients').emit('get_connected_devices', Object.values(connectedDevices));
+}
+
+const handleRpiDisconnect = (socketID)=>{
+    console.log('RPi disconnected');
+    deviceID = Object.values(connectedDevices).filter(d=>d.socketID === socketID)[0].id
+    
+    if(connectedDevices.hasOwnProperty(deviceID)){
+        connectedDevices[deviceID] = {
+            ...connectedDevices[deviceID],
+            status: "disconnected",
+            socketID: null
+        }
+    }else{
+        console.log("The device is not registered")
+    }
+   
+   
+    io.to('web_clients').emit('get_connected_devices', Object.values(connectedDevices));
+}
+
+
+
 io.on('connection', (socket) => {
     console.log('New connection:', socket.id);
    
@@ -149,6 +125,14 @@ io.on('connection', (socket) => {
         } 
         else if (clientType === 'web') {
             registerWebClient(socket)
+        }
+    });
+
+    socket.on('get_rpi_config', (config) => {
+        if(config){
+            handleDeviceRegistration(config, config.id, socket.id)
+        }else{
+            socket.emit('get_connected_devices',  Object.values(connectedDevices));
         }
     });
 
@@ -189,13 +173,9 @@ io.on('connection', (socket) => {
     // Handle disconnection
     socket.on('disconnect', () => {
         console.log("Client Disconnected")
-        if (socket === rpiSocket) {
-            console.log('RPi disconnected');
-            rpiSocket = null;
-            io.to('web_clients').emit('rpi_status_change', {
-                status: 'disconnected',
-                experimentStatus
-            });
+        const isDevice = Object.values(connectedDevices).filter(d=>d.socketID === socket.id).length > 0
+        if (isDevice) {
+            handleRpiDisconnect(socket.id)
         }
     });
 

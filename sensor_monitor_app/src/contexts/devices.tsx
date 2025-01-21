@@ -1,5 +1,8 @@
+"use client"
+
 import React from 'react'
 import { useSocket } from './socket';
+import { useToast } from '@/hooks/use-toast';
  
 export interface User {
     sub: string;
@@ -32,7 +35,7 @@ type TemperatureSensorType = {}
 
 type SensorType = PhSensorType | TemperatureSensorType
 
-type LocationType = {
+type DeviceConfigurationType = {
     id: string
     name: string
     createdAt: string
@@ -46,8 +49,8 @@ export type DeviceType = {
     createdAt: string
     lastUpdatedAt?: string
     isConnected: boolean
-    status: "ready" | "busy"
-    locations: LocationType[]
+    status: "ready" | "busy" | "disconnected"
+    configurations: DeviceConfigurationType[]
 }
 
 interface DeviceContextType {
@@ -72,6 +75,7 @@ interface DevicesProviderProps {
 const DevicesProvider = ({children}: DevicesProviderProps) => {
     const [deviceList, setDeviceList] = React.useState<DeviceType[]>([])
     const {on, emit, isConnected} = useSocket()
+    const { toast } = useToast()
 
     const value: DeviceContextType = {
         deviceList
@@ -80,8 +84,13 @@ const DevicesProvider = ({children}: DevicesProviderProps) => {
     React.useEffect(()=>{
         if(isConnected){
             emit("register_client", "web")
-            on<DeviceType[]>("getDeviceList", (data)=>{
+            on<DeviceType[]>("get_connected_devices", (data)=>{
+                console.log("UPDATED")
                 setDeviceList(data)
+                toast({
+                    title: "Device info update",
+                    description: "The device information was successfuly updated!",
+                })
             })
         }
     },[isConnected])

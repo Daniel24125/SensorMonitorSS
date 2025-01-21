@@ -45,13 +45,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
   const [isConnected, setIsConnected] = useState<boolean>(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(()=>{
-    if(socket){
-      socket.on("getDeviceList", data=>{
-        console.log(data)
-      })
-    }
-  },[])
+
 
   useEffect(() => {
     // Initialize socket connection
@@ -78,6 +72,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
       setError(err.message);
       setIsConnected(false);
     });
+
 
     // Store socket instance
     setSocket(socketInstance);
@@ -161,7 +156,6 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
   return (
     <SocketContext.Provider value={value}>
         <DevicesProvider>
-          
             {children}
         </DevicesProvider>
     </SocketContext.Provider>
