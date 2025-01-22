@@ -6,13 +6,14 @@ import { TooltipWrapper } from '@/components/ui/tooltip'
 import { useDevices } from '@/contexts/devices'
 import { Plus } from 'lucide-react'
 import React from 'react'
+import ProjectForm from '../../projects/ProjectForm'
 
 const Topbar = () => {
   return (
     <div className='w-full flex justify-between items-center p-3 flex-grow-0 flex-shrink basis-auto'>
         <SearchProject/>
         <div className='flex items-center gap-3'>
-          <DeviceInfo/>
+          {/* <DeviceInfo/> */}
           <CreateProject/>
         </div>
     </div>
@@ -30,11 +31,15 @@ const DeviceInfo = ()=>{
 }
 
 export const CreateProject = ()=>{
-    return <TooltipWrapper title={"Create a new project"}>
-      <Button size="icon" className='rounded-full'>
-        <Plus/>
-      </Button>
-    </TooltipWrapper>
+    return <ProjectForm size="icon" className='rounded-full'>
+      <TooltipWrapper title={"Create a new project"}>
+          <div className='rounded-full bg-primary p-2'>
+            <Plus/>
+          </div>
+      </TooltipWrapper>
+    </ProjectForm>
+    
+   
 }
 
 export default Topbar

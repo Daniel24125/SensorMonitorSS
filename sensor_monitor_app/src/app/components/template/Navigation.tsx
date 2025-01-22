@@ -3,7 +3,7 @@ import { LayoutDashboard, LucideProps, Menu, RadioReceiver, SquareDashedKanban, 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import React from 'react'
-import { ThemeToggleButton } from './topbar/ThemeToggleButton'
+import { ThemeToggleButton } from './ThemeToggleButton'
 import { Button } from '@/components/ui/button'
 import { useUser } from '@auth0/nextjs-auth0'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'

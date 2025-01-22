@@ -3,6 +3,7 @@
 import React from 'react'
 import { useSocket } from './socket';
 import { useToast } from '@/hooks/use-toast';
+import { ProjectProvider } from './projects';
  
 export interface User {
     sub: string;
@@ -35,12 +36,21 @@ type TemperatureSensorType = {}
 
 type SensorType = PhSensorType | TemperatureSensorType
 
+type DeviceLocationType ={
+    id: string, 
+    name: string, 
+    createdAt: string, 
+    updatedAt?: string 
+    updatedBy: User, 
+    sensors: SensorType[]
+}
+
 type DeviceConfigurationType = {
     id: string
     name: string
     createdAt: string
     lastUpdatedAt?: string
-    sensor: SensorType[]
+    locations: DeviceLocationType[]
 }
 
 export type DeviceType = {
@@ -48,7 +58,6 @@ export type DeviceType = {
     name: string
     createdAt: string
     lastUpdatedAt?: string
-    isConnected: boolean
     status: "ready" | "busy" | "disconnected"
     configurations: DeviceConfigurationType[]
 }
@@ -85,19 +94,22 @@ const DevicesProvider = ({children}: DevicesProviderProps) => {
         if(isConnected){
             emit("register_client", "web")
             on<DeviceType[]>("get_connected_devices", (data)=>{
-                console.log("UPDATED")
                 setDeviceList(data)
-                toast({
-                    title: "Device info update",
-                    description: "The device information was successfuly updated!",
-                })
+                if(deviceList.length > 0){
+                    toast({
+                        title: "Device info update",
+                        description: "The device information was successfuly updated!",
+                    })
+                }
             })
         }
     },[isConnected])
 
 
     return <DevicesContext.Provider value={value}>
-        {children}
+        <ProjectProvider>
+            {children}
+        </ProjectProvider>
     </DevicesContext.Provider>
 }
 

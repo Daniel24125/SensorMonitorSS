@@ -1,55 +1,60 @@
 "use server"
 
-import { DeviceType, User } from "@/contexts/devices"
+import { ProjectType } from "@/contexts/projects";
 
-export type ProjectType = {
-    id: string 
-    title: string 
-    device: DeviceType
-    dataAquisitionInterval: number
-    createdAt: string
-    updatedAt?: string
+async function delay(ms: number) {
+    return new Promise(resolve => setTimeout(resolve, ms));
+  }
+
+
+
+type GetProjectType = (userID: string) => Promise<{
+    data: ProjectType[], 
+    error: boolean
+}>
+type CreateProjectType = (data: FormData | ProjectType ) => Promise<boolean>
+type EditProjectType = (data: ProjectType) => Promise<boolean>
+type DeleteProjectType = (projectID: string) => Promise<boolean>
+
+const projectList: ProjectType[] = [
+    {
+        id: "powengfvpiwenfg", 
+        title: "Monitoring the growth of micro alge pH through time",
+        experiments: [],
+        device: "dojvfnbowejdvn",
+        dataAquisitionInterval: 10,
+        createdAt: new Date().toJSON()
+    }
+]
+
+export const getProjects: GetProjectType = async (userID) =>{
+    await delay(1000)
+    console.log(projectList)
+    return {
+        data: projectList, 
+        error: false
+    }
 }
 
+export const createProject: CreateProjectType = async (data) =>{
+    await delay(3000)
+    console.log(data)
+    projectList.push(data as ProjectType)
+    return true
+}
 
-type GetProjectType = (userID: User) => Promise<ProjectType[]>
-
-export const getProjectList: GetProjectType = async (userID) =>{
+export const editProject: EditProjectType = async (data) =>{
     return new Promise((resolve, reject)=>{
-        resolve([
-            {
-                id: "powengfvpiwenfg", 
-                title: "Monitoring the growth of micro alge pH through time",
-                device: {
-                    id: "wojnfvowejknfowef", 
-                    name: "pH Monitor Device",
-                    createdAt: new Date().toJSON(),
-                    isConnected: true,
-                    status: "ready",
-                    locations: [
-                        {
-                            id: "sdkjvbirkejwbvweiojrg",
-                            name: "R1",
-                            createdAt: new Date().toJSON(),
-                            sensor: [
-                                {
-                                    id: "wfwefvwecvwevwev",
-                                    mode: "acidic",
-                                    margin: 0.1,
-                                    maxValveTimeOpen: 30,
-                                    targetPh: 7.0,
-                                    probePort: 17,
-                                    valvePort: 18,
-                                    checkInterval: 5,
-                                    createdAt: new Date().toJSON()
-                                }
-                            ],
-                        }
-                    ]
-                },
-                dataAquisitionInterval: 10,
-                createdAt: new Date().toJSON()
-            }
-        ])
+        const index = projectList.findIndex(p =>p.id === data.id)
+        projectList[index] = data
+        resolve(true)
+    })
+}
+
+export const deleteProject: DeleteProjectType = async (projectID) =>{
+    return new Promise((resolve, reject)=>{
+        const index = projectList.findIndex(p =>p.id === projectID)
+        
+        resolve(true)
     })
 }
