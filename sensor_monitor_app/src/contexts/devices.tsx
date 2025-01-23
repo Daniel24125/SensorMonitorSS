@@ -4,6 +4,7 @@ import React from 'react'
 import { useSocket } from './socket';
 import { useToast } from '@/hooks/use-toast';
 import { ProjectProvider } from './projects';
+import { Button } from '@/components/ui/button';
  
 export interface User {
     sub: string;
@@ -62,6 +63,11 @@ export type DeviceType = {
     configurations: DeviceConfigurationType[]
 }
 
+type DeviceErrorType = {
+    message: string 
+    deviceID: string
+}
+
 interface DeviceContextType {
     deviceList: DeviceType[]
 }
@@ -102,12 +108,26 @@ const DevicesProvider = ({children}: DevicesProviderProps) => {
                     })
                 }
             })
+            on<DeviceErrorType>("error", (err)=>{
+                console.error(err.message)
+                toast({
+                    title: `An error occured on device ${err.deviceID}`,
+                    description: err.message,
+                    variant: "destructive"
+                })
+            })
         }
     },[isConnected])
 
 
     return <DevicesContext.Provider value={value}>
         <ProjectProvider>
+            <Button onClick={()=>{
+              emit("updateDeviceConfig", {
+                deviceID: "dvdwvwevewvwddvwev",
+                data: "HELLO"
+              })
+            }}>Send Config Data Test</Button>
             {children}
         </ProjectProvider>
     </DevicesContext.Provider>

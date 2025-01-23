@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button'
 import { ExternalLink, Plus, RadioReceiver, ToggleLeft, ToggleRight } from 'lucide-react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useSocket } from '@/contexts/socket'
-import CardAvatar from './ui/CardAvatar'
 import DashboardCard from '@/components/ui/dashboard-card'
 
 export const deviceIconColors = {
@@ -14,7 +13,6 @@ export const deviceIconColors = {
     "busy": "#FDCB6E",
     "disconnected": "#35363A"
 }
-
 
 const DeviceWidget = () => {
     const {deviceList} = useDevices()
@@ -47,8 +45,6 @@ const NoDeviceDetected = ()=>{
     </div>
 }
 
-
-
 const DeviceCardComponent = ({device}:{device: DeviceType})=>{
     return <DashboardCard 
         title={device.name}
@@ -57,8 +53,6 @@ const DeviceCardComponent = ({device}:{device: DeviceType})=>{
     >
         <RadioReceiver/>
     </DashboardCard>
-    
-   
 }
 
 const DeviceSwitch = ({device}:{device: DeviceType})=>{

@@ -2,7 +2,6 @@ import React from 'react'
 import WidgetCard from '../ui/WidgetCard'
 import { Button } from '@/components/ui/button'
 import { ChevronRight, ExternalLink } from 'lucide-react'
-import CardAvatar from '../ui/CardAvatar'
 import { Skeleton } from '@/components/ui/skeleton'
 import { useProjects } from '@/contexts/projects'
 import DashboardCard from '@/components/ui/dashboard-card'
@@ -37,6 +36,7 @@ const ProjectListComponent = ()=>{
   const {projectList, isLoading} = useProjects()
   return projectList.map(p=>{
     return <DashboardCard  
+      key={p.id}
       title={p.title}
       subtitle={`${p.experiments.length} experiments`}
       color='#9C88FF'

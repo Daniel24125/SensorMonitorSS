@@ -113,7 +113,15 @@ const handleRpiDisconnect = (socketID)=>{
     io.to('web_clients').emit('get_connected_devices', Object.values(connectedDevices));
 }
 
+const reportErrorToClient = (error) => {
+    console.error("An error occured while trying to send a device config command.", error)
 
+    io.to('web_clients').emit('error', {
+        message: error.message ? error.message : "An error occured in the device!",
+        deviceID: error["device_id"] ? error["device_id"] : null,
+        timestamp: new Date().toJSON()
+    });
+}
 
 io.on('connection', (socket) => {
     console.log('New connection:', socket.id);
@@ -135,6 +143,33 @@ io.on('connection', (socket) => {
             socket.emit('get_connected_devices',  Object.values(connectedDevices));
         }
     });
+
+    socket.on("updateDeviceConfig", config =>{
+        /* 
+            config: {
+                deviceID: string, 
+                data: any
+            }
+        */
+
+       const device = connectedDevices[config["deviceID"]]
+       try {
+            if(!device || device.status === "disconnected"){
+                throw Error("The device you are trying to communicate is not connected. Please make sure the device is turned on.")
+            }
+            if(!config.data){
+                throw Error("Invalid command format")
+            }
+            console.log(device)
+            io.to(device.socketID).emit("updateDeviceConfig", config.data)
+        } catch (error) {
+            reportErrorToClient({
+                message: error.message,
+                device_id: device? device.id : null
+            })
+        }
+
+    })
 
     // Handle commands from web client
     socket.on('command', (data) => {
@@ -181,11 +216,15 @@ io.on('connection', (socket) => {
 
     // Handle errors
     socket.on('error', (error) => {
+        /*
+            Receives errors from the device socket client
+            error: {
+                message: string,
+                device_id: string
+            }
+        */ 
         console.error('Socket error:', error);
-        socket.emit('server_error', {
-            message: 'An error occurred',
-            timestamp: new Date().toISOString()
-        });
+        reportErrorToClient(error)
     });
 });
 

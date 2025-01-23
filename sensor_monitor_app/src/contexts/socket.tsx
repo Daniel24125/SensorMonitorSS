@@ -4,6 +4,7 @@ import React, { createContext, useCallback, useContext, useEffect, useState } fr
 import { Socket, io } from 'socket.io-client';
 import DevicesProvider from './devices';
 import { NoProjectsIlustration } from '@/components/ui/ilustrations';
+import { Button } from '@/components/ui/button';
 
 // Define types for the socket context
 interface SocketContextType {
@@ -119,6 +120,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
   }, [socket, isConnected]);
 
   const on = <T,>(event: string, callback: (data: T) => void): void => {
+    console.log(`On ${event}`);
     if (socket) {
       socket.on(event, callback);
     }
