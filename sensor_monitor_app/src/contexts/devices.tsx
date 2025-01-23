@@ -122,12 +122,39 @@ const DevicesProvider = ({children}: DevicesProviderProps) => {
 
     return <DevicesContext.Provider value={value}>
         <ProjectProvider>
-            <Button onClick={()=>{
+            {/* <Button onClick={()=>{
               emit("updateDeviceConfig", {
                 deviceID: "dvdwvwevewvwddvwev",
-                data: "HELLO"
+                data: {
+                    context: "configuration",
+                    operation: "create",
+                    data: {
+                        id: "wobjgfijwerbgiwerjbgv",
+                        name: "odwsnfvowerkinvow", 
+                        createdAt: new Date().toJSON(),
+                        locations: [
+                            {
+                                id: "ibugeiuebrg",
+                                name: "odwsnfvowerkinvow", 
+                                createdAt: new Date().toJSON(),
+                                sensors: [
+                                    {
+                                        'id': "ehbvgihweribj",
+                                        'mode': "acidics",
+                                        'margin': 0.1,
+                                        'maxValveTimeOpen': 10,
+                                        'targetPh': 10.0,
+                                        'probePort': 17,
+                                        'checkInterval': 10,
+                                        'createdAt':  new Date().toJSON()
+                                    }
+                                ]
+                            }
+                        ]
+                    }
+                }
               })
-            }}>Send Config Data Test</Button>
+            }}>Send Config Data Test</Button> */}
             {children}
         </ProjectProvider>
     </DevicesContext.Provider>

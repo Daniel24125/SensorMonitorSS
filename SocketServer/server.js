@@ -160,7 +160,7 @@ io.on('connection', (socket) => {
             if(!config.data){
                 throw Error("Invalid command format")
             }
-            console.log(device)
+
             io.to(device.socketID).emit("updateDeviceConfig", config.data)
         } catch (error) {
             reportErrorToClient({
