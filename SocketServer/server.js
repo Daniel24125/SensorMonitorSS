@@ -87,6 +87,7 @@ const handleDeviceRegistration = (config, deviceID, socketID) =>{
     }else{
         connectedDevices[deviceID] = {
             ...connectedDevices[deviceID],
+            ...config,
             status: "ready",
             socketID
         }
@@ -142,6 +143,15 @@ io.on('connection', (socket) => {
         }else{
             socket.emit('get_connected_devices',  Object.values(connectedDevices));
         }
+    });
+
+    socket.on('refresh_device_data', (config) => {
+        deviceID = Object.values(connectedDevices).filter(d=>d.socketID === socket.id)[0].id
+        connectedDevices[deviceID] = {
+            ...connectedDevices[deviceID],
+            ...config
+        }
+        io.to('web_clients').emit('get_connected_devices', Object.values(connectedDevices));
     });
 
     socket.on("updateDeviceConfig", config =>{

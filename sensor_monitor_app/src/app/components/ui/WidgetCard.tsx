@@ -1,13 +1,21 @@
-import React from 'react'
+import { DeviceType } from '@/contexts/devices'
+import React, { MouseEventHandler } from 'react'
 
-const WidgetCard = ({className, title, secondaryAction, children}:{className?:string, title: string, secondaryAction?: React.ReactNode, children: React.ReactNode }) => {
+type WidgetCardType = {
+  className?:string,
+  title: string | React.ReactNode, 
+  secondaryAction?: React.ReactNode, 
+  children: React.ReactNode }
+
+
+const WidgetCard = ({className, title, secondaryAction, children}: WidgetCardType) => {
   return (
-    <div  className={`${className} bg-secondary-background h-full rounded-xl px-5 py-4 flex flex-col`}>
-      <div className='flex justify-between items-center mb-6'>
-            <h6>{title}</h6>
-            <div>
-                {secondaryAction}
-            </div>
+    <div className={`${className} bg-secondary-background h-full rounded-xl px-5 py-4 flex flex-col`}>
+      <div className='flex justify-between items-start mb-6'>
+            <h6 className='flex-shrink-0 mr-3'>{title}</h6>
+            {secondaryAction}
+            {/* <div>
+            </div> */}
         </div>
         {children}
     </div>

@@ -46,7 +46,7 @@ type DeviceLocationType ={
     sensors: SensorType[]
 }
 
-type DeviceConfigurationType = {
+export type DeviceConfigurationType = {
     id: string
     name: string
     createdAt: string
@@ -70,6 +70,8 @@ type DeviceErrorType = {
 
 interface DeviceContextType {
     deviceList: DeviceType[]
+    selectedDevice: null | DeviceType
+    setSelectedDevice: React.Dispatch<React.SetStateAction<null | DeviceType>>
 }
 
 const DevicesContext = React.createContext<DeviceContextType | null>(null)
@@ -89,12 +91,16 @@ interface DevicesProviderProps {
 
 const DevicesProvider = ({children}: DevicesProviderProps) => {
     const [deviceList, setDeviceList] = React.useState<DeviceType[]>([])
+    const [selectedDevice, setSelectedDevice] = React.useState<null | DeviceType>(null)
     const {on, emit, isConnected} = useSocket()
     const { toast } = useToast()
 
     const value: DeviceContextType = {
-        deviceList
+        deviceList,
+        selectedDevice,
+        setSelectedDevice
     }
+
 
     React.useEffect(()=>{
         if(isConnected){
@@ -108,6 +114,7 @@ const DevicesProvider = ({children}: DevicesProviderProps) => {
                     })
                 }
             })
+
             on<DeviceErrorType>("error", (err)=>{
                 console.error(err.message)
                 toast({
@@ -119,45 +126,60 @@ const DevicesProvider = ({children}: DevicesProviderProps) => {
         }
     },[isConnected])
 
+    React.useEffect(()=>{
+        if(selectedDevice){
+            const updatedDeviceData = deviceList.filter(d=>d.id === selectedDevice.id)[0]
+            if(updatedDeviceData.status === "disconnected"){
+                setSelectedDevice(null)
+            }else{
+                setSelectedDevice(updatedDeviceData)
+            }
+        }
+        
+    }, [deviceList])
+
 
     return <DevicesContext.Provider value={value}>
         <ProjectProvider>
-            {/* <Button onClick={()=>{
-              emit("updateDeviceConfig", {
-                deviceID: "dvdwvwevewvwddvwev",
+            
+        <Button onClick={()=>{
+            emit("updateDeviceConfig", {
+            deviceID: "dvdwvwevewvwddvwev",
+            data: {
+                context: "configuration",
+                operation: "create",
                 data: {
-                    context: "configuration",
-                    operation: "create",
-                    data: {
-                        id: "wobjgfijwerbgiwerjbgv",
-                        name: "odwsnfvowerkinvow", 
-                        createdAt: new Date().toJSON(),
-                        locations: [
-                            {
-                                id: "ibugeiuebrg",
-                                name: "odwsnfvowerkinvow", 
-                                createdAt: new Date().toJSON(),
-                                sensors: [
-                                    {
-                                        'id': "ehbvgihweribj",
-                                        'mode': "acidics",
-                                        'margin': 0.1,
-                                        'maxValveTimeOpen': 10,
-                                        'targetPh': 10.0,
-                                        'probePort': 17,
-                                        'checkInterval': 10,
-                                        'createdAt':  new Date().toJSON()
-                                    }
-                                ]
-                            }
-                        ]
-                    }
+                    id: "wobjgfijwerbgiwerjbgv",
+                    name: "odwsnfvowerkinvow", 
+                    createdAt: new Date().toJSON(),
+                    locations: [
+                        {
+                            id: "ibugeiuebrg",
+                            name: "odwsnfvowerkinvow", 
+                            createdAt: new Date().toJSON(),
+                            sensors: [
+                                {
+                                    'id': "ehbvgihweribj",
+                                    'mode': "acidic",
+                                    'margin': 0.1,
+                                    'maxValveTimeOpen': 10,
+                                    'targetPh': 10.0,
+                                    'probePort': 17,
+                                    'checkInterval': 10,
+                                    'createdAt':  new Date().toJSON()
+                                }
+                            ]
+                        }
+                    ]
                 }
-              })
-            }}>Send Config Data Test</Button> */}
+            }
+            })
+        }}>Send Config Data Test</Button>
             {children}
         </ProjectProvider>
     </DevicesContext.Provider>
 }
 
 export default DevicesProvider
+
+

@@ -7,6 +7,8 @@ import { ExternalLink, Plus, RadioReceiver, ToggleLeft, ToggleRight } from 'luci
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useSocket } from '@/contexts/socket'
 import DashboardCard from '@/components/ui/dashboard-card'
+import { useRouter } from 'next/navigation'
+import { cn } from '@/lib/utils'
 
 export const deviceIconColors = {
     "ready": "#2ECC71",
@@ -14,18 +16,22 @@ export const deviceIconColors = {
     "disconnected": "#35363A"
 }
 
-const DeviceWidget = () => {
+type DeviceWidgetProps = {
+    showHeaderIcon?: boolean
+    setDevice?: (device: DeviceType)=>void
+}
+const DeviceWidget = ({
+    showHeaderIcon
+}:DeviceWidgetProps) => {
+    const router = useRouter()
     const {deviceList} = useDevices()
+
     return (
         <WidgetCard title="Devices" secondaryAction={<>
-            <Button size="icon" variant="ghost">
-                <Plus/>
-            </Button>
-            <Button size="icon" variant="ghost">
+            {showHeaderIcon && <Button onClick={()=>router.push("/devices")} size="icon" variant="ghost">
                 <ExternalLink/>
-            </Button>
-        </>} className='w-80 flex-shrink-0'>
-           
+            </Button>}
+        </>} className={cn('w-80 flex-shrink-0', )}>
             {deviceList.length > 0 ? <ScrollArea className='w-full h-full flex flex-col gap-5'>
                 {deviceList.map(d=><DeviceCardComponent key={d.id} device={d}/>)}
             </ScrollArea>: <NoDeviceDetected/>}
@@ -46,10 +52,14 @@ const NoDeviceDetected = ()=>{
 }
 
 const DeviceCardComponent = ({device}:{device: DeviceType})=>{
+    const {setSelectedDevice} = useDevices()
+    
     return <DashboardCard 
+        setSelected={()=>setSelectedDevice(device)}
         title={device.name}
         subtitle={`${device.configurations.length} configurations defined`}
         color={deviceIconColors[device.status]}
+        secondaryAction={<DeviceSwitch device={device}/>}
     >
         <RadioReceiver/>
     </DashboardCard>

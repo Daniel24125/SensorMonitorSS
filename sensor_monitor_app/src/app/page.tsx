@@ -13,7 +13,7 @@ export default function Home() {
 
   return <>
     <div className={`${rowClass}`}>
-      <DeviceWidget/>
+      <DeviceWidget showHeaderIcon={true}/>
       <OnGoingExperimentWidget/>  
     </div>
     <div className={`${rowClass}`}>
