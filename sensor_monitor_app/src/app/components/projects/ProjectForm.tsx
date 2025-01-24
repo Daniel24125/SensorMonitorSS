@@ -66,7 +66,7 @@ const DeviceSelection = ()=>{
             </SelectTrigger>
             <SelectContent >
                 {deviceList.map(d=>{
-                    const colorStatus = !d.isConnected ? deviceIconColors.disconnected : deviceIconColors[d.status]
+                    const colorStatus = d.status !== "disconnected" ? deviceIconColors.disconnected : deviceIconColors[d.status]
                     return <SelectItem key={d.id} value={d.id}>
                         <div className='flex items-center gap-2'>
                             <div style={{

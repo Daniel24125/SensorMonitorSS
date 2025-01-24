@@ -5,7 +5,9 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useDevices } from "@/contexts/devices"
 import React from "react";
 import { useConfigurations } from "../page";
-
+import ConfigurationManager from "./ConfigurationManager";
+import { Button } from "@/components/ui/button";
+import { Plus } from "lucide-react";
 
 const DeviceInformation = ()=>{
   return "HELLO"
@@ -14,17 +16,25 @@ const DeviceInformation = ()=>{
 export const DeviceConfigurationTabs = ()=>{
   const {selectedDevice} = useDevices()
   const {setSelectedConfiguration} = useConfigurations()
-  
+
   console.log(selectedDevice)
-  return selectedDevice?.configurations && <Tabs defaultValue={selectedDevice.configurations[0].id} className="w-full justify-end flex">
-  <TabsList>
-    {selectedDevice.configurations.map(conf => {
-      return <TabsTrigger onClick={()=>setSelectedConfiguration(conf)} key={conf.id} value={conf.id}>{conf.name}</TabsTrigger>
-    })}
-    
-  </TabsList>
-</Tabs>
+  return selectedDevice?.configurations && <>
+    {selectedDevice.configurations.length > 0 && <Tabs defaultValue={selectedDevice.configurations[0].id} className="w-full justify-end flex mr-3">
+      <TabsList>
+        {selectedDevice.configurations.map(conf => {
+          return <TabsTrigger onClick={()=>setSelectedConfiguration(conf)} key={conf.id} value={conf.id}>{conf.name}</TabsTrigger>
+        })}        
+      </TabsList>
+    </Tabs> }
+    <ConfigurationManager>
+      <Button variant="outline" size="icon" onClick={()=>{}}>
+          <Plus/>
+      </Button>
+    </ConfigurationManager>
+  </>
 }
+
+
 
 export const NoSelectedDevice = ()=>{
   return <div className='flex items-center justify-center flex-col gap-3 w-full h-full'>

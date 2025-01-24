@@ -4,8 +4,7 @@ import React from 'react'
 import { useSocket } from './socket';
 import { useToast } from '@/hooks/use-toast';
 import { ProjectProvider } from './projects';
-import { Button } from '@/components/ui/button';
- 
+
 export interface User {
     sub: string;
     name?: string;
@@ -142,39 +141,7 @@ const DevicesProvider = ({children}: DevicesProviderProps) => {
     return <DevicesContext.Provider value={value}>
         <ProjectProvider>
             
-        <Button onClick={()=>{
-            emit("updateDeviceConfig", {
-            deviceID: "dvdwvwevewvwddvwev",
-            data: {
-                context: "configuration",
-                operation: "create",
-                data: {
-                    id: "wobjgfijwerbgiwerjbgv",
-                    name: "odwsnfvowerkinvow", 
-                    createdAt: new Date().toJSON(),
-                    locations: [
-                        {
-                            id: "ibugeiuebrg",
-                            name: "odwsnfvowerkinvow", 
-                            createdAt: new Date().toJSON(),
-                            sensors: [
-                                {
-                                    'id': "ehbvgihweribj",
-                                    'mode': "acidic",
-                                    'margin': 0.1,
-                                    'maxValveTimeOpen': 10,
-                                    'targetPh': 10.0,
-                                    'probePort': 17,
-                                    'checkInterval': 10,
-                                    'createdAt':  new Date().toJSON()
-                                }
-                            ]
-                        }
-                    ]
-                }
-            }
-            })
-        }}>Send Config Data Test</Button>
+        
             {children}
         </ProjectProvider>
     </DevicesContext.Provider>
