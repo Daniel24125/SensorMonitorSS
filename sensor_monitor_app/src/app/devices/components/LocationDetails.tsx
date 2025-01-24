@@ -3,6 +3,7 @@ import React from 'react'
 import { useConfigurations } from '../page'
 import { Button } from '@/components/ui/button'
 import { NoLocationIlustration } from '@/components/ui/ilustrations'
+import ConfigurationManager from './ConfigurationManager'
 
 
 interface LocationContextType {
@@ -44,7 +45,13 @@ const LocationDetails = () => {
     return (<LocationContext.Provider value={value}>
 
         {selectedConfiguration!.locations.length === 0 ? <NoLocationSelected/>: <LocationInformation/>}
-
+        <ConfigurationManager
+            useContext={useLocations as typeof useConfigurations}
+            channelContext='location'
+            additionalSubmitData={{
+                configurationID: selectedConfiguration!.id
+            }}
+        />
     </LocationContext.Provider>
     )
 }

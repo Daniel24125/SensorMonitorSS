@@ -133,8 +133,9 @@ const DevicesProvider = ({children}: DevicesProviderProps) => {
             }else{
                 setSelectedDevice(updatedDeviceData)
             }
+        }else if(deviceList.length > 0){
+            setSelectedDevice(deviceList[0])
         }
-        
     }, [deviceList])
 
 

@@ -1,14 +1,21 @@
-require('dotenv').config();
-const express = require('express');
-const { v4 } = require('uuid');
+import { handleDeviceRegistration, handleRpiDisconnect, parseCommands, registerRpi, registerWebClient, reportErrorToClient } from './utils.js';
+import 'dotenv/config';
+import express from 'express';
+import { v4 } from 'uuid';
+import { createServer } from 'http';
+import { Server } from 'socket.io';
+
 const app = express();
-const http = require('http').createServer(app);
-const io = require('socket.io')(http, {
+const http = createServer(app);
+const io = new Server(http, {
     cors: {
         origin: process.env.NEXTJS_CLIENT_URL || "http://localhost:3000",
         methods: ["GET", "POST"]
     }
 });
+
+export { io };
+
 const PORT = process.env.PORT || 8000;
 
 // Track RPi connection and experiment status
@@ -18,112 +25,9 @@ let experimentStatus = {
     startTime: null,
     currentConfiguration: null
 };
-let connectedDevices = {}
+export let connectedDevices = {}
 
-// Command validation
-const validateCommand = (command, params) => {
-    const validCommands = {
-        'valve': (params) => params.valveId && typeof params.state === 'boolean',
-        'configure': (params) => params.configuration && typeof params.configuration === 'object',
-        'getReadings': (params) => true,
-        'startExperiment': (params) => params.configuration && typeof params.configuration === 'object',
-        'stopExperiment': (params) => true
-    };
 
-    return validCommands[command] && validCommands[command](params);
-};
-
-const registerRpi = socket=>{
-    if (connectedDevices[socket.id]) {
-        // Disconnect existing RPi connection
-        socket.disconnect(true);
-        delete connectedDevices[socket.id]
-    }
-    console.log('RPi registered:', socket.id);
-}
-
-const registerWebClient = socket =>{
-    console.log('Web client registered:', socket.id);
-    socket.join('web_clients');
-    socket.emit('get_connected_devices', Object.values(connectedDevices));
-}
-
-const parseCommands = (socket, data)=>{
-    const { command, params } = data;
-
-    // Validate command
-    if (!validateCommand(command, params)) {
-        socket.emit('command_error', {
-            error: 'Invalid command or parameters',
-            command,
-            params
-        });
-        return;
-    }
-
-    console.log(`Command received: ${command}`, params);
-
-    // Handle experiment-related commands
-    if (command === 'startExperiment') {
-        experimentStatus.isRunning = true;
-        experimentStatus.startTime = new Date();
-        experimentStatus.currentConfiguration = params.configuration;
-    } else if (command === 'stopExperiment') {
-        experimentStatus.isRunning = false;
-        experimentStatus.startTime = null;
-    }
-
-    // Forward command to RPi
-    rpiSocket.emit('execute_command', {
-        command,
-        params,
-        timestamp: new Date().toISOString(),
-        senderId: socket.id
-    });
-}
-
-const handleDeviceRegistration = (config, deviceID, socketID) =>{
-    if(!connectedDevices.hasOwnProperty(deviceID)){
-        connectedDevices[deviceID] = {...config, socketID}
-    }else{
-        connectedDevices[deviceID] = {
-            ...connectedDevices[deviceID],
-            ...config,
-            status: "ready",
-            socketID
-        }
-    }
-
-    io.to('web_clients').emit('get_connected_devices', Object.values(connectedDevices));
-}
-
-const handleRpiDisconnect = (socketID)=>{
-    console.log('RPi disconnected');
-    deviceID = Object.values(connectedDevices).filter(d=>d.socketID === socketID)[0].id
-    
-    if(connectedDevices.hasOwnProperty(deviceID)){
-        connectedDevices[deviceID] = {
-            ...connectedDevices[deviceID],
-            status: "disconnected",
-            socketID: null
-        }
-    }else{
-        console.log("The device is not registered")
-    }
-   
-   
-    io.to('web_clients').emit('get_connected_devices', Object.values(connectedDevices));
-}
-
-const reportErrorToClient = (error) => {
-    console.error("An error occured while trying to send a device config command.", error)
-
-    io.to('web_clients').emit('error', {
-        message: error.message ? error.message : "An error occured in the device!",
-        deviceID: error["device_id"] ? error["device_id"] : null,
-        timestamp: new Date().toJSON()
-    });
-}
 
 io.on('connection', (socket) => {
     console.log('New connection:', socket.id);
@@ -174,16 +78,20 @@ io.on('connection', (socket) => {
             if(!config.data){
                 throw Error("Invalid command format")
             }
+
+            const parsedData = {
+                ...submitData.data,
+                id: isCreate ? v4() : submitData.data.id,
+                createdAt: isCreate ? new Date().toJSON() : submitData.data.createdAt,
+                lastUpdatedAt: isCreate ? undefined : new Date().toJSON(), 
+                locations: operationContext === "configuration" ? isCreate ? [] : submitData.data.locations: undefined,
+                sensors: operationContext === "location" ? isCreate ? [] : submitData.data.sensors: undefined
+            }
+
+            console.log(parsedData)
             io.to(device.socketID).emit("updateDeviceConfig", {
                 ...submitData,
-                data:{
-                    ...submitData.data,
-                    id: isCreate ? v4() : submitData.data.id,
-                    createdAt: isCreate ? new Date().toJSON() : submitData.data.createdAt,
-                    updatedAt: isCreate ? null : new Date().toJSON(), 
-                    locations: operationContext === "configuration" ? isCreate ? [] : submitData.data.locations: null,
-                    sensors: operationContext === "location" ? isCreate ? [] : submitData.data.sensors: null
-                }
+                data: parsedData
             })
         } catch (error) {
             reportErrorToClient({

@@ -18,7 +18,7 @@ const DeviceInformation = ()=>{
     <header className="w-full flex justify-between">
       <div className="flex flex-col gap-1">
         <h2 className="text-2xl font-bold">{selectedData?.name} </h2>
-        {selectedData!.lastUpdatedAt && <h5 className="text-muted">Configuration last updated {new Intl.DateTimeFormat().format(new Date(selectedData!.lastUpdatedAt))}</h5>}
+        {selectedData!.lastUpdatedAt && <h5 className="text-accent text-sm">Configuration last updated {new Intl.DateTimeFormat().format(new Date(selectedData!.lastUpdatedAt))}</h5>}
       </div>
       <div >
         <DropdownMenu>
@@ -45,6 +45,7 @@ const DeviceInformation = ()=>{
                   <Trash size={13}/>
                   <span>Delete</span>
                 </div>
+
               </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
@@ -58,14 +59,14 @@ const DeviceInformation = ()=>{
 
 export const DeviceConfigurationTabs = ()=>{
   const {selectedDevice} = useDevices()
-  const {setselectedData, setOpen} = useConfigurations()
+  const {setSelectedData, setOpen} = useConfigurations()
 
 
   return selectedDevice?.configurations && <>
     {selectedDevice.configurations.length > 0 && <Tabs defaultValue={selectedDevice.configurations[0].id} className="w-full justify-end flex mr-3">
       <TabsList>
         {selectedDevice.configurations.map(conf => {
-          return <TabsTrigger onClick={()=>setselectedData(conf)} key={conf.id} value={conf.id}>{conf.name}</TabsTrigger>
+          return <TabsTrigger onClick={()=>setSelectedData(conf)} key={conf.id} value={conf.id}>{conf.name}</TabsTrigger>
         })}        
       </TabsList>
     </Tabs> }

@@ -10,11 +10,12 @@ import { ResponsiveDialog } from '@/components/ui/responsive-dialog';
 
 type UpperLevelDataManagerProps = {
     useContext: typeof useConfigurations
-    channelContext: "configuration" | "location" | "device"
+    channelContext: "configuration" | "location" | "device" ,
+    additionalSubmitData?: any
 }
 
 
-const ConfigurationManager = ({useContext, channelContext}: UpperLevelDataManagerProps) => {
+const ConfigurationManager = ({useContext, channelContext, additionalSubmitData}: UpperLevelDataManagerProps) => {
     const {emit} = useSocket()
     const {selectedDevice} = useDevices()
     const {open, setOpen, selectedData, edit} = useContext()
@@ -38,6 +39,7 @@ const ConfigurationManager = ({useContext, channelContext}: UpperLevelDataManage
                 operation: edit ? "update" : "create",
                 data: {
                     ...selectedData,
+                    ...additionalSubmitData,
                     name: data.get("name"),
                 }
             }
