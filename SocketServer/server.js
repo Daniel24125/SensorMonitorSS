@@ -1,5 +1,6 @@
 require('dotenv').config();
 const express = require('express');
+const { v4 } = require('uuid');
 const app = express();
 const http = require('http').createServer(app);
 const io = require('socket.io')(http, {
@@ -164,14 +165,26 @@ io.on('connection', (socket) => {
 
        const device = connectedDevices[config["deviceID"]]
        try {
+            const submitData = config.data
+            const isCreate =  submitData.operation === "create"
+            const operationContext = submitData.context 
             if(!device || device.status === "disconnected"){
                 throw Error("The device you are trying to communicate is not connected. Please make sure the device is turned on.")
             }
             if(!config.data){
                 throw Error("Invalid command format")
             }
-
-            io.to(device.socketID).emit("updateDeviceConfig", config.data)
+            io.to(device.socketID).emit("updateDeviceConfig", {
+                ...submitData,
+                data:{
+                    ...submitData.data,
+                    id: isCreate ? v4() : submitData.data.id,
+                    createdAt: isCreate ? new Date().toJSON() : submitData.data.createdAt,
+                    updatedAt: isCreate ? null : new Date().toJSON(), 
+                    locations: operationContext === "configuration" ? isCreate ? [] : submitData.data.locations: null,
+                    sensors: operationContext === "location" ? isCreate ? [] : submitData.data.sensors: null
+                }
+            })
         } catch (error) {
             reportErrorToClient({
                 message: error.message,
