@@ -3,11 +3,16 @@ import React from 'react'
 import WidgetCard from '../components/ui/WidgetCard'
 import { DeviceConfigurationType, useDevices } from '@/contexts/devices'
 import DeviceInformation, { DeviceConfigurationTabs, NoSelectedDevice } from './components/DeviceDetails'
+import ConfigurationManager from './components/ConfigurationManager'
 
 
-interface ConfigurationContextType {
-  selectedConfiguration: DeviceConfigurationType | null
-  setSelectedConfiguration: React.Dispatch<React.SetStateAction<DeviceConfigurationType | null>>
+export interface ConfigurationContextType {
+  selectedData: DeviceConfigurationType | null
+  setSelectedData: React.Dispatch<React.SetStateAction<DeviceConfigurationType | null>>
+  open: boolean, 
+  setOpen: React.Dispatch<React.SetStateAction<boolean>>
+  edit: boolean, 
+  setEdit: React.Dispatch<React.SetStateAction<boolean>>
 }
 
 const ConfigurationContext = React.createContext<ConfigurationContextType | null>(null)
@@ -24,23 +29,43 @@ return context;
 
 
 const DevicePage = () => {
-  const {selectedDevice, deviceList} = useDevices()
-  const [selectedConfiguration, setSelectedConfiguration] = React.useState<null | DeviceConfigurationType>(null)
-  
+  const {selectedDevice} = useDevices()
+  const [selectedData, setSelectedData] = React.useState<null | DeviceConfigurationType>(null)
+  const [open, setOpen] = React.useState(false)
+  const [edit, setEdit] = React.useState(false)
+
   React.useEffect(()=>{
-    
-  },[deviceList])
+    if(!open){
+      setEdit(false)
+    }
+  }, [open])
+
+  React.useEffect(()=>{
+    if(selectedDevice){
+      setSelectedData(selectedDevice.configurations[0])
+    }
+  },[selectedDevice])
 
   const value: ConfigurationContextType = {
-    selectedConfiguration,
-    setSelectedConfiguration,
-}
+    selectedData,
+    setSelectedData,
+    open, 
+    setOpen,
+    edit,
+    setEdit
+  }
 
   return <ConfigurationContext.Provider value={value}>
     <WidgetCard secondaryAction={
       selectedDevice && <DeviceConfigurationTabs/>
     } className='w-full ml-5' title={"Device Details"} >
-      {selectedDevice ? <DeviceInformation/> : <NoSelectedDevice/>}
+      {selectedDevice ? <>
+        <DeviceInformation/>
+        <ConfigurationManager 
+          useContext={useConfigurations}
+          channelContext="configuration"
+        />
+      </> : <NoSelectedDevice/>}
     </WidgetCard>
   </ConfigurationContext.Provider> 
 }

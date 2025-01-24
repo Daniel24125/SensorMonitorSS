@@ -3,63 +3,73 @@
 import { Button } from '@/components/ui/button'
 import { useSocket } from '@/contexts/socket'
 import React from 'react'
-import { v4 } from "uuid";
-import { Plus } from "lucide-react";
-import { TooltipWrapper } from '@/components/ui/tooltip';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog';
-import { DeviceConfigurationType, useDevices } from '@/contexts/devices';
+import { useDevices } from '@/contexts/devices';
 import { Input } from '@/components/ui/input';
+import { useConfigurations } from '../page';
+import { ResponsiveDialog } from '@/components/ui/responsive-dialog';
 
-type ConfigurationManagerProps= {
-    children: React.ReactNode,
-    editConfiguration?: null | DeviceConfigurationType
+type UpperLevelDataManagerProps = {
+    useContext: typeof useConfigurations
+    channelContext: "configuration" | "location" | "device"
 }
 
 
-const ConfigurationManager = ({children, editConfiguration}: ConfigurationManagerProps) => {
+const ConfigurationManager = ({useContext, channelContext}: UpperLevelDataManagerProps) => {
     const {emit} = useSocket()
     const {selectedDevice} = useDevices()
-    
+    const {open, setOpen, selectedData, edit} = useContext()
+    const ref = React.useRef<HTMLFormElement>(null)
+    const [name, setName] = React.useState(edit? selectedData!.name : "")
+
+    React.useEffect(()=>{
+        if(edit){
+            setName(selectedData!.name)
+        }else{
+            setName("")
+        }
+    },[edit])
+
     const handleSubmit = (data: FormData)=>{
+    
         emit("updateDeviceConfig", {
-            deviceID: selectedDevice?.id,
+            deviceID: selectedDevice!.id,
             data: {
-                context: "configuration",
-                operation: "create",
+                context: channelContext,
+                operation: edit ? "update" : "create",
                 data: {
-                    id: v4(),
-                    name: data.get("name"), 
-                    createdAt: new Date().toJSON(),
-                    locations: []
+                    ...selectedData,
+                    name: data.get("name"),
                 }
             }
         })
+        setOpen(false)
+        setName("")
+    }
+
+    const handleChange = (e: React.ChangeEvent<HTMLInputElement>)=>{
+        setName(e.target.value)
     }
 
     return (
-        <Dialog>
-            <DialogTrigger>
-                <TooltipWrapper title="Add configuration">
-                    {children}
-                </TooltipWrapper>
-            </DialogTrigger>
-            <DialogContent>
-                <DialogHeader>
-                    <DialogTitle>{editConfiguration ? "Edit device configuration": "Register a new device configuration"}</DialogTitle>
-                </DialogHeader>
-                <form action={handleSubmit} className='flex flex-col gap-5'>
-                    <Input
-                        placeholder='Configuration Name'
-                        id="name"
-                        name="name"
-                        required
-                    />
-                    <Button>
-                        Submit
-                    </Button>
-                </form>
-            </DialogContent>
-        </Dialog>
+        <ResponsiveDialog
+            isOpen={open}
+            setIsOpen={setOpen}
+            title={`${edit ? "Edit the": "Register a"} ${channelContext}`}
+        >
+            <form ref={ref} action={handleSubmit} className='flex flex-col gap-5'>
+                <Input
+                    placeholder='Name'
+                    id="name"
+                    name="name"
+                    value={name}
+                    required
+                    onChange={handleChange}
+                />
+                <Button>
+                    Submit
+                </Button>
+            </form>
+        </ResponsiveDialog>
     )
 }
 

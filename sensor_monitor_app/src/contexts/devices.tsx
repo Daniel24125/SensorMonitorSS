@@ -36,7 +36,7 @@ type TemperatureSensorType = {}
 
 type SensorType = PhSensorType | TemperatureSensorType
 
-type DeviceLocationType ={
+export type DeviceLocationType ={
     id: string, 
     name: string, 
     createdAt: string, 

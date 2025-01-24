@@ -5,32 +5,73 @@ import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useDevices } from "@/contexts/devices"
 import React from "react";
 import { useConfigurations } from "../page";
-import ConfigurationManager from "./ConfigurationManager";
 import { Button } from "@/components/ui/button";
-import { Plus } from "lucide-react";
+import { Edit, MoreVertical, Plus, Trash } from "lucide-react";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
+import { TooltipWrapper } from "@/components/ui/tooltip";
+import LocationDetails from "./LocationDetails";
 
 const DeviceInformation = ()=>{
-  return "HELLO"
+  const {selectedData, setOpen, setEdit} = useConfigurations()
+  
+  return selectedData && <div className="flex w-full flex-col gap-5 h-full">
+    <header className="w-full flex justify-between">
+      <div className="flex flex-col gap-1">
+        <h2 className="text-2xl font-bold">{selectedData?.name} </h2>
+        {selectedData!.lastUpdatedAt && <h5 className="text-muted">Configuration last updated {new Intl.DateTimeFormat().format(new Date(selectedData!.lastUpdatedAt))}</h5>}
+      </div>
+      <div >
+        <DropdownMenu>
+          <DropdownMenuTrigger>
+            <TooltipWrapper title="Device configuration options">
+              <Button variant="outline" size="icon">
+                <MoreVertical/>
+              </Button>
+            </TooltipWrapper>
+          </DropdownMenuTrigger>
+          <DropdownMenuContent>
+              <DropdownMenuItem className="cursor-pointer" onClick={()=>{
+                setOpen(true)
+                setEdit(true)
+              }}>
+                <div className="flex items-center gap-2">
+                  <Edit size={13}/>
+                  <span>Edit</span>
+                </div>
+              </DropdownMenuItem>
+
+              <DropdownMenuItem className="cursor-pointer" onClick={()=>setOpen(true)}>
+                <div className="flex items-center gap-2 text-destructive">
+                  <Trash size={13}/>
+                  <span>Delete</span>
+                </div>
+              </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      </div>
+    </header>
+    <LocationDetails/>
+  </div>
 }
+
+
 
 export const DeviceConfigurationTabs = ()=>{
   const {selectedDevice} = useDevices()
-  const {setSelectedConfiguration} = useConfigurations()
+  const {setselectedData, setOpen} = useConfigurations()
 
-  console.log(selectedDevice)
+
   return selectedDevice?.configurations && <>
     {selectedDevice.configurations.length > 0 && <Tabs defaultValue={selectedDevice.configurations[0].id} className="w-full justify-end flex mr-3">
       <TabsList>
         {selectedDevice.configurations.map(conf => {
-          return <TabsTrigger onClick={()=>setSelectedConfiguration(conf)} key={conf.id} value={conf.id}>{conf.name}</TabsTrigger>
+          return <TabsTrigger onClick={()=>setselectedData(conf)} key={conf.id} value={conf.id}>{conf.name}</TabsTrigger>
         })}        
       </TabsList>
     </Tabs> }
-    <ConfigurationManager>
-      <Button variant="outline" size="icon" onClick={()=>{}}>
+      <Button className="flex-shrink-0" size="icon" onClick={()=>setOpen(true)}>
           <Plus/>
       </Button>
-    </ConfigurationManager>
   </>
 }
 
