@@ -1,12 +1,16 @@
-import { DeviceLocationType } from '@/contexts/devices'
+import { DeviceLocationType, useDevices } from '@/contexts/devices'
 import React from 'react'
 import { useConfigurations } from '../page'
 import { Button } from '@/components/ui/button'
-import { NoLocationIlustration } from '@/components/ui/ilustrations'
+import { NoLocationIlustration, NoLocationSelectedIlustration } from '@/components/ui/ilustrations'
 import ConfigurationManager from './ConfigurationManager'
 import { cn } from '@/lib/utils'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { ChevronDown } from 'lucide-react'
+import { ChevronDown, Edit, Trash } from 'lucide-react'
+import { LoadingSpinner } from '@/app/components/ui/Icons'
+import { TooltipWrapper } from '@/components/ui/tooltip'
+import { useWarningDialog } from '@/contexts/warning'
+import { useSocket } from '@/contexts/socket'
 
 
 interface LocationContextType {
@@ -35,7 +39,7 @@ const LocationDetails = () => {
     const [open, setOpen] = React.useState<boolean>(false)
     const [edit, setEdit] = React.useState<boolean>(false)
     const {selectedData: selectedConfiguration} = useConfigurations()
-
+    
 
     const value: LocationContextType = {
         selectedData,
@@ -48,12 +52,13 @@ const LocationDetails = () => {
 
     return (<LocationContext.Provider value={value}>
 
-        {selectedConfiguration!.locations.length === 0 ? <NoLocationSelected/>: <LocationInformation/>}
+        {selectedConfiguration!.locations.length === 0 ? <NoLocation/>: <LocationInformation/>}
         <ConfigurationManager
             useContext={useLocations as typeof useConfigurations}
             channelContext='location'
             additionalSubmitData={{
-                configurationID: selectedConfiguration!.id
+                configurationID: selectedConfiguration!.id,
+                locationID: selectedData ? selectedData.id : undefined
             }}
         />
     </LocationContext.Provider>
@@ -61,7 +66,7 @@ const LocationDetails = () => {
 }
 
 
-const NoLocationSelected = ()=>{
+const NoLocation = ()=>{
     const {setOpen, setEdit} = useLocations()
 
     return <div className='w-full h-full flex flex-col gap-4 items-center justify-center'>
@@ -77,9 +82,15 @@ const NoLocationSelected = ()=>{
 
 const LocationInformation = ()=>{
     const containerRef = React.useRef<HTMLDivElement>(null)
-    return <div ref={containerRef} className='w-full h-full flex gap-4'>
+    const {selectedData} = useLocations()
+
+    return <div ref={containerRef} className='w-full h-full flex gap-4 relative'>
+        <div className={cn('w-full h-full flex justify-center items-center absolute top-0 bg-secondary-background z-10', containerRef.current ? " animate-fadeout": "")}>
+            <LoadingSpinner className='w-12 h-12 text-primary'/>
+        </div>
         <LocationsList container={containerRef}/>
-        <SelectedLocationDetails/>
+        {selectedData ? <SelectedLocationDetails/>: <NoLocationSelected/> }
+ 
     </div>
 }
 
@@ -87,8 +98,7 @@ const LocationsList = ({container}:{container: React.RefObject<HTMLDivElement | 
     const {selectedData, setSelectedData, setOpen, setEdit} = useLocations()
     const {selectedData: selectedConfiguration} = useConfigurations()
     const scrollRef = React.useRef<HTMLDivElement>(null)
-
-
+    
     const handleScroll = () => {
         if (scrollRef.current) {
             // Find the inner scrollable div
@@ -102,7 +112,6 @@ const LocationsList = ({container}:{container: React.RefObject<HTMLDivElement | 
             }
         }
     }
-
     return <div style={{
         height: container.current ? container.current.offsetHeight : 0
     }} className='w-64 rounded-xl border border-muted flex flex-col gap-4 p-4 flex-shrink-0'>
@@ -114,7 +123,7 @@ const LocationsList = ({container}:{container: React.RefObject<HTMLDivElement | 
 
         <ScrollArea ref={scrollRef}   className='h-full'>
             {selectedConfiguration!.locations.map((l)=>{
-                return <div onClick={()=>setSelectedData(l)} className={cn("w-full rounded hover:bg-indigo-950 cursor-pointer p-2",selectedData && selectedData.id === l.id ? "bg-indigo-950": "")} key={l.id}>
+                return <div onClick={()=>setSelectedData(l)} className={cn("w-full rounded hover:bg-emerald-950 cursor-pointer p-2",selectedData && selectedData.id === l.id ? "bg-emerald-950": "")} key={l.id}>
                     <p>{l.name}</p>
                     <p className='text-xs text-accent'>{l.sensors.length} sensors registered</p>
                 </div>
@@ -127,10 +136,60 @@ const LocationsList = ({container}:{container: React.RefObject<HTMLDivElement | 
     </div>
 }
 
-const SelectedLocationDetails = () =>{
-    const {selectedData, setSelectedData, setOpen, setEdit} = useLocations()
-    return <div className='w-full h-full bg-red-400'>
+const NoLocationSelected = ()=>{
+    return <div className='w-full h-full flex justify-center items-center flex-col gap-4'>
+        <NoLocationSelectedIlustration width={250}/>
+        <h2 className='text-2xl font-bold'>No Location Selected</h2>
+    </div>
+}
 
+const SelectedLocationDetails = () =>{
+    const {selectedData,  setOpen, setEdit} = useLocations()
+    const {setOptions, setOpen: setWarningOpen} = useWarningDialog()
+    const {on, emit, isConnected} = useSocket()
+    const {selectedDevice} = useDevices()
+    const {selectedData: selectedConfiguration} = useConfigurations()
+
+    const handleDelete = ()=>{
+        setOptions({
+            title: "Delete location",
+            deleteFn: ()=>{
+                emit("updateDeviceConfig", {
+                    deviceID: selectedDevice!.id,
+                    data: {
+                        context: "location",
+                        operation: "delete",
+                        data: {
+                            configurationID: selectedConfiguration!.id,
+                            locationID: selectedData!.id
+                        }
+                    }
+
+                })
+                setWarningOpen(false)
+            }
+        })
+        setWarningOpen(true)
+    }
+    return <div className='w-full h-full '>
+        <header className='w-full flex justify-between items-center'>
+            <p className='text-xl'>{selectedData?.name}</p>
+            <div className='flex gap-2'>
+                <TooltipWrapper title="Edit Location">
+                    <Button onClick={()=>{
+                        setOpen(true)
+                        setEdit(true)
+                    }} size="icon" variant="ghost">
+                        <Edit/>
+                    </Button>
+                </TooltipWrapper>
+                <TooltipWrapper title="Delete Location">
+                    <Button onClick={handleDelete} className='text-destructive' size="icon" variant="ghost">
+                        <Trash/>
+                    </Button>
+                </TooltipWrapper>
+            </div>
+        </header>
     </div>
 }
 export default LocationDetails

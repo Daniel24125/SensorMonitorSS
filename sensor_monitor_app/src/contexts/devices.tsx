@@ -4,6 +4,7 @@ import React from 'react'
 import { useSocket } from './socket';
 import { useToast } from '@/hooks/use-toast';
 import { ProjectProvider } from './projects';
+import WarningDialogProvider from './warning';
 
 export interface User {
     sub: string;
@@ -100,7 +101,7 @@ const DevicesProvider = ({children}: DevicesProviderProps) => {
         setSelectedDevice
     }
 
-
+    
     React.useEffect(()=>{
         if(isConnected){
             emit("register_client", "web")
@@ -140,11 +141,11 @@ const DevicesProvider = ({children}: DevicesProviderProps) => {
 
 
     return <DevicesContext.Provider value={value}>
-        <ProjectProvider>
-            
-        
-            {children}
-        </ProjectProvider>
+        <WarningDialogProvider>
+            <ProjectProvider>
+                {children}
+            </ProjectProvider>
+        </WarningDialogProvider>
     </DevicesContext.Provider>
 }
 
