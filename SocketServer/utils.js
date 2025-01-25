@@ -78,7 +78,7 @@ export const handleDeviceRegistration = (config, deviceID, socketID) =>{
 
 export const handleRpiDisconnect = (socketID)=>{
     console.log('RPi disconnected');
-    deviceID = Object.values(connectedDevices).filter(d=>d.socketID === socketID)[0].id
+    const deviceID = Object.values(connectedDevices).filter(d=>d.socketID === socketID)[0].id
     
     if(connectedDevices.hasOwnProperty(deviceID)){
         connectedDevices[deviceID] = {

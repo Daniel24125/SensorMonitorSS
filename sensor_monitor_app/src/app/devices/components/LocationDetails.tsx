@@ -4,6 +4,9 @@ import { useConfigurations } from '../page'
 import { Button } from '@/components/ui/button'
 import { NoLocationIlustration } from '@/components/ui/ilustrations'
 import ConfigurationManager from './ConfigurationManager'
+import { cn } from '@/lib/utils'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import { ChevronDown } from 'lucide-react'
 
 
 interface LocationContextType {
@@ -32,6 +35,7 @@ const LocationDetails = () => {
     const [open, setOpen] = React.useState<boolean>(false)
     const [edit, setEdit] = React.useState<boolean>(false)
     const {selectedData: selectedConfiguration} = useConfigurations()
+
 
     const value: LocationContextType = {
         selectedData,
@@ -72,6 +76,61 @@ const NoLocationSelected = ()=>{
 }
 
 const LocationInformation = ()=>{
-    return "LOCATION INFORMATION"
+    const containerRef = React.useRef<HTMLDivElement>(null)
+    return <div ref={containerRef} className='w-full h-full flex gap-4'>
+        <LocationsList container={containerRef}/>
+        <SelectedLocationDetails/>
+    </div>
+}
+
+const LocationsList = ({container}:{container: React.RefObject<HTMLDivElement | null>})=>{
+    const {selectedData, setSelectedData, setOpen, setEdit} = useLocations()
+    const {selectedData: selectedConfiguration} = useConfigurations()
+    const scrollRef = React.useRef<HTMLDivElement>(null)
+
+
+    const handleScroll = () => {
+        if (scrollRef.current) {
+            // Find the inner scrollable div
+            const scrollableDiv = scrollRef.current.querySelector('[data-radix-scroll-area-viewport]') as HTMLDivElement;
+            if (scrollableDiv) {
+                // OR
+                scrollableDiv.scrollBy({
+                    top: 56, // scroll down by 56 pixels
+                    behavior: "smooth"
+                });
+            }
+        }
+    }
+
+    return <div style={{
+        height: container.current ? container.current.offsetHeight : 0
+    }} className='w-64 rounded-xl border border-muted flex flex-col gap-4 p-4 flex-shrink-0'>
+        <p className='text-sm font-bold'>Available Locations</p>
+        <Button onClick={()=>{
+            setOpen(true)
+            setEdit(false)
+        }} variant="outline">Add Location</Button>
+
+        <ScrollArea ref={scrollRef}   className='h-full'>
+            {selectedConfiguration!.locations.map((l)=>{
+                return <div onClick={()=>setSelectedData(l)} className={cn("w-full rounded hover:bg-indigo-950 cursor-pointer p-2",selectedData && selectedData.id === l.id ? "bg-indigo-950": "")} key={l.id}>
+                    <p>{l.name}</p>
+                    <p className='text-xs text-accent'>{l.sensors.length} sensors registered</p>
+                </div>
+            })}
+        </ScrollArea>
+
+        <Button className='hover:bg-transparent hover:text-primary' onClick={handleScroll} variant="ghost">
+            <ChevronDown/>
+        </Button>
+    </div>
+}
+
+const SelectedLocationDetails = () =>{
+    const {selectedData, setSelectedData, setOpen, setEdit} = useLocations()
+    return <div className='w-full h-full bg-red-400'>
+
+    </div>
 }
 export default LocationDetails

@@ -51,7 +51,7 @@ io.on('connection', (socket) => {
     });
 
     socket.on('refresh_device_data', (config) => {
-        deviceID = Object.values(connectedDevices).filter(d=>d.socketID === socket.id)[0].id
+        const deviceID = Object.values(connectedDevices).filter(d=>d.socketID === socket.id)[0].id
         connectedDevices[deviceID] = {
             ...connectedDevices[deviceID],
             ...config

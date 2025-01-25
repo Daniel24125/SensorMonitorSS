@@ -16,7 +16,7 @@ const DeviceInformation = ()=>{
   
   return selectedData && <div className="flex w-full flex-col gap-5 h-full">
     <header className="w-full flex justify-between">
-      <div className="flex flex-col gap-1">
+      <div className="flex flex-col gap-1 h-14">
         <h2 className="text-2xl font-bold">{selectedData?.name} </h2>
         {selectedData!.lastUpdatedAt && <h5 className="text-accent text-sm">Configuration last updated {new Intl.DateTimeFormat().format(new Date(selectedData!.lastUpdatedAt))}</h5>}
       </div>
