@@ -22,7 +22,7 @@ const ConfigurationContext = React.createContext<ConfigurationContextType | null
 export const useConfigurations = (): ConfigurationContextType => {
 const context = React.useContext(ConfigurationContext);
 if (!context) {
-  throw new Error('useDevices must be used within a DevicesProvider');
+  throw new Error('useConfigurations must be used within a ConfigurationsProvider');
 }
 return context;
 };

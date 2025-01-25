@@ -11,6 +11,7 @@ import { LoadingSpinner } from '@/app/components/ui/Icons'
 import { TooltipWrapper } from '@/components/ui/tooltip'
 import { useWarningDialog } from '@/contexts/warning'
 import { useSocket } from '@/contexts/socket'
+import { useDeleteConfig } from '@/app/hooks/use-delete-config'
 
 
 interface LocationContextType {
@@ -27,14 +28,14 @@ const LocationContext = React.createContext<LocationContextType | null>(null)
 export const useLocations = (): LocationContextType => {
   const context = React.useContext(LocationContext);
   if (!context) {
-    throw new Error('useDevices must be used within a DevicesProvider');
+    throw new Error('useLocations must be used within a LocationProvider');
   }
   return context;
 };
 
 
 
-const LocationDetails = () => {
+const LocationDetails = ({children}: {children: React.ReactNode}) => {
     const [selectedData, setSelectedData] = React.useState<null | DeviceLocationType>(null)
     const [open, setOpen] = React.useState<boolean>(false)
     const [edit, setEdit] = React.useState<boolean>(false)
@@ -51,7 +52,7 @@ const LocationDetails = () => {
     }
 
     return (<LocationContext.Provider value={value}>
-
+        {children}
         {selectedConfiguration!.locations.length === 0 ? <NoLocation/>: <LocationInformation/>}
         <ConfigurationManager
             useContext={useLocations as typeof useConfigurations}
@@ -145,30 +146,27 @@ const NoLocationSelected = ()=>{
 
 const SelectedLocationDetails = () =>{
     const {selectedData,  setOpen, setEdit} = useLocations()
-    const {setOptions, setOpen: setWarningOpen} = useWarningDialog()
-    const {on, emit, isConnected} = useSocket()
-    const {selectedDevice} = useDevices()
-    const {selectedData: selectedConfiguration} = useConfigurations()
-
+    const setWarningOpen = useDeleteConfig("location")
+    
     const handleDelete = ()=>{
-        setOptions({
-            title: "Delete location",
-            deleteFn: ()=>{
-                emit("updateDeviceConfig", {
-                    deviceID: selectedDevice!.id,
-                    data: {
-                        context: "location",
-                        operation: "delete",
-                        data: {
-                            configurationID: selectedConfiguration!.id,
-                            locationID: selectedData!.id
-                        }
-                    }
+        // setOptions({
+        //     title: "Delete location",
+        //     deleteFn: ()=>{
+        //         emit("updateDeviceConfig", {
+        //             deviceID: selectedDevice!.id,
+        //             data: {
+        //                 context: "location",
+        //                 operation: "delete",
+        //                 data: {
+        //                     configurationID: selectedConfiguration!.id,
+        //                     locationID: selectedData!.id
+        //                 }
+        //             }
 
-                })
-                setWarningOpen(false)
-            }
-        })
+        //         })
+        //         setWarningOpen(false)
+        //     }
+        // })
         setWarningOpen(true)
     }
     return <div className='w-full h-full '>

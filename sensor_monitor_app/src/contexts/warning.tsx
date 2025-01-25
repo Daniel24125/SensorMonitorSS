@@ -11,6 +11,7 @@ type DialogOptions = {
 }
 
 interface WarningContextType {
+    open: boolean,
     setOpen:  React.Dispatch<React.SetStateAction<boolean>>
     options: DialogOptions,
     setOptions: React.Dispatch<React.SetStateAction<DialogOptions>>
@@ -39,6 +40,7 @@ type WarningDialogProps ={
     })
 
     const value: WarningContextType = {
+        open,
         setOpen,
         options,
         setOptions
