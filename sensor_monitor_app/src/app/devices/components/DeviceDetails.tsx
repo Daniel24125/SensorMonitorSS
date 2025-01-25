@@ -15,7 +15,6 @@ import { useDeleteConfig } from "@/app/hooks/use-delete-config";
 const DeviceInformation = ()=>{
   const {selectedData} = useConfigurations()
 
-  
   return selectedData && <div className="flex w-full flex-col gap-5 h-full">
     <LocationDetails>
       <header className="w-full flex justify-between">
