@@ -2,7 +2,6 @@
 
 import React from 'react'
 import DeviceWidget from '../components/DeviceWidget'
-import { DeviceConfigurationType } from '@/contexts/devices'
 
 const DeviceLayout = ({children}: {children: React.ReactNode}) => {
     return (

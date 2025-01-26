@@ -19,23 +19,25 @@ export interface User {
     [key: string]: any;
 }
 
-type PhSensorType = {
-    id: string
-    mode: "acidic" | "alkaline" | "both"
+export type PhSensorModeType =  "acidic" | "alkaline" | "both"
+
+export type PhSensorType = {
+    id?: string
+    mode:PhSensorModeType
     margin: number 
     maxValveTimeOpen: number 
     targetPh: number 
     probePort: number
     valvePort: number 
     checkInterval: number
-    createdAt: string
+    createdAt?: string
     updatedAt?: string
     updatedBy?: User
 }
 
 type TemperatureSensorType = {}
 
-type SensorType = PhSensorType | TemperatureSensorType
+export type SensorType = PhSensorType | TemperatureSensorType
 
 export type DeviceLocationType ={
     id: string, 

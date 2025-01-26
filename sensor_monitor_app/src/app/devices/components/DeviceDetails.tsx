@@ -10,21 +10,24 @@ import { Edit, MoreVertical, Plus, Trash } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { TooltipWrapper } from "@/components/ui/tooltip";
 import LocationDetails from "./LocationDetails";
-import { useDeleteConfig } from "@/app/hooks/use-delete-config";
+import { useDeleteConfig } from "@/hooks/use-delete-config";
+import SensorProvider from "./SensorDetails";
 
 const DeviceInformation = ()=>{
   const {selectedData} = useConfigurations()
 
   return selectedData && <div className="flex w-full flex-col gap-5 h-full">
-    <LocationDetails>
-      <header className="w-full flex justify-between">
-        <div className="flex flex-col gap-1 h-14">
-          <h2 className="text-2xl font-bold">{selectedData?.name} </h2>
-          {selectedData!.lastUpdatedAt && <h5 className="text-accent text-sm">Configuration last updated {new Intl.DateTimeFormat().format(new Date(selectedData!.lastUpdatedAt))}</h5>}
-        </div>
-        <ConfigurationOptions/>
-      </header>
-    </LocationDetails>
+    <SensorProvider>
+      <LocationDetails>
+        <header className="w-full flex justify-between">
+          <div className="flex flex-col gap-1 h-14">
+            <h2 className="text-2xl font-bold">{selectedData?.name} </h2>
+            {selectedData!.lastUpdatedAt && <h5 className="text-accent text-sm">Configuration last updated {new Intl.DateTimeFormat().format(new Date(selectedData!.lastUpdatedAt))}</h5>}
+          </div>
+          <ConfigurationOptions/>
+        </header>
+      </LocationDetails>
+    </SensorProvider>
   </div>
 }
 

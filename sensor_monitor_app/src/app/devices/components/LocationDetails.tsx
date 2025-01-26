@@ -2,16 +2,16 @@ import { DeviceLocationType, useDevices } from '@/contexts/devices'
 import React from 'react'
 import { useConfigurations } from '../page'
 import { Button } from '@/components/ui/button'
-import { NoLocationIlustration, NoLocationSelectedIlustration } from '@/components/ui/ilustrations'
+import { NoLocationIlustration, NoLocationSelectedIlustration, NoSensorIlustration } from '@/components/ui/ilustrations'
 import ConfigurationManager from './ConfigurationManager'
 import { cn } from '@/lib/utils'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { ChevronDown, Edit, Trash } from 'lucide-react'
 import { LoadingSpinner } from '@/app/components/ui/Icons'
 import { TooltipWrapper } from '@/components/ui/tooltip'
-import { useWarningDialog } from '@/contexts/warning'
-import { useSocket } from '@/contexts/socket'
-import { useDeleteConfig } from '@/app/hooks/use-delete-config'
+import { useDeleteConfig } from '@/hooks/use-delete-config'
+import { SensorDataList, SensorForm } from './SensorDetails'
+
 
 
 interface LocationContextType {
@@ -149,29 +149,14 @@ const SelectedLocationDetails = () =>{
     const setWarningOpen = useDeleteConfig("location")
     
     const handleDelete = ()=>{
-        // setOptions({
-        //     title: "Delete location",
-        //     deleteFn: ()=>{
-        //         emit("updateDeviceConfig", {
-        //             deviceID: selectedDevice!.id,
-        //             data: {
-        //                 context: "location",
-        //                 operation: "delete",
-        //                 data: {
-        //                     configurationID: selectedConfiguration!.id,
-        //                     locationID: selectedData!.id
-        //                 }
-        //             }
-
-        //         })
-        //         setWarningOpen(false)
-        //     }
-        // })
         setWarningOpen(true)
     }
-    return <div className='w-full h-full '>
+    return <div className='w-full h-full flex flex-col'>
         <header className='w-full flex justify-between items-center'>
-            <p className='text-xl'>{selectedData?.name}</p>
+            <div>
+                <p className='text-xl'>{selectedData?.name}</p>
+                <h6 className='text-xs text-accent'>{selectedData?.id}</h6>
+            </div>
             <div className='flex gap-2'>
                 <TooltipWrapper title="Edit Location">
                     <Button onClick={()=>{
@@ -188,6 +173,9 @@ const SelectedLocationDetails = () =>{
                 </TooltipWrapper>
             </div>
         </header>
+        <SensorDataList/>
+        <SensorForm/>
     </div>
 }
+
 export default LocationDetails
