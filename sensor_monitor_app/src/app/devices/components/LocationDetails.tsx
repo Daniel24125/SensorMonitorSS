@@ -1,6 +1,6 @@
 import { DeviceLocationType } from '@/contexts/devices'
 import React from 'react'
-import { useConfigurations } from '../page'
+import { useConfigurations } from '@/hooks/use-configurations';
 import { Button } from '@/components/ui/button'
 import { NoLocationIlustration, NoLocationSelectedIlustration } from '@/components/ui/ilustrations'
 import ConfigurationManager from './ConfigurationManager'

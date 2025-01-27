@@ -4,7 +4,7 @@ import { NoSelectedDeviceIlustration } from "@/components/ui/ilustrations"
 import { Tabs, TabsList, TabsTrigger } from "@/components/ui/tabs"
 import { useDevices } from "@/contexts/devices"
 import React from "react";
-import { useConfigurations } from "../page";
+import { useConfigurations } from '@/hooks/use-configurations';
 import { Button } from "@/components/ui/button";
 import { Edit, MoreVertical, Plus, Trash } from "lucide-react";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";

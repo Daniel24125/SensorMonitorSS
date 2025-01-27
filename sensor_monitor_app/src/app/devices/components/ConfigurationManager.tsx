@@ -5,8 +5,8 @@ import { useSocket } from '@/contexts/socket'
 import React from 'react'
 import { useDevices } from '@/contexts/devices';
 import { Input } from '@/components/ui/input';
-import { useConfigurations } from '../page';
 import { ResponsiveDialog } from '@/components/ui/responsive-dialog';
+import { useConfigurations } from '@/hooks/use-configurations';
 
 type UpperLevelDataManagerProps = {
     useContext: typeof useConfigurations

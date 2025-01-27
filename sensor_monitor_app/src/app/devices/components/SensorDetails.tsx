@@ -8,7 +8,7 @@ import React from 'react'
 import { useLocations } from './LocationDetails'
 import { NoSensorIlustration } from '@/components/ui/ilustrations'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { useConfigurations } from '../page'
+import { useConfigurations } from '@/hooks/use-configurations';
 import { Badge } from '@/components/ui/badge'
 import { ChevronsUpDown, Edit, MoreVertical, Trash } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
