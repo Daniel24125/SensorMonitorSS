@@ -6,11 +6,11 @@ import { NoLocationIlustration, NoLocationSelectedIlustration, NoSensorIlustrati
 import ConfigurationManager from './ConfigurationManager'
 import { cn } from '@/lib/utils'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import { ChevronDown, Edit, Trash } from 'lucide-react'
+import { ChevronDown, Edit, PlusCircle, Trash } from 'lucide-react'
 import { LoadingSpinner } from '@/app/components/ui/Icons'
 import { TooltipWrapper } from '@/components/ui/tooltip'
 import { useDeleteConfig } from '@/hooks/use-delete-config'
-import { SensorDataList, SensorForm } from './SensorDetails'
+import { SensorDataList, SensorForm, useSensors } from './SensorDetails'
 
 
 
@@ -146,11 +146,11 @@ const NoLocationSelected = ()=>{
 
 const SelectedLocationDetails = () =>{
     const {selectedData,  setOpen, setEdit} = useLocations()
-    const setWarningOpen = useDeleteConfig("location")
+    const {setOpen: setOpenSensorForm, setEdit: setEditSensor} = useSensors()
+    const handleOpen = useDeleteConfig("location")
     
-    const handleDelete = ()=>{
-        setWarningOpen(true)
-    }
+   
+
     return <div className='w-full h-full flex flex-col'>
         <header className='w-full flex justify-between items-center'>
             <div>
@@ -158,6 +158,14 @@ const SelectedLocationDetails = () =>{
                 <h6 className='text-xs text-accent'>{selectedData?.id}</h6>
             </div>
             <div className='flex gap-2'>
+                <TooltipWrapper title="Add Sensor">
+                    <Button onClick={()=>{
+                        setOpenSensorForm(true)
+                        setEditSensor(false)
+                    }} size="icon" variant="ghost">
+                        <PlusCircle/>
+                    </Button>
+                </TooltipWrapper>
                 <TooltipWrapper title="Edit Location">
                     <Button onClick={()=>{
                         setOpen(true)
@@ -167,7 +175,7 @@ const SelectedLocationDetails = () =>{
                     </Button>
                 </TooltipWrapper>
                 <TooltipWrapper title="Delete Location">
-                    <Button onClick={handleDelete} className='text-destructive' size="icon" variant="ghost">
+                    <Button onClick={handleOpen} className='text-destructive' size="icon" variant="ghost">
                         <Trash/>
                     </Button>
                 </TooltipWrapper>

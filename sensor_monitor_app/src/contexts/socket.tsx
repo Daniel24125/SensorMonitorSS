@@ -3,8 +3,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { Socket, io } from 'socket.io-client';
 import DevicesProvider from './devices';
-import { NoProjectsIlustration } from '@/components/ui/ilustrations';
-import { Button } from '@/components/ui/button';
+
 
 // Define types for the socket context
 interface SocketContextType {

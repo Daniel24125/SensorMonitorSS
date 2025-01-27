@@ -2,13 +2,20 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ResponsiveDialog } from '@/components/ui/responsive-dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { DeviceType, PhSensorModeType, PhSensorType, useDevices } from '@/contexts/devices'
+import { PhSensorModeType, PhSensorType, useDevices } from '@/contexts/devices'
 import { useSocket } from '@/contexts/socket'
 import React from 'react'
 import { useLocations } from './LocationDetails'
 import { NoSensorIlustration } from '@/components/ui/ilustrations'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useConfigurations } from '../page'
+import { Badge } from '@/components/ui/badge'
+import { ChevronsUpDown, Edit, MoreVertical, Trash } from 'lucide-react'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { TooltipWrapper } from '@/components/ui/tooltip'
+import { useDeleteConfig } from '@/hooks/use-delete-config'
+import moment from 'moment';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
 
 
 interface SensorContextType {
@@ -32,7 +39,7 @@ export const useSensors = (): SensorContextType => {
 
 const SensorProvider = ({children}: {children: React.ReactNode}) => {
     const [selectedData, setSelectedData] = React.useState<null | PhSensorType>(null)
-    const [open, setOpen] = React.useState<boolean>(true)
+    const [open, setOpen] = React.useState<boolean>(false)
     const [edit, setEdit] = React.useState<boolean>(false)
         
     const value: SensorContextType = {
@@ -49,21 +56,32 @@ const SensorProvider = ({children}: {children: React.ReactNode}) => {
   </SensorContext.Provider>
 }
 
+const defaultSensorData: PhSensorType = {
+    mode: "acidic",
+    margin: 0.1,
+    maxValveTimeOpen: 30,
+    targetPh: 7,
+    probePort: 17,
+    valvePort: 18,
+    checkInterval: 10
+}
+
 export const SensorForm = ()=>{
     const {emit} = useSocket()
     const {open, setOpen, selectedData, edit} = useSensors()
     const {selectedData:selectedConfiguration} = useConfigurations()
     const {selectedData:selectedLocation} = useLocations()
     const {selectedDevice} = useDevices()
-    const [form, setForm] = React.useState<PhSensorType>({
-        mode: "acidic",
-        margin: 0.1,
-        maxValveTimeOpen: 30,
-        targetPh: 7,
-        probePort: 17,
-        valvePort: 18,
-        checkInterval: 10
-    })
+
+    const [form, setForm] = React.useState<PhSensorType>(defaultSensorData)
+
+    React.useEffect(()=>{
+        if(edit){
+            setForm(selectedData!)
+        }else{
+            setForm(defaultSensorData)
+        }
+    },[edit])
 
     const handleSubmit = (data: FormData)=>{
     
@@ -77,6 +95,7 @@ export const SensorForm = ()=>{
                     ...form,
                     configurationID:  selectedConfiguration!.id,
                     locationID: selectedLocation!.id,
+                    sensorID: edit ? selectedData?.id : undefined
                 }
             }
         })
@@ -113,7 +132,7 @@ export const SensorForm = ()=>{
                         <SelectContent>
                             <SelectItem value="acidic">Acidic Mode</SelectItem>
                             <SelectItem value="alkaline">Alkaline Mode</SelectItem>
-                            <SelectItem value="both">Auto Mode</SelectItem>
+                            <SelectItem value="auto">Auto Mode</SelectItem>
                         </SelectContent>
                     </Select>
                 </FormInput>
@@ -214,11 +233,122 @@ const FormInput = ({children, description, label}: FormInputType)=>{
 
 export const SensorDataList = ()=>{
     const {selectedData} = useLocations()
-    return  <div className='w-full h-full py-6'>
+    
+    return  <div className='w-full h-full pt-6'>
         {selectedData!.sensors.length === 0 ?<NoSensorRegistered/> :<>
-            SENSOR DATA
+            {selectedData?.sensors.length === 1 ? <SingleSensorTemplate/> : <MultipleSensorTemplate/>}
         </> }
     </div>
+}
+
+const SingleSensorTemplate = ({sensorData}: {sensorData?:PhSensorType})=>{
+    const {selectedData} = useLocations()
+    const {setSelectedData} = useSensors()
+    
+    const sensor = React.useMemo<PhSensorType>(()=>{
+        return sensorData || selectedData!.sensors[0]
+    },[selectedData!.sensors])
+    
+    return <div className='w-full h-full bg-background rounded-2xl p-6'>
+        <header className='w-full flex justify-between items-start mb-5'>
+            <div className='flex flex-col gap-2 items-start'>
+                <p className='text-xl font-bold'>pH Sensor</p>
+                <Badge
+                    style={{
+                        backgroundColor: sensor.mode === "alkaline" ? "#f1c40f" : 
+                        sensor.mode === "auto" ? "#3498db" : "#2ecc71"
+                    }}
+                >{`${sensor.mode[0].toUpperCase()}${sensor.mode.substring(1,sensor.mode.length)}`}</Badge>
+            </div>
+            <div className='flex gap-2'>
+                <TooltipWrapper title="Target pH">
+                    <div className='w-14 h-8 flex justify-center items-center bg-primary rounded-xl cursor-default'>{sensor.targetPh.toFixed(2)}</div>
+                </TooltipWrapper>
+                <SensorOptions onClick={()=>{setSelectedData(sensor)}}/>
+            </div>
+            
+        </header>
+        <div className='w-full flex justify-between py-6'>
+            <SensorPropertieTemplate title='Electrode Port' info={`Port ${sensor.probePort}`}/> 
+            <SensorPropertieTemplate title='Valve Port' info={`Port ${sensor.valvePort}`}/> 
+        </div>
+        <div className='w-full flex justify-between py-6'>
+            <SensorPropertieTemplate title='Acceptance Margin' info={sensor.margin}/> 
+            <SensorPropertieTemplate title='Maximum Valve Time' info={`${sensor.maxValveTimeOpen} seconds`} /> 
+        </div>
+        <div className='w-full flex justify-between py-6'>
+            <SensorPropertieTemplate title='Sensor registered At' info={moment(sensor.createdAt).format("DD/MM/YYYY - hh:mm a")}/> 
+            <SensorPropertieTemplate title='Last updated at' info={sensor.updatedAt ? moment(sensor.updatedAt).format("DD/MM/YYYY") : "Never updated"} /> 
+        </div>
+    </div>
+}
+
+
+
+const SensorPropertieTemplate = ({title, info}:{title: string, info: string | React.ReactNode})=>{
+    return <div className='flex flex-col w-[clamp(150px,50%,300px)]'>
+        <span className='text-primary text-xs'>{title}</span>
+        <p className='font-bold text-xl'>{info}</p>
+    </div>
+}
+
+const SensorOptions = ({onClick}:{onClick: any})=>{
+    const {setEdit, setOpen} = useSensors()
+    const handleOpen = useDeleteConfig("sensor")
+    
+ 
+
+    return <DropdownMenu>
+        <DropdownMenuTrigger  onClick={onClick}>
+            <TooltipWrapper title="Device configuration options">
+                {/* <Button onClick={onClick} variant="outline" size="icon"> */}
+                    <MoreVertical/>
+                {/* </Button> */}
+            </TooltipWrapper>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent>
+            <DropdownMenuItem className="cursor-pointer" onClick={()=>{
+                setOpen(true)
+                setEdit(true)
+            }}>
+                <div className="flex items-center gap-2">
+                    <Edit size={13}/>
+                    <span>Edit</span>
+                </div>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem className="cursor-pointer" onClick={handleOpen}>
+                <div className="flex items-center gap-2 text-destructive">
+                    <Trash size={13}/>
+                    <span>Delete</span>
+                </div>
+
+            </DropdownMenuItem>
+        </DropdownMenuContent>
+    </DropdownMenu>
+}
+const MultipleSensorTemplate = ()=>{
+    const {selectedData} = useLocations()
+    const {selectedData: selectedSensor, setSelectedData: setSelectedSensor} = useSensors()
+
+    return selectedData?.sensors.map(s=>{
+        return <Collapsible onOpenChange={()=>{
+            setSelectedSensor((prev: null | PhSensorType)=>prev ? prev.id === s.id ? null : s: s )
+        }} open={selectedSensor?.id === s.id} className='mb-3'>
+            <CollapsibleTrigger asChild>
+                <Button variant="outline" size="sm" className="w-full justify-between py-7">
+                    <div className='flex flex-col items-start'>
+                        <span className='text-lg'>pH Sensor</span>
+                        <p>{s.id}</p>
+                    </div>
+                    <ChevronsUpDown className="h-4 w-4" />
+                </Button>
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+                <SingleSensorTemplate sensorData={s}/>
+            </CollapsibleContent>
+        </Collapsible>
+    }) 
 }
 
 const NoSensorRegistered = ()=>{

@@ -3,17 +3,20 @@
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { TooltipWrapper } from '@/components/ui/tooltip'
-import { useDevices } from '@/contexts/devices'
+import { DeviceType, useDevices } from '@/contexts/devices'
 import { Plus } from 'lucide-react'
 import React from 'react'
 import ProjectForm from '../../projects/ProjectForm'
+import { Select, SelectContent, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { SelectItem } from '@radix-ui/react-select'
+import { deviceIconColors } from '../../DeviceWidget'
 
 const Topbar = () => {
   return (
     <div className='w-full flex justify-between items-center p-3 flex-grow-0 flex-shrink basis-auto'>
         <SearchProject/>
         <div className='flex items-center gap-3'>
-          {/* <DeviceInfo/> */}
+          <DeviceInfo/>
           <CreateProject/>
         </div>
     </div>
@@ -23,11 +26,34 @@ const Topbar = () => {
 export const SearchProject = ()=>{
     return <Input placeholder="Search for a project title" className='w-80 bg-secondary-background'/>
 }
+export const DeviceStatusDot = ({device}:{device: DeviceType})=> {
+  return <TooltipWrapper title={device.status}>
+    <div style={{background: deviceIconColors[device.status]}} className='w-2 h-2 rounded-full'></div>
+  </TooltipWrapper>
+}
 
 const DeviceInfo = ()=>{
-  const {deviceList} = useDevices()
+  const {deviceList, selectedDevice, setSelectedDevice} = useDevices()
 
-  return "Device List"
+  
+  return<Select disabled={deviceList.length === 0} value={selectedDevice?.id} onValueChange={(value: string)=>{
+    setSelectedDevice(deviceList.filter(d=>d.id === value)[0])
+}}>
+    <SelectTrigger >
+      {selectedDevice ? <div className='flex gap-2 items-center p-2'>
+        <DeviceStatusDot device={selectedDevice!}/> {selectedDevice?.name}
+      </div> : "Select a device"}
+    </SelectTrigger>
+    <SelectContent>
+        {deviceList.map(d=>{
+          return <SelectItem key={d.id} value={d.id}>
+            <div className='flex gap-2 items-center p-2'>
+              <DeviceStatusDot device={d}/> {d.name}
+            </div>
+          </SelectItem>
+        })}
+    </SelectContent>
+  </Select>
 }
 
 export const CreateProject = ()=>{

@@ -45,7 +45,7 @@ type WarningDialogProps ={
         options,
         setOptions
     } 
-    
+
     return <WarningContext.Provider value={value}>
         <ResponsiveDialog 
             title={options.title} 

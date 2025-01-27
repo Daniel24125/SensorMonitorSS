@@ -58,7 +58,7 @@ const DevicePage = () => {
   return <ConfigurationContext.Provider value={value}>
     <WidgetCard secondaryAction={
       selectedDevice && <DeviceConfigurationTabs/>
-    } className='w-full ml-5' title={"Device Details"} >
+    } className='w-full' title={"Device Details"} >
       {selectedDevice ? <>
         <DeviceInformation/>
         <ConfigurationManager 

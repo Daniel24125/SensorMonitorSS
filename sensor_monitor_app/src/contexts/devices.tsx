@@ -19,7 +19,7 @@ export interface User {
     [key: string]: any;
 }
 
-export type PhSensorModeType =  "acidic" | "alkaline" | "both"
+export type PhSensorModeType =  "acidic" | "alkaline" | "auto"
 
 export type PhSensorType = {
     id?: string
@@ -45,7 +45,7 @@ export type DeviceLocationType ={
     createdAt: string, 
     updatedAt?: string 
     updatedBy: User, 
-    sensors: SensorType[]
+    sensors: PhSensorType[]
 }
 
 export type DeviceConfigurationType = {

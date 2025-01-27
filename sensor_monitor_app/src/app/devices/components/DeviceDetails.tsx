@@ -32,7 +32,7 @@ const DeviceInformation = ()=>{
 }
 
 const ConfigurationOptions = ()=>{
-  const setWarningOpen = useDeleteConfig("configuration")
+  const handleOpen = useDeleteConfig("configuration")
   const {setOpen, setEdit} = useConfigurations()
 
   return <DropdownMenu>
@@ -54,7 +54,7 @@ const ConfigurationOptions = ()=>{
           </div>
         </DropdownMenuItem>
 
-        <DropdownMenuItem className="cursor-pointer" onClick={()=>setWarningOpen(true)}>
+        <DropdownMenuItem className="cursor-pointer" onClick={()=>handleOpen()}>
           <div className="flex items-center gap-2 text-destructive">
             <Trash size={13}/>
             <span>Delete</span>
