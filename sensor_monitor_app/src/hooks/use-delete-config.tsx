@@ -1,10 +1,10 @@
 import { useLocations } from "@/app/devices/components/LocationDetails"
 import { useSensors } from "@/app/devices/components/SensorDetails"
-import { useConfigurations } from "@/app/devices/page"
 import { useDevices } from "@/contexts/devices"
 import { useSocket } from "@/contexts/socket"
 import { useWarningDialog } from "@/contexts/warning"
 import React from "react"
+import { useConfigurations } from "./use-configurations"
 
 type DeleteConfigProps = "device" | "configuration" | "location" | "sensor" 
 
