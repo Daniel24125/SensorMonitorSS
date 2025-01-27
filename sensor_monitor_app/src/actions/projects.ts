@@ -16,7 +16,7 @@ type CreateProjectType = (data: FormData | ProjectType ) => Promise<boolean>
 type EditProjectType = (data: ProjectType) => Promise<boolean>
 type DeleteProjectType = (projectID: string) => Promise<boolean>
 
-const projectList: ProjectType[] = [
+let projectList: ProjectType[] = [
     {
         id: "powengfvpiwenfg", 
         title: "Monitoring the growth of micro alge pH through time",
@@ -53,8 +53,7 @@ export const editProject: EditProjectType = async (data) =>{
 
 export const deleteProject: DeleteProjectType = async (projectID) =>{
     return new Promise((resolve)=>{
-        // const index = projectList.findIndex(p =>p.id === projectID)
-        
+        projectList = projectList.filter(p =>p.id !== projectID)
         resolve(true)
     })
 }

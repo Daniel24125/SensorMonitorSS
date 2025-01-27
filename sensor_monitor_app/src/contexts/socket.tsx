@@ -1,7 +1,7 @@
 "use client"
 
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
-import { Socket, io } from 'socket.io-client';
+import { Socket, SocketOptions, io } from 'socket.io-client';
 import DevicesProvider from './devices';
 
 
@@ -20,7 +20,7 @@ interface SocketContextType {
 // Define props interface for the provider
 interface SocketProviderProps {
   url?: string;
-  options?: Record<string, any>;
+  options?: Record<string, SocketOptions>;
   children: React.ReactNode;
 }
 

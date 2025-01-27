@@ -1,6 +1,5 @@
 "use client"
 
-import { useUser } from "@auth0/nextjs-auth0"
 import DeviceWidget from "./components/DeviceWidget"
 import OnGoingExperimentWidget from "./components/OnGoingExperimentWidget"
 import ProjectListWidget from "./components/projects/ProjectListWidget"
