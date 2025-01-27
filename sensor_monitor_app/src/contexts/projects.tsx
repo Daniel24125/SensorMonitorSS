@@ -54,6 +54,8 @@ export const ProjectProvider = ({
   const { isLoading } = useUser()
   const {toast} = useToast()
 
+
+
     React.useEffect(()=>{
         startTransition(async () => {
         const result = await getProjects("")
@@ -65,6 +67,9 @@ export const ProjectProvider = ({
             })
         } else {
             setProjectList(result.data)
+            if(result.data.length > 0 && ! selectedProject){
+              setSelectedProject(result.data[0])
+            }
         }
         })
     },[])
