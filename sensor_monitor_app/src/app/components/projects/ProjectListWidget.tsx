@@ -33,7 +33,7 @@ const ProjectLoadingCard = ()=>{
 }
 
 const ProjectListComponent = ()=>{
-  const {projectList, isLoading} = useProjects()
+  const {projectList} = useProjects()
   return projectList.map(p=>{
     return <DashboardCard  
       key={p.id}

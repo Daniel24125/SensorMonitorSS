@@ -1,13 +1,12 @@
 "use client"
 
-import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { TooltipWrapper } from '@/components/ui/tooltip'
 import { DeviceType, useDevices } from '@/contexts/devices'
 import { Plus } from 'lucide-react'
 import React from 'react'
 import ProjectForm from '../../projects/ProjectForm'
-import { Select, SelectContent, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { Select, SelectContent, SelectTrigger } from '@/components/ui/select'
 import { SelectItem } from '@radix-ui/react-select'
 import { deviceIconColors } from '../../DeviceWidget'
 

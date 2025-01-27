@@ -1,6 +1,4 @@
 import CardAvatar from '@/app/components/ui/CardAvatar'
-import { DeviceType } from '@/contexts/devices'
-import { cn } from '@/lib/utils'
 import React from 'react'
 
 type DashboardCardPropsType = {

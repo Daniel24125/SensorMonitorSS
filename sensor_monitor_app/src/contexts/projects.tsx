@@ -1,6 +1,6 @@
 "use client"
 
-import React, { createContext, useCallback, useContext, useEffect, useState, useTransition } from 'react';
+import React, { createContext,  useContext, useTransition } from 'react';
 
 import { useUser } from '@auth0/nextjs-auth0';
 import { useToast } from '@/hooks/use-toast';
@@ -16,13 +16,16 @@ interface ProjectsContextType {
     updateProject: (data: ProjectType) => void
     deleteProject: (projectID: string) => void
 }
+export type ExperimentType = {
+  id: string
+} 
 
 export type ProjectType = {
     id?: string 
     title: string 
     device: string
     dataAquisitionInterval: number
-    experiments: any[]
+    experiments: ExperimentType[]
     createdAt?: string
     updatedAt?: string
 }
@@ -48,7 +51,7 @@ export const ProjectProvider = ({
   const [projectList, setProjectList] = React.useState<[] | ProjectType[]>([])
   const [selectedProject, setSelectedProject] = React.useState<ProjectType | null>(null)
   const [isPending, startTransition] = useTransition()
-  const { user, isLoading } = useUser()
+  const { isLoading } = useUser()
   const {toast} = useToast()
 
     React.useEffect(()=>{
@@ -69,7 +72,7 @@ export const ProjectProvider = ({
 
     const registerProject = React.useCallback(async (data: FormData | ProjectType)=>{
         startTransition(async () => {
-            let success = await createProject(data)
+            const success = await createProject(data)
             if(success){
                 toast({
                     title: "Project Submission",

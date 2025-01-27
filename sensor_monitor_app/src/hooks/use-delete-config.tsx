@@ -11,7 +11,7 @@ type DeleteConfigProps = "device" | "configuration" | "location" | "sensor"
 export const useDeleteConfig = (context: DeleteConfigProps)=>{
     const {emit} = useSocket()
     const {selectedDevice} = useDevices()
-    const {setOpen: setWarningOpen, setOptions, open} =  useWarningDialog()
+    const {setOpen: setWarningOpen, setOptions} =  useWarningDialog()
     const {selectedData: selectedConfiguration} = useConfigurations()
     const {selectedData: selectedLocation} = useLocations()
     const {selectedData: selectedSensor} = useSensors()

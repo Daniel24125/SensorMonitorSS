@@ -12,8 +12,6 @@ import { ProjectType, useProjects } from '@/contexts/projects'
 
 
 const ProjectForm = ({
-    size,
-    variant,
     children
 }:ButtonProps) => {
     const {registerProject, isLoading} = useProjects()

@@ -1,7 +1,6 @@
 "use client"
 
 import React from 'react'
-import DeviceWidget from '../components/DeviceWidget'
 
 const DeviceLayout = ({children}: {children: React.ReactNode}) => {
     return (

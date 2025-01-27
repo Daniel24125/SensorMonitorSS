@@ -27,7 +27,7 @@ const projectList: ProjectType[] = [
     }
 ]
 
-export const getProjects: GetProjectType = async (userID) =>{
+export const getProjects: GetProjectType = async () =>{
     await delay(1000)
     console.log(projectList)
     return {
@@ -44,7 +44,7 @@ export const createProject: CreateProjectType = async (data) =>{
 }
 
 export const editProject: EditProjectType = async (data) =>{
-    return new Promise((resolve, reject)=>{
+    return new Promise((resolve)=>{
         const index = projectList.findIndex(p =>p.id === data.id)
         projectList[index] = data
         resolve(true)
@@ -52,8 +52,8 @@ export const editProject: EditProjectType = async (data) =>{
 }
 
 export const deleteProject: DeleteProjectType = async (projectID) =>{
-    return new Promise((resolve, reject)=>{
-        const index = projectList.findIndex(p =>p.id === projectID)
+    return new Promise((resolve)=>{
+        // const index = projectList.findIndex(p =>p.id === projectID)
         
         resolve(true)
     })

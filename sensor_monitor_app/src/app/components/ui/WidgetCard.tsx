@@ -1,5 +1,4 @@
-import { DeviceType } from '@/contexts/devices'
-import React, { MouseEventHandler } from 'react'
+import React from 'react'
 
 type WidgetCardType = {
   className?:string,

@@ -83,7 +83,7 @@ export const SensorForm = ()=>{
         }
     },[edit])
 
-    const handleSubmit = (data: FormData)=>{
+    const handleSubmit = ()=>{
     
         emit("updateDeviceConfig", {
             deviceID: selectedDevice!.id,
@@ -294,7 +294,7 @@ const SensorPropertieTemplate = ({title, info}:{title: string, info: string | Re
     </div>
 }
 
-const SensorOptions = ({onClick}:{onClick: any})=>{
+const SensorOptions = ({onClick}:{onClick: ()=>void})=>{
     const {setEdit, setOpen} = useSensors()
     const handleOpen = useDeleteConfig("sensor")
     
@@ -334,7 +334,7 @@ const MultipleSensorTemplate = ()=>{
     const {selectedData: selectedSensor, setSelectedData: setSelectedSensor} = useSensors()
 
     return selectedData?.sensors.map(s=>{
-        return <Collapsible onOpenChange={()=>{
+        return <Collapsible key={`callapsible-${s.id}`} onOpenChange={()=>{
             setSelectedSensor((prev: null | PhSensorType)=>prev ? prev.id === s.id ? null : s: s )
         }} open={selectedSensor?.id === s.id} className='mb-3'>
             <CollapsibleTrigger asChild>
@@ -358,7 +358,7 @@ const NoSensorRegistered = ()=>{
 
     return <div className='w-full h-full flex justify-center items-center flex-col gap-4'>
         <NoSensorIlustration width={250}/>
-        <p className='text-2xl font-bold'>You didn't register a pH sensor yet.</p>
+        <p className='text-2xl font-bold'>You didn&apos;t register a pH sensor yet.</p>
         <Button onClick={()=>{
             setOpen(true)
         }}>Register Sensor</Button>

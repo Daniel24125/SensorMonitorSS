@@ -16,7 +16,6 @@ export interface User {
     email?: string;
     email_verified?: boolean;
     org_id?: string;
-    [key: string]: any;
 }
 
 export type PhSensorModeType =  "acidic" | "alkaline" | "auto"
@@ -35,7 +34,9 @@ export type PhSensorType = {
     updatedBy?: User
 }
 
-type TemperatureSensorType = {}
+type TemperatureSensorType = {
+    probePort: string
+}
 
 export type SensorType = PhSensorType | TemperatureSensorType
 

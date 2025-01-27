@@ -102,7 +102,7 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
 
       try {
         console.log(`Emitting ${event}:`, data);
-        socket.emit(event, data, (error: any) => {
+        socket.emit(event, data, (error: string) => {
           if (error) {
             console.error('Emit error:', error);
             reject(error);

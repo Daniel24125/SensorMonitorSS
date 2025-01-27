@@ -11,7 +11,7 @@ import { ResponsiveDialog } from '@/components/ui/responsive-dialog';
 type UpperLevelDataManagerProps = {
     useContext: typeof useConfigurations
     channelContext: "configuration" | "location" | "device" ,
-    additionalSubmitData?: any
+    additionalSubmitData?: {}
 }
 
 
