@@ -5,6 +5,7 @@ import { DeviceConfigurationType, useDevices } from '@/contexts/devices'
 import DeviceInformation, { DeviceConfigurationTabs, NoSelectedDevice } from './components/DeviceDetails'
 import ConfigurationManager from './components/ConfigurationManager'
 import { NextPage } from 'next'
+import { ConfigurationContext, useConfigurations } from '@/hooks/use-configurations'
 
 
 export interface ConfigurationContextType {
@@ -16,22 +17,13 @@ export interface ConfigurationContextType {
   setEdit: React.Dispatch<React.SetStateAction<boolean>>
 }
 
-const ConfigurationContext = React.createContext<ConfigurationContextType | null>(null)
 
 
-// Custom hook to use socket context with type safety
-export const useConfigurations = (): ConfigurationContextType => {
-const context = React.useContext(ConfigurationContext);
-if (!context) {
-  throw new Error('useConfigurations must be used within a ConfigurationsProvider');
-}
-return context;
-};
 
 
 const DevicePage: NextPage = () => {
   const {selectedDevice} = useDevices()
-  const [selectedData, setSelectedData] = React.useState<null | DeviceConfigurationType>(null)
+  const [selectedData, setSelectedData] = React.useState<DeviceConfigurationType | null>(null)
   const [open, setOpen] = React.useState(false)
   const [edit, setEdit] = React.useState(false)
 
@@ -57,9 +49,13 @@ const DevicePage: NextPage = () => {
   }
 
   return <ConfigurationContext.Provider value={value}>
-    <WidgetCard secondaryAction={
-      selectedDevice && <DeviceConfigurationTabs/>
-    } className='w-full' title={"Device Details"} >
+    <WidgetCard 
+      secondaryAction={
+        selectedDevice && <DeviceConfigurationTabs/>
+      } 
+      className='w-full' 
+      title={"Device Details"} 
+    >
       {selectedDevice ? <>
         <DeviceInformation/>
         <ConfigurationManager 
