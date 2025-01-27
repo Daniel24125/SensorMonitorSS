@@ -3,7 +3,7 @@ import WidgetCard from '../ui/WidgetCard'
 
 const ProjectDetails = () => {
   return (
-    <WidgetCard className='w-full '>ProjectDetails</WidgetCard>
+    <WidgetCard title="ProjectDetails" className='w-full '>ProjectDetails</WidgetCard>
   )
 }
 
