@@ -4,6 +4,7 @@ import WidgetCard from '../components/ui/WidgetCard'
 import { DeviceConfigurationType, useDevices } from '@/contexts/devices'
 import DeviceInformation, { DeviceConfigurationTabs, NoSelectedDevice } from './components/DeviceDetails'
 import ConfigurationManager from './components/ConfigurationManager'
+import { NextPage } from 'next'
 
 
 export interface ConfigurationContextType {
@@ -28,7 +29,7 @@ return context;
 };
 
 
-const DevicePage = () => {
+const DevicePage: NextPage = () => {
   const {selectedDevice} = useDevices()
   const [selectedData, setSelectedData] = React.useState<null | DeviceConfigurationType>(null)
   const [open, setOpen] = React.useState(false)
