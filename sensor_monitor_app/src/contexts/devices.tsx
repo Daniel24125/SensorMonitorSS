@@ -7,6 +7,7 @@ import { ProjectProvider } from './projects';
 import WarningDialogProvider from './warning';
 import { useUser } from '@auth0/nextjs-auth0';
 import Loading from '@/app/components/Loading';
+import { ExperimentProvider } from './experiments';
 
 export interface User {
     sub: string;
@@ -76,7 +77,9 @@ type DeviceErrorType = {
 interface DeviceContextType {
     deviceList: DeviceType[]
     selectedDevice: null | DeviceType
-    setSelectedDevice: React.Dispatch<React.SetStateAction<null | DeviceType>>
+    setSelectedDevice: React.Dispatch<React.SetStateAction<null | DeviceType>>,
+    getDeviceByID: (deviceID: string)=> null | DeviceType
+    getConfigurationByID: (deviceID: string, configurationID: string) => null | DeviceConfigurationType
 }
 
 const DevicesContext = React.createContext<DeviceContextType | null>(null)
@@ -99,15 +102,28 @@ const DevicesProvider = ({children}: DevicesProviderProps) => {
     const [selectedDevice, setSelectedDevice] = React.useState<null | DeviceType>(null)
     const {on, emit, isConnected} = useSocket()
     const { toast } = useToast()
-    const { user, isLoading, error } = useUser()
+    const { isLoading} = useUser()
+
+    const getDeviceByID = React.useCallback((deviceID: string)=>{
+        const list = deviceList.filter(d=>d.id === deviceID)
+        return list.length === 0 ? null: list[0]
+    }, [isLoading])
+
+    const getConfigurationByID = React.useCallback((deviceID: string, configurationID: string)=>{
+        const device = getDeviceByID(deviceID)
+        if(!device) return null
+        const list = device.configurations.filter(c=>c.id === configurationID)
+        return list.length === 0 ? null: list[0]
+    }, [isLoading])
 
     const value: DeviceContextType = {
         deviceList,
         selectedDevice,
-        setSelectedDevice
+        setSelectedDevice, 
+        getDeviceByID,
+        getConfigurationByID
     }
 
-    
     React.useEffect(()=>{
         if(isConnected){
             emit("register_client", "web")
@@ -151,7 +167,9 @@ const DevicesProvider = ({children}: DevicesProviderProps) => {
     return <DevicesContext.Provider value={value}>
         <WarningDialogProvider>
             <ProjectProvider>
-                {children}
+                <ExperimentProvider>
+                    {children}
+                </ExperimentProvider>
             </ProjectProvider>
         </WarningDialogProvider>
     </DevicesContext.Provider>

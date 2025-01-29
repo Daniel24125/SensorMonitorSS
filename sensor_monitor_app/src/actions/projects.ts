@@ -47,9 +47,9 @@ export const getProjects: GetProjectsType = async () =>{
     try {
         const session = await auth0.getSession()
         if(!session){
-           throw new Error("You must be logged in to get the projects list")
-            
+           throw new Error("You must be logged in to get the projects list")  
         }
+
         const q = query(collectionRef, where("userID", "==", session.user.sub))
         const data = await getDocs(q)
         return {
@@ -65,8 +65,7 @@ export const createProject: CreateProjectType = async (data) =>{
     try{
         const session = await auth0.getSession()
         if(!session){
-           throw new Error("You must be logged in to get the projects list")
-            
+           throw new Error("You must be logged in to get the projects list")   
         }
         await addDoc(collectionRef, {
             ...data, 
@@ -77,6 +76,7 @@ export const createProject: CreateProjectType = async (data) =>{
         revalidatePath("/") 
         return true
     } catch(error){
+
         return parseError(error as typeof Error | string)
     }
 }
@@ -89,7 +89,10 @@ export const editProject: EditProjectType = async (project) =>{
             
         }
         const projectRef = doc(db, "projects", project.id!);
-        await updateDoc(projectRef, project);
+        await updateDoc(projectRef, {
+            ...project,
+            updatedAt: new Date().toJSON()
+        });
         revalidatePath("/") 
         return true
     } catch(error){

@@ -37,14 +37,16 @@ const ProjectLoadingCard = ()=>{
 }
 
 const ProjectListComponent = ()=>{
-  const {projectList} = useProjects()
+  const {projectList, setSelectedProject, selectedProject} = useProjects()
 
   return projectList.length === 0 ? <NoProjectsComponent size='sm'/> : projectList.map(p=>{
-    return <DashboardCard  
+    return <DashboardCard 
       key={p.id}
       title={p.title}
-      subtitle={`${p.experiments.length} experiments`}
+      subtitle={`${p.experiments!.length} experiments`}
       color='#9C88FF'
+      setSelected={()=>setSelectedProject(p)}
+      active={selectedProject?.id === p.id}
       secondaryAction={<Button  className='flex-shrink-0' size="icon" variant="ghost">
         <ChevronRight/>
       </Button>}

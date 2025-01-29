@@ -7,6 +7,7 @@ import { useToast } from '@/hooks/use-toast';
 import { createProject, deleteProject, editProject, getProjects } from '@/actions/projects';
 import ProjectForm from '@/app/components/projects/ProjectForm';
 import { useWarningDialog } from './warning';
+import { ExperimentType } from './experiments';
 
 // Define types for the socket context
 interface ProjectsContextType {
@@ -14,6 +15,7 @@ interface ProjectsContextType {
     selectedProject: ProjectType | null
     setSelectedProject: React.Dispatch<React.SetStateAction<null | ProjectType>>
     isLoading: boolean;
+    getProjectByID: (projectID: string) => ProjectType | null
     handleProjectRegistration: (data: ProjectType) => void
     handleUpdateProject: (data: ProjectType) => void
     handleDeleteProject: (projectID: string) => void
@@ -21,21 +23,15 @@ interface ProjectsContextType {
     edit: boolean, 
     setOpen: React.Dispatch<React.SetStateAction<boolean>>
     setEdit: React.Dispatch<React.SetStateAction<boolean>>
-
 }
-export type ExperimentType = {
-  id: string,
-  projectID: string, 
-  userID: string,
-  createdAt: string, 
-  updatedAt?: string 
 
-} 
+
 
 export type ProjectType = {
     id?: string 
     title: string 
     device: string
+    configuration: string
     dataAquisitionInterval: number
     experiments?: ExperimentType[]
     createdAt?: string
@@ -69,27 +65,37 @@ export const ProjectProvider = ({
   const { isLoading } = useUser()
   const {toast} = useToast()
   const {setOpen: setOpenWarning} = useWarningDialog()
+  const [isFetching, setIsFetching] = React.useState(true)
+
+  const projectsLoading = React.useMemo(()=>{
+    return isFetching || isPending || isLoading
+  },[isFetching, isLoading, isPending])
 
   React.useEffect(()=>{
     getProjectList()
   },[])
 
+  const getProjectByID = React.useCallback((projectID: string) => {
+    return projectList.find(p => p.id === projectID) || null;
+  }, [projectsLoading]);
+
   const getProjectList = React.useCallback(async ()=>{
     startTransition(async () => {
       const result = await getProjects()
       if (result.error) {
-          toast({
-              title: "An error occured",
-              description: result.error as string,
-              variant: "destructive"
-          })
+        toast({
+            title: "An error occured",
+            description: result.error as string,
+            variant: "destructive"
+        })
       } else {
-          setProjectList(result.data ? result.data : [])
-          if(result.data && !selectedProject){
-            setSelectedProject(result.data[0])
-          }
+        setProjectList(result.data ? result.data : [])
+        if(result.data && !selectedProject){
+          setSelectedProject(result.data[0])
+        }
       }
-      })
+      setIsFetching(false)
+    })
   }, [])
 
   const handleProjectRegistration = React.useCallback(async (data: ProjectType)=>{
@@ -138,7 +144,8 @@ export const ProjectProvider = ({
     projectList,
     selectedProject,
     setSelectedProject,
-    isLoading: isLoading || isPending,
+    isLoading: projectsLoading,
+    getProjectByID,
     handleProjectRegistration,
     handleUpdateProject,
     handleDeleteProject,

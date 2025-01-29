@@ -5,10 +5,9 @@ import React from 'react'
 
 interface ChildProps {
     disabled?: boolean;
-    // Add any other props that your children components might have
   }
 
-const AddProjectButton = ({children}: {children: React.ReactNode}) => {
+const AddProjectButton = ({children, title}: {children: React.ReactNode, title: string}) => {
     const {deviceList} = useDevices()
 
     const childrenWithProps = React.Children.map(children, child => {
@@ -19,11 +18,10 @@ const AddProjectButton = ({children}: {children: React.ReactNode}) => {
       });
 
     return (
-        <TooltipWrapper title={deviceList.length === 0 ? "Please connect a device so that you can start a project": ""}>
+        <TooltipWrapper title={deviceList.length === 0 ? "Please connect a device so that you can start a project": title}>
             <>
                 {childrenWithProps}
             </>
-            
         </TooltipWrapper>
     )
 }

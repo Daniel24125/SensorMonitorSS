@@ -18,8 +18,20 @@ const ProjectForm = () => {
     const [form, setForm] = React.useState<ProjectType>({
         title: "", 
         device: "", 
+        configuration: "",
         dataAquisitionInterval: 2
     }) 
+
+    React.useEffect(()=>{
+        if(!open){
+            setForm({
+                title: "", 
+                device: "", 
+                configuration: "",
+                dataAquisitionInterval: 2
+            })
+        }
+    }, [open])
 
     React.useEffect(()=>{
         if(edit && selectedProject){
@@ -40,7 +52,7 @@ const ProjectForm = () => {
     }
     
     async function handleSubmit() {
-        if(form.title === "" || form.device === "" || form.dataAquisitionInterval <= 0){
+        if(form.title === "" || form.device === "" || form.dataAquisitionInterval <= 0 || form.configuration === ""){
             toast({
                 title: "Error",
                 description: "Make sure you filled all the required fields",
@@ -48,7 +60,7 @@ const ProjectForm = () => {
             })
             return 
         }
-       selectedProject ? handleUpdateProject(form) : handleProjectRegistration(form)
+        edit ? handleUpdateProject(form) : handleProjectRegistration(form)
     }
 
     
@@ -69,6 +81,7 @@ const ProjectForm = () => {
                 value={form.title}
             />
             <DeviceSelection form={form} setForm={setForm} />
+            {form.device !== "" && <ConfigurationSelection form={form} setForm={setForm}/>}
             <Input
                 placeholder='Data aquisition interval'
                 id="dataAquisitionInterval"
@@ -92,7 +105,6 @@ const DeviceSelection = ({form, setForm}: {form: ProjectType, setForm: React.Dis
 
     return <>
         <Select onValueChange={value=>{
-            console.log(form)
             setForm(prev=>{
                 return {
                     ...prev, 
@@ -120,4 +132,43 @@ const DeviceSelection = ({form, setForm}: {form: ProjectType, setForm: React.Dis
     </>
 }
 
+const ConfigurationSelection = ({form, setForm}: {form: ProjectType, setForm: React.Dispatch<React.SetStateAction<ProjectType>>})=>{
+    const {getDeviceByID} = useDevices()
+    
+    const device = React.useMemo(()=>{
+        return getDeviceByID(form.device)
+    },[form.device])
+
+
+    return <>
+        <Select
+            onValueChange={value=>{
+                setForm(prev=>{
+                    return {
+                        ...prev, 
+                        configuration: value
+                    }
+                })
+            }} 
+            required 
+            value={form.configuration} 
+        >
+            <SelectTrigger className='h-auto'>
+                <SelectValue  placeholder="Select the device configuration" />
+            </SelectTrigger>
+            <SelectContent>
+                {device?.configurations.map(c=>{
+                    return <SelectItem  key={c.id} value={c.id}>
+                        <div className='flex flex-col gap-2'>
+                            <p>
+                                {c.name}
+                            </p>
+                            <p className='text-xs text-primary'>{c.locations.length} locations defined</p>
+                        </div>
+                    </SelectItem>
+                })}
+            </SelectContent>
+        </Select>
+    </>
+}
 export default ProjectForm

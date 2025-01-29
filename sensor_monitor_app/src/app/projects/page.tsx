@@ -14,6 +14,7 @@ import moment from 'moment'
 import React from 'react'
 import { NoProjectsComponent } from '../components/projects/ProjectListWidget'
 import {  useWarningDialog } from '@/contexts/warning'
+import { useRouter } from 'next/navigation'
 
 
 const Page = () => {
@@ -58,17 +59,22 @@ const Page = () => {
     )
 }
 
-const ProjectOptions = ({onClick, project}: {onClick: ()=>void, project: ProjectType})=>{
+export const ProjectOptions = ({onClick, project}: {onClick?: ()=>void, project: ProjectType})=>{
     const {setOpen, setEdit, handleDeleteProject} = useProjects()
     const {setOptions, setOpen: setOpenWarning} = useWarningDialog()
+    const router = useRouter()
 
     return <DropdownMenu>
         <DropdownMenuTrigger  asChild>
-            <Button onClick={onClick} variant="outline" size="icon">
+            <Button disabled={!project} onClick={onClick} variant="outline" size="icon">
                 <MoreHorizontal/>
             </Button>
         </DropdownMenuTrigger>
-        <DropdownMenuContent align="end">
+        {project && <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() =>router.push(`/experiment?projectID=${project.id}`)}>
+                <FlaskConical/>
+                <span> Start Experiment</span>
+            </DropdownMenuItem>
             <DropdownMenuItem onClick={() =>{
                 setOpen(true)
                 setEdit(true)
@@ -87,12 +93,12 @@ const ProjectOptions = ({onClick, project}: {onClick: ()=>void, project: Project
                 <Trash2/>
                 <span> Delete Project</span>
             </DropdownMenuItem>
-        </DropdownMenuContent>
+        </DropdownMenuContent>}
     </DropdownMenu>
 }
 
 
-const DeviceBadge = ({project}: {project: ProjectType})=>{
+export const DeviceBadge = ({project}: {project: ProjectType})=>{
     const {deviceList} = useDevices()
     
     const projectDevice = React.useMemo(()=>{
@@ -108,11 +114,11 @@ const LoadingProjectList = ()=>{
     const {isLoading} = useProjects()
 
     return <div className={cn(
-        'absolute w-full h-full bg-background flex flex-wrap gap-5',
+        'absolute w-full h-full bg-background flex flex-col gap-5',
         isLoading? "": "animate-fadeout"
     )}>
         {[...Array(2).keys()].map(s =>{
-        return <Skeleton key={s} className='w-full h-52 rounded-xl'/>
+        return <Skeleton key={s} className='w-full h-40 rounded-xl'/>
     })}
     </div>
 }

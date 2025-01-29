@@ -10,6 +10,7 @@ import { Select, SelectContent, SelectTrigger } from '@/components/ui/select'
 import { SelectItem } from '@radix-ui/react-select'
 import { deviceIconColors } from '../../DeviceWidget'
 import { useProjects } from '@/contexts/projects'
+import AddProjectButton from '../../projects/AddProjectButton'
 
 const Topbar = () => {
   return (
@@ -59,14 +60,14 @@ const DeviceInfo = ()=>{
 export const CreateProject = ()=>{
     const {setOpen, setEdit} = useProjects()
 
-    return <TooltipWrapper title={"Create a new project"}>
+    return <AddProjectButton title="Create a new project">
           <div onClick={()=>{
             setOpen(true)
             setEdit(false)
           }} className='rounded-full bg-primary p-2 cursor-pointer'>
             <Plus/>
           </div>
-      </TooltipWrapper>  
+      </AddProjectButton>  
 }
 
 export default Topbar
