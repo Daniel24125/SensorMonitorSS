@@ -18,9 +18,6 @@ export interface ConfigurationContextType {
 }
 
 
-
-
-
 const DevicePage: NextPage = () => {
   const {selectedDevice} = useDevices()
   const [selectedData, setSelectedData] = React.useState<DeviceConfigurationType | null>(null)

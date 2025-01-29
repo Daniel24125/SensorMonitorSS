@@ -10,7 +10,7 @@ import { NoSensorIlustration } from '@/components/ui/ilustrations'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useConfigurations } from '@/hooks/use-configurations';
 import { Badge } from '@/components/ui/badge'
-import { ChevronsUpDown, Edit, MoreVertical, Trash } from 'lucide-react'
+import { Calendar, ChevronsUpDown, CircleFadingArrowUp, Clock2, Edit, MoreVertical, PanelLeft, PanelLeftOpen, Plug2, ShieldCheck, Trash } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { TooltipWrapper } from '@/components/ui/tooltip'
 import { useDeleteConfig } from '@/hooks/use-delete-config'
@@ -271,26 +271,31 @@ const SingleSensorTemplate = ({sensorData}: {sensorData?:PhSensorType})=>{
             
         </header>
         <div className='w-full flex justify-between py-6'>
-            <SensorPropertieTemplate title='Electrode Port' info={`Port ${sensor.probePort}`}/> 
-            <SensorPropertieTemplate title='Valve Port' info={`Port ${sensor.valvePort}`}/> 
+            <SensorPropertieTemplate icon={Plug2} title='Electrode Port' info={`Port ${sensor.probePort}`}/> 
+            <SensorPropertieTemplate icon={PanelLeftOpen} title='Valve Port' info={`Port ${sensor.valvePort}`}/> 
         </div>
         <div className='w-full flex justify-between py-6'>
-            <SensorPropertieTemplate title='Acceptance Margin' info={sensor.margin}/> 
-            <SensorPropertieTemplate title='Maximum Valve Time' info={`${sensor.maxValveTimeOpen} seconds`} /> 
+            <SensorPropertieTemplate icon={ShieldCheck} title='Acceptance Margin' info={sensor.margin}/> 
+            <SensorPropertieTemplate icon={Clock2} title='Maximum Valve Time' info={`${sensor.maxValveTimeOpen} seconds`} /> 
         </div>
         <div className='w-full flex justify-between py-6'>
-            <SensorPropertieTemplate title='Sensor registered At' info={moment(sensor.createdAt).format("DD/MM/YYYY - hh:mm a")}/> 
-            <SensorPropertieTemplate title='Last updated at' info={sensor.updatedAt ? moment(sensor.updatedAt).format("DD/MM/YYYY") : "Never updated"} /> 
+            <SensorPropertieTemplate icon={Calendar} title='Sensor registered At' info={moment(sensor.createdAt).format("DD/MM/YYYY - hh:mm a")}/> 
+            <SensorPropertieTemplate icon={CircleFadingArrowUp} title='Last updated at' info={sensor.updatedAt ? moment(sensor.updatedAt).format("DD/MM/YYYY") : "Never updated"} /> 
         </div>
     </div>
 }
 
 
 
-const SensorPropertieTemplate = ({title, info}:{title: string, info: string | React.ReactNode})=>{
-    return <div className='flex flex-col w-[clamp(150px,50%,300px)]'>
-        <span className='text-primary text-xs'>{title}</span>
-        <p className='font-bold text-xl'>{info}</p>
+const SensorPropertieTemplate = ({title, info, icon}:{title: string, info: string | React.ReactNode, icon: typeof Plug2})=>{
+    return <div className='flex w-[clamp(150px,50%,300px)] gap-4'>
+            <div className='bg-primary bg-opacity-20 w-10 h-10 flex justify-center items-center rounded-xl'>
+                {React.createElement(icon)}
+            </div>
+        <div className='flex gap-2 flex-col'>
+            <span className='text-primary text-xs'>{title}</span>
+            <p className='font-bold text-xl'>{info}</p>
+        </div>
     </div>
 }
 

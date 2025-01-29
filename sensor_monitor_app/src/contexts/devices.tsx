@@ -5,6 +5,8 @@ import { useSocket } from './socket';
 import { useToast } from '@/hooks/use-toast';
 import { ProjectProvider } from './projects';
 import WarningDialogProvider from './warning';
+import { useUser } from '@auth0/nextjs-auth0';
+import Loading from '@/app/components/Loading';
 
 export interface User {
     sub: string;
@@ -97,6 +99,7 @@ const DevicesProvider = ({children}: DevicesProviderProps) => {
     const [selectedDevice, setSelectedDevice] = React.useState<null | DeviceType>(null)
     const {on, emit, isConnected} = useSocket()
     const { toast } = useToast()
+    const { user, isLoading, error } = useUser()
 
     const value: DeviceContextType = {
         deviceList,
@@ -142,6 +145,8 @@ const DevicesProvider = ({children}: DevicesProviderProps) => {
         }
     }, [deviceList])
 
+  
+    if(isLoading) return <Loading/>
 
     return <DevicesContext.Provider value={value}>
         <WarningDialogProvider>

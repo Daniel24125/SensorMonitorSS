@@ -84,9 +84,22 @@ const NoLocation = ()=>{
 const LocationInformation = ()=>{
     const containerRef = React.useRef<HTMLDivElement>(null)
     const {selectedData} = useLocations()
+    const [isLoading, setIsLoading] = React.useState(true);
+
+    
+    // Use useEffect to handle the initial mount and loading state
+    React.useEffect(() => {
+        // Small delay to ensure DOM is ready
+        const timer = setTimeout(() => {
+            setIsLoading(false);
+        }, 100);
+        
+        return () => clearTimeout(timer);
+    }, []);
+
 
     return <div ref={containerRef} className='w-full h-full flex gap-4 relative'>
-        <div className={cn('w-full h-full flex justify-center items-center absolute top-0 bg-secondary-background z-10', containerRef.current ? " animate-fadeout": "")}>
+        <div className={cn('w-full h-full flex justify-center items-center absolute top-0 bg-secondary-background z-10', !isLoading ? "animate-fadeout": "")}>
             <LoadingSpinner className='w-12 h-12 text-primary'/>
         </div>
         <LocationsList container={containerRef}/>

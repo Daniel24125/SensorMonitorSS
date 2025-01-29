@@ -9,6 +9,7 @@ import ProjectForm from '../../projects/ProjectForm'
 import { Select, SelectContent, SelectTrigger } from '@/components/ui/select'
 import { SelectItem } from '@radix-ui/react-select'
 import { deviceIconColors } from '../../DeviceWidget'
+import { useProjects } from '@/contexts/projects'
 
 const Topbar = () => {
   return (
@@ -56,15 +57,16 @@ const DeviceInfo = ()=>{
 }
 
 export const CreateProject = ()=>{
-    return <ProjectForm size="icon" className='rounded-full'>
-      <TooltipWrapper title={"Create a new project"}>
-          <div className='rounded-full bg-primary p-2'>
+    const {setOpen, setEdit} = useProjects()
+
+    return <TooltipWrapper title={"Create a new project"}>
+          <div onClick={()=>{
+            setOpen(true)
+            setEdit(false)
+          }} className='rounded-full bg-primary p-2 cursor-pointer'>
             <Plus/>
           </div>
-      </TooltipWrapper>
-    </ProjectForm>
-    
-   
+      </TooltipWrapper>  
 }
 
 export default Topbar

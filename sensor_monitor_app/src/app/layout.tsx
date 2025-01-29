@@ -23,6 +23,8 @@ export default async function RootLayout({
 
   if(!session) redirect("/auth/login")
 
+  
+    
   return (
     <html lang="en">
       <body>

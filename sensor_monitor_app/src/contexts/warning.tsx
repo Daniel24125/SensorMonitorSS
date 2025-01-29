@@ -4,10 +4,10 @@ import { Button } from "@/components/ui/button"
 import { ResponsiveDialog } from "@/components/ui/responsive-dialog"
 import React from "react"
 
-type DialogOptions = {
+export type DialogOptions<T = void> = {
     title: string 
     description?: string
-    deleteFn: null | (()=>void )
+    deleteFn: null | ((data: T) => Promise<void>)
 }
 
 interface WarningContextType {
@@ -56,8 +56,10 @@ type WarningDialogProps ={
             <div className="w-full flex flex-col">
                 <p>Are you sure you want to proceed with this operation?</p>
                 <div className="w-full flex justify-end">
-                    <Button onClick={()=>{
-                        if(options.deleteFn) options.deleteFn()
+                    <Button onClick={async ()=>{
+                        if(options.deleteFn){
+                            await options.deleteFn()
+                        }
                     }}>Submit</Button>
                 </div>
             </div>

@@ -1,64 +1,121 @@
 "use client"
 
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { TooltipWrapper } from '@/components/ui/tooltip'
-import { useProjects } from '@/contexts/projects'
+import { useDevices } from '@/contexts/devices'
+import { ProjectType, useProjects } from '@/contexts/projects'
 import { cn } from '@/lib/utils'
-import { SquareKanban } from 'lucide-react'
+import { Edit, FlaskConical,  MoreHorizontal, SquareKanban, Trash2 } from 'lucide-react'
+import moment from 'moment'
 import React from 'react'
+import { NoProjectsComponent } from '../components/projects/ProjectListWidget'
+import {  useWarningDialog } from '@/contexts/warning'
+
 
 const Page = () => {
-  return (
-    <div className='w-full flex justify-evenly h-full'>
-        <ProjectList/>
-        <ProjectInformation/>
-    </div>
-  )
+    const {projectList, setSelectedProject} = useProjects()
+
+    return (
+        <div  className='w-full flex justify-evenly h-full'>
+            <ScrollArea className='w-full'>
+                <div className='w-full flex flex-col gap-5 pt-11'>
+                    <LoadingProjectList/>
+                    {projectList.length === 0 ? <NoProjectsComponent size="lg"/> :projectList.map((p)=>{
+                        return <div key={p.id}  className={'w-full gap-10 border flex flex-col rounded-xl p-4'}>
+                            <div className='w-full flex justify-between'>
+                                <div className='flex gap-2 items-center'>
+                                    <div className={'w-10 h-10 flex-shrink-0 bg-[#9C88FF80] flex justify-center items-center rounded-lg'}>
+                                        <SquareKanban/>
+                                    </div>
+                                    <div className='flex flex-col px-4'>
+                                        <p className='text-lg '>{p.title}</p>
+                                        <span className='text-accent text-xs'>Created at {moment(p.createdAt!).format("DD/MM/YYYY - hh:mm a")}</span>
+                                    </div>
+                                </div>
+                                <div className='flex gap-4 items-center'>
+                                    <TooltipWrapper title="Number of experiments">
+                                        <div className='flex gap-2'>
+                                            <FlaskConical/> {p.experiments!.length}
+                                        </div>
+                                    </TooltipWrapper>
+                                    <DeviceBadge project={p}/>
+                                    <ProjectOptions project={p} onClick={()=>setSelectedProject(p)}/>
+                                </div>
+                            </div>
+                            <div className='w-full flex justify-end'>
+                                <Button variant="outline">More details</Button>
+                            </div>
+
+                        </div>
+                    })}
+                </div>
+            </ScrollArea>        
+        </div>
+    )
 }
 
-const ProjectList = ()=>{
-    const {projectList, setSelectedProject,selectedProject , isLoading} = useProjects()
+const ProjectOptions = ({onClick, project}: {onClick: ()=>void, project: ProjectType})=>{
+    const {setOpen, setEdit, handleDeleteProject} = useProjects()
+    const {setOptions, setOpen: setOpenWarning} = useWarningDialog()
 
-   
-    return <div className='w-96 flex flex-wrap justify-evenly relative'>
-            
-            <LoadingProjectList/>
-            {projectList.map((p)=>{
-                const isSelected = selectedProject && selectedProject.id === p.id
-                return <div key={p.id} onClick={()=>setSelectedProject(p)} className={cn(
-                    'w-28 cursor-pointer h-28 gap-3 flex flex-col justify-center items-center rounded-xl',
-                    isSelected ? "bg-white text-black": "bg-card"
-                )}>
-                    <div className={cn(
-                        'w-9 h-9 flex justify-center items-center rounded-lg  text-black',
-                        isSelected ? "bg-primary opacity-50": "bg-white"
-                    )}>
-                        <SquareKanban/>
-                    </div>
-                    <TooltipWrapper title={p.title}>
-                    <p className='text-xs text-center px-4'>{p.title.length > 20 ? `${p.title.substring(0,20)}...` : p.title}</p>
-                    </TooltipWrapper>
-                </div>
-            })}
-    </div>
+    return <DropdownMenu>
+        <DropdownMenuTrigger  asChild>
+            <Button onClick={onClick} variant="outline" size="icon">
+                <MoreHorizontal/>
+            </Button>
+        </DropdownMenuTrigger>
+        <DropdownMenuContent align="end">
+            <DropdownMenuItem onClick={() =>{
+                setOpen(true)
+                setEdit(true)
+            }}>
+                <Edit/>
+                <span> Edit Project</span>
+            </DropdownMenuItem>
+                <DropdownMenuItem  className='text-destructive' onClick={() =>{
+                    setOptions({
+                        title: "Delete Project",
+                        description: "This operation is not reversible!", 
+                        deleteFn: async ()=>handleDeleteProject(project.id!)
+                    })
+                    setOpenWarning(true)
+                }}>
+                <Trash2/>
+                <span> Delete Project</span>
+            </DropdownMenuItem>
+        </DropdownMenuContent>
+    </DropdownMenu>
+}
+
+
+const DeviceBadge = ({project}: {project: ProjectType})=>{
+    const {deviceList} = useDevices()
+    
+    const projectDevice = React.useMemo(()=>{
+        return deviceList.filter(d=>d.id === project.device)[0]
+    },[])
+
+    return projectDevice && <Badge>
+        {projectDevice.name}
+    </Badge>
 }
 
 const LoadingProjectList = ()=>{
     const {isLoading} = useProjects()
 
     return <div className={cn(
-        'absolute w-full h-full bg-background flex flex-wrap gap-2 justify-evenly',
+        'absolute w-full h-full bg-background flex flex-wrap gap-5',
         isLoading? "": "animate-fadeout"
     )}>
-        {[...Array(10).keys()].map(s =>{
-        return <Skeleton key={s} className='w-28 h-28 rounded-xl'/>
+        {[...Array(2).keys()].map(s =>{
+        return <Skeleton key={s} className='w-full h-52 rounded-xl'/>
     })}
     </div>
 }
 
-const ProjectInformation = ()=>{
-    return <div className='w-full'>ProjectInformation</div>
-}
 
 export default Page
