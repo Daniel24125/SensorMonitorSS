@@ -18,7 +18,7 @@ type LogType = {
     id: string, 
     type: "error" | "info" | "warning",
     desc: string, 
-    time: string, 
+    logTime: string, 
     location: string
 }
 
@@ -66,16 +66,18 @@ export const ExperimentProvider = ({
         const projectData = getProjectByID(projectID)
         if(projectData){
             const configuration = getConfigurationByID(projectData.device, projectData.configuration)
-            setData({
-                projectID,
-                duration: 0,
-                locations: configuration!.locations.map(l=>{
-                    return {
-                        ...l, 
-                        sensors: []
-                    }
+            if(configuration){
+                setData({
+                    projectID,
+                    duration: 0,
+                    locations: configuration!.locations.map(l=>{
+                        return {
+                            ...l, 
+                            sensors: []
+                        }
+                    })
                 })
-            })
+            }
         }
     },[isLoading])
 

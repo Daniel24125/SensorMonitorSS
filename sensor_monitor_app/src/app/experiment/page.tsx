@@ -5,6 +5,7 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { useExperiments } from '@/contexts/experiments';
 import { useProjects } from '@/contexts/projects';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import ExperimentControls from './components/ExperimentControls';
 
 const ExperimentPage = () => {
     const searchParams = useSearchParams();
@@ -20,10 +21,19 @@ const ExperimentPage = () => {
 
     if(!data?.projectID) return <SelectProjectTemplate/>
     return (<div className='w-full h-full flex-col py-5'>
-        ExperimentPage
+        <ExperimentHeader/>
     </div>
     )
 }
+
+const ExperimentHeader = ()=>{
+    return <div className='w-full flex justify-between items-center'>
+        <ExperimentControls/>
+        <p className='text-4xl font-bold'>00:00:00</p>
+    </div>
+}
+
+
 
 const SelectProjectTemplate = ()=>{
     const {projectList} = useProjects()
