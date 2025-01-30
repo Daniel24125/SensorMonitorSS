@@ -87,7 +87,7 @@ const NoExperimentOngoingComponent = ()=>{
     return <div className='flex justify-evenly w-full h-full items-center'>
         <NoExperimentOngoingIlustration width={250}/>
         <div className='flex flex-col items-center gap-2'>
-            <p>You didn't start the experiment yet</p>
+            <p>You didn&apos;t start the experiment yet</p>
             <Button>Start experiment</Button>
         </div>
 

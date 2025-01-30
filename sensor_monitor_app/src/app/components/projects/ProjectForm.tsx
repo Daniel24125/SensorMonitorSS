@@ -60,7 +60,8 @@ const ProjectForm = () => {
             })
             return 
         }
-        edit ? handleUpdateProject(form) : handleProjectRegistration(form)
+        const execFn = edit ? handleUpdateProject : handleProjectRegistration
+        execFn(form)
     }
 
     

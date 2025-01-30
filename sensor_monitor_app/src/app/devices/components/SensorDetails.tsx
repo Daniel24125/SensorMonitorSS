@@ -10,7 +10,7 @@ import { NoSensorIlustration } from '@/components/ui/ilustrations'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useConfigurations } from '@/hooks/use-configurations';
 import { Badge } from '@/components/ui/badge'
-import { Calendar, ChevronsUpDown, CircleFadingArrowUp, Clock2, Edit, MoreVertical, PanelLeft, PanelLeftOpen, Plug2, ShieldCheck, Trash } from 'lucide-react'
+import { Calendar, ChevronsUpDown, CircleFadingArrowUp, Clock2, Edit, MoreVertical, PanelLeftOpen, Plug2, ShieldCheck, Trash } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { TooltipWrapper } from '@/components/ui/tooltip'
 import { useDeleteConfig } from '@/hooks/use-delete-config'

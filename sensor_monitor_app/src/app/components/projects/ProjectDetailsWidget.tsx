@@ -24,7 +24,7 @@ const ProjectDetails = () => {
       {selectedProject.experiments!.length > 0 ? <>
         <div className='w-40 bg-card flex flex-col rounded-xl h-full'>
         {selectedProject.experiments?.map(e=>{
-          return <div style={{
+          return <div key={e.id} style={{
             border: selectedExperiment && selectedExperiment.id === e.id ? "solid 2px #0984E3" : "none"
           }} onClick={()=>{
             setSelectedExperiment(e)

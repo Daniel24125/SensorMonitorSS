@@ -1,4 +1,3 @@
-import { Button } from '@/components/ui/button';
 import { TooltipWrapper } from '@/components/ui/tooltip'
 import { useDevices } from '@/contexts/devices'
 import React from 'react'
