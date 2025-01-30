@@ -110,39 +110,70 @@ export const reportErrorToClient = (error) => {
 
 
 export class DeviceManager {
-    constructor(deviceStoragePath = './devices') {
-      this.deviceStoragePath = deviceStoragePath;
+    constructor(storageFilePath = './devices.json') {
+      this.storageFilePath = storageFilePath;
     }
   
     async initialize() {
       try {
-        await fs.mkdir(this.deviceStoragePath, { recursive: true });
+        // Create directory if it doesn't exist
+        const directory = path.dirname(this.storageFilePath);
+        await fs.mkdir(directory, { recursive: true });
+  
+        // Check if file exists, if not create it with empty array
+        try {
+          await fs.access(this.storageFilePath);
+        } catch {
+          await this.saveDevices([]);
+        }
       } catch (error) {
-        console.error('Error creating device storage directory:', error);
+        console.error('Error initializing device storage:', error);
         throw error;
       }
     }
   
-    async getDeviceFilePath(deviceId) {
-      return path.join(this.deviceStoragePath, `${deviceId}.json`);
+    async loadDevices() {
+      try {
+        const data = await fs.readFile(this.storageFilePath, 'utf8');
+        return JSON.parse(data);
+      } catch (error) {
+        console.error('Error loading devices:', error);
+        throw error;
+      }
+    }
+  
+    async saveDevices(devices) {
+      try {
+        await fs.writeFile(
+          this.storageFilePath,
+          JSON.stringify(devices, null, 2),
+          'utf8'
+        );
+      } catch (error) {
+        console.error('Error saving devices:', error);
+        throw error;
+      }
+    }
+  
+    async getAllDevices() {
+      return await this.loadDevices();
     }
   
     async registerDevice(deviceInfo) {
       try {
-        // Generate new device ID if not provided
-        const deviceId = deviceInfo.id || v4();
+        const devices = await this.loadDevices();
         const timestamp = new Date().toISOString();
         
         const newDevice = {
           ...deviceInfo,
-          id: deviceId,
+          id: deviceInfo.id || uuidv4(),
           createdAt: timestamp,
           status: 'connected',
           lastUpdatedAt: timestamp
         };
   
-        const filePath = await this.getDeviceFilePath(deviceId);
-        await fs.writeFile(filePath, JSON.stringify(newDevice, null, 2));
+        devices.push(newDevice);
+        await this.saveDevices(devices);
         
         return newDevice;
       } catch (error) {
@@ -153,14 +184,21 @@ export class DeviceManager {
   
     async updateDeviceStatus(deviceId, status) {
       try {
-        const filePath = await this.getDeviceFilePath(deviceId);
-        const deviceData = JSON.parse(await fs.readFile(filePath, 'utf8'));
+        const devices = await this.loadDevices();
+        const deviceIndex = devices.findIndex(device => device.id === deviceId);
         
-        deviceData.status = status;
-        deviceData.lastUpdatedAt = new Date().toISOString();
-        
-        await fs.writeFile(filePath, JSON.stringify(deviceData, null, 2));
-        return deviceData;
+        if (deviceIndex === -1) {
+          throw new Error(`Device not found: ${deviceId}`);
+        }
+  
+        devices[deviceIndex] = {
+          ...devices[deviceIndex],
+          status,
+          lastUpdatedAt: new Date().toISOString()
+        };
+  
+        await this.saveDevices(devices);
+        return devices[deviceIndex];
       } catch (error) {
         console.error('Error updating device status:', error);
         throw error;
@@ -169,11 +207,27 @@ export class DeviceManager {
   
     async deviceExists(deviceId) {
       try {
-        const filePath = await this.getDeviceFilePath(deviceId);
-        await fs.access(filePath);
-        return true;
+        const devices = await this.loadDevices();
+        return devices.some(device => device.id === deviceId);
       } catch {
         return false;
+      }
+    }
+  
+    // Utility method to help with race conditions
+    async atomicUpdate(updateFn) {
+      let retries = 3;
+      while (retries > 0) {
+        try {
+          const devices = await this.loadDevices();
+          const result = await updateFn(devices);
+          await this.saveDevices(devices);
+          return result;
+        } catch (error) {
+          retries--;
+          if (retries === 0) throw error;
+          await new Promise(resolve => setTimeout(resolve, 100)); // Small delay before retry
+        }
       }
     }
   }
