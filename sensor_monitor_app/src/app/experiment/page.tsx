@@ -6,6 +6,9 @@ import { useExperiments } from '@/contexts/experiments';
 import { useProjects } from '@/contexts/projects';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ExperimentControls from './components/ExperimentControls';
+import ExperimentData from './components/ExperimentData';
+import ExperimentLogs from './components/ExperimentLogs';
+import { ScrollArea } from '@radix-ui/react-scroll-area';
 
 const ExperimentPage = () => {
     const searchParams = useSearchParams();
@@ -20,8 +23,11 @@ const ExperimentPage = () => {
     },[isLoading])
 
     if(!data?.projectID) return <SelectProjectTemplate/>
-    return (<div className='w-full h-full flex-col py-5'>
-        <ExperimentHeader/>
+    return (<div className='w-full h-full flex flex-col py-5 gap-7'>
+            <ExperimentHeader/>
+            <ExperimentData/>
+            <ExperimentLogs/>
+            
     </div>
     )
 }

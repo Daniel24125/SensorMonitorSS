@@ -6,8 +6,8 @@ import { useProjects } from './projects';
 import Loading from '@/app/components/Loading';
 
 type ExperimentDataType = {
-    time: number, 
-    sensorData: number
+    x: number, //Represents the experiment time
+    y: number  //Represents the experiment pH
 }
 
 interface ExperimentLocationsType extends DeviceLocationType {
@@ -39,6 +39,8 @@ interface ExperimentContextType {
     isExperimentOngoing: boolean
     setIsExperimentOngoing: React.Dispatch<React.SetStateAction<boolean>>
     registerProject: (projectID: string) => void
+    selectedLocation: DeviceLocationType | null,
+    setSelectedLocation: React.Dispatch<React.SetStateAction<DeviceLocationType | null>>
 }
 
 
@@ -59,11 +61,19 @@ export const ExperimentProvider = ({
 }:{children: React.ReactNode})=>{
     const [data, setData] = React.useState<null | ExperimentType>(null)
     const [isExperimentOngoing, setIsExperimentOngoing] = React.useState(false)
+    const [selectedLocation, setSelectedLocation] = React.useState<null | DeviceLocationType>(null)
     const {getProjectByID, isLoading} = useProjects()
     const { getConfigurationByID} = useDevices()
     
+    React.useEffect(()=>{
+        if(data && !selectedLocation){
+            setSelectedLocation(data.locations[0])
+        }
+    },[data])
+
     const registerProject = React.useCallback((projectID: string)=>{
         const projectData = getProjectByID(projectID)
+        
         if(projectData){
             const configuration = getConfigurationByID(projectData.device, projectData.configuration)
             if(configuration){
@@ -86,7 +96,9 @@ export const ExperimentProvider = ({
         setData,
         isExperimentOngoing,
         setIsExperimentOngoing,
-        registerProject
+        registerProject,
+        selectedLocation,
+        setSelectedLocation
     }
 
     if(isLoading) return <Loading/>

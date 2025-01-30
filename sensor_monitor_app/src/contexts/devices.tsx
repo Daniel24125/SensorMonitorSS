@@ -78,8 +78,8 @@ interface DeviceContextType {
     deviceList: DeviceType[]
     selectedDevice: null | DeviceType
     setSelectedDevice: React.Dispatch<React.SetStateAction<null | DeviceType>>,
-    getDeviceByID: (deviceID: string)=> null | DeviceType
-    getConfigurationByID: (deviceID: string, configurationID: string) => null | DeviceConfigurationType
+    getDeviceByID: (deviceID: string)=> null | DeviceType | undefined
+    getConfigurationByID: (deviceID: string, configurationID: string) => null | undefined | DeviceConfigurationType
 }
 
 const DevicesContext = React.createContext<DeviceContextType | null>(null)
@@ -105,16 +105,16 @@ const DevicesProvider = ({children}: DevicesProviderProps) => {
     const { isLoading} = useUser()
 
     const getDeviceByID = React.useCallback((deviceID: string)=>{
-        const list = deviceList.filter(d=>d.id === deviceID)
-        return list.length === 0 ? null: list[0]
-    }, [isLoading])
+        const list = deviceList.find(d=>d.id === deviceID)
+        return list
+    }, [isLoading, deviceList])
 
     const getConfigurationByID = React.useCallback((deviceID: string, configurationID: string)=>{
         const device = getDeviceByID(deviceID)
         if(!device) return null
-        const list = device.configurations.filter(c=>c.id === configurationID)
-        return list.length === 0 ? null: list[0]
-    }, [isLoading])
+        const list = device.configurations.find(c=>c.id === configurationID)
+        return list
+    }, [isLoading, deviceList])
 
     const value: DeviceContextType = {
         deviceList,

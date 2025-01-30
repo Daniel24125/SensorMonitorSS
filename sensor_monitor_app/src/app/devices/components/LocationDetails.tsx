@@ -150,7 +150,7 @@ const LocationsList = ({container}:{container: React.RefObject<HTMLDivElement | 
     </div>
 }
 
-const NoLocationSelected = ()=>{
+export const NoLocationSelected = ()=>{
     return <div className='w-full h-full flex justify-center items-center flex-col gap-4'>
         <NoLocationSelectedIlustration width={250}/>
         <h2 className='text-2xl font-bold'>No Location Selected</h2>
