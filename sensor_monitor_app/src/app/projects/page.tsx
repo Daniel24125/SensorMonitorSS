@@ -2,19 +2,18 @@
 
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { TooltipWrapper } from '@/components/ui/tooltip'
 import { useDevices } from '@/contexts/devices'
 import { ProjectType, useProjects } from '@/contexts/projects'
 import { cn } from '@/lib/utils'
-import { Edit, FlaskConical,  MoreHorizontal, SquareKanban, Trash2 } from 'lucide-react'
+import {  FlaskConical,   SquareKanban } from 'lucide-react'
 import moment from 'moment'
 import React from 'react'
 import { NoProjectsComponent } from '../components/projects/ProjectListWidget'
-import {  useWarningDialog } from '@/contexts/warning'
-import { useRouter } from 'next/navigation'
+import ProjectOptions from '../components/projects/ProjectOptions'
+import DeviceBadge from '../devices/components/DeviceBadge'
 
 
 const Page = () => {
@@ -59,56 +58,8 @@ const Page = () => {
     )
 }
 
-export const ProjectOptions = ({onClick, project}: {onClick?: ()=>void, project: ProjectType})=>{
-    const {setOpen, setEdit, handleDeleteProject} = useProjects()
-    const {setOptions, setOpen: setOpenWarning} = useWarningDialog()
-    const router = useRouter()
-
-    return <DropdownMenu>
-        <DropdownMenuTrigger  asChild>
-            <Button disabled={!project} onClick={onClick} variant="outline" size="icon">
-                <MoreHorizontal/>
-            </Button>
-        </DropdownMenuTrigger>
-        {project && <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() =>router.push(`/experiment?projectID=${project.id}`)}>
-                <FlaskConical/>
-                <span> Start Experiment</span>
-            </DropdownMenuItem>
-            <DropdownMenuItem onClick={() =>{
-                setOpen(true)
-                setEdit(true)
-            }}>
-                <Edit/>
-                <span> Edit Project</span>
-            </DropdownMenuItem>
-                <DropdownMenuItem  className='text-destructive' onClick={() =>{
-                    setOptions({
-                        title: "Delete Project",
-                        description: "This operation is not reversible!", 
-                        deleteFn: async ()=>handleDeleteProject(project.id!)
-                    })
-                    setOpenWarning(true)
-                }}>
-                <Trash2/>
-                <span> Delete Project</span>
-            </DropdownMenuItem>
-        </DropdownMenuContent>}
-    </DropdownMenu>
-}
 
 
-export const DeviceBadge = ({project}: {project: ProjectType})=>{
-    const {deviceList} = useDevices()
-    
-    const projectDevice = React.useMemo(()=>{
-        return deviceList.filter(d=>d.id === project.device)[0]
-    },[])
-
-    return projectDevice && <Badge>
-        {projectDevice.name}
-    </Badge>
-}
 
 const LoadingProjectList = ()=>{
     const {isLoading} = useProjects()

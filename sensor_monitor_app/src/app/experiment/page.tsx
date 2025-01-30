@@ -8,8 +8,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import ExperimentControls from './components/ExperimentControls';
 import ExperimentData from './components/ExperimentData';
 import ExperimentLogs from './components/ExperimentLogs';
-import { DropdownMenu, DropdownMenuContent } from '@radix-ui/react-dropdown-menu';
-import { DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { TooltipWrapper } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { CircleMinus, MoreVertical } from 'lucide-react';
@@ -55,7 +54,7 @@ const ExperimentOptions = ()=>{
         </Button>
       </TooltipWrapper>
     </DropdownMenuTrigger>
-    <DropdownMenuContent className='z-50 bg-background'>
+    <DropdownMenuContent>
         <DropdownMenuItem className="cursor-pointer" onClick={()=>{
       
         }}>

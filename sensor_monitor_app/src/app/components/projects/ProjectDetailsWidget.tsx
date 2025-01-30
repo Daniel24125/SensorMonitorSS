@@ -1,11 +1,12 @@
 import React from 'react'
 import WidgetCard from '../ui/WidgetCard'
 import { useProjects } from '@/contexts/projects'
-import { DeviceBadge, ProjectOptions } from '@/app/projects/page'
 import moment from 'moment'
 import { Button } from '@/components/ui/button'
 import { ExperimentType } from '@/contexts/experiments'
 import { useRouter } from 'next/navigation'
+import ProjectOptions from './ProjectOptions'
+import DeviceBadge from '@/app/devices/components/DeviceBadge'
 
 const ProjectDetails = () => {
   const {selectedProject} = useProjects()
