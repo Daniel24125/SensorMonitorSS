@@ -7,7 +7,7 @@ import React from "react"
 export type DialogOptions<T = void> = {
     title: string 
     description?: string
-    deleteFn: null | ((data: T) => Promise<void>)
+    deleteFn: null | ((data: T) => Promise<void>) | (()=>void)
 }
 
 interface WarningContextType {
