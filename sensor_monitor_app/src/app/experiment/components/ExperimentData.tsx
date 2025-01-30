@@ -1,11 +1,12 @@
 import { NoLocationSelected } from '@/app/devices/components/LocationDetails'
 import { Button } from '@/components/ui/button'
 import { ChartConfig,ChartContainer} from '@/components/ui/chart'
+import { NoExperimentOngoingIlustration } from '@/components/ui/ilustrations'
 import { ScrollArea } from '@/components/ui/scroll-area'
+import { TooltipWrapper } from '@/components/ui/tooltip'
 import { useExperiments } from '@/contexts/experiments'
 import { cn } from '@/lib/utils'
-import { Separator } from '@radix-ui/react-dropdown-menu'
-import { MapPin } from 'lucide-react'
+import { CircleCheck, CircleMinus, MapPin } from 'lucide-react'
 import React from 'react'
 import {   ScatterChart,
     Scatter,
@@ -41,20 +42,30 @@ const ExperimentData = () => {
 }
 
 const ChartHeader = ()=>{
-    const {selectedLocation} = useExperiments()
+    const {selectedLocation, isExperimentOngoing} = useExperiments()
 
     return selectedLocation && <div className='w-full flex justify-between items-center py-2 px-4'>
         <h5 className='text-location font-bold text-lg'>{selectedLocation.name}</h5>
-        <div>
-
+        <div className='flex items-center'>
+            <TooltipWrapper title="Open valve">
+                <Button disabled={!isExperimentOngoing} className="text-primary" variant={"ghost"} size="icon">
+                    <CircleCheck/>
+                </Button>
+            </TooltipWrapper>
+            <TooltipWrapper title="Close valve">
+                <Button disabled={!isExperimentOngoing} className='text-destructive' variant={"ghost"} size="icon">
+                    <CircleMinus/>
+                </Button>
+            </TooltipWrapper>
+            <div className='w-3 h-3 bg-accent rounded-full ml-2'></div>
         </div>
     </div>
 }
 
 const ChartComponent = ()=>{
-    const {selectedLocation} = useExperiments()
+    const {selectedLocation, isExperimentOngoing} = useExperiments()
 
-    return selectedLocation ? <ChartContainer config={chartConfig} className="min-h-[200px] w-full h-full">
+    return selectedLocation ? isExperimentOngoing ? <ChartContainer config={chartConfig} className="min-h-[200px] w-full h-full">
         <ScatterChart
           margin={{
               top: 20,
@@ -69,10 +80,19 @@ const ChartComponent = ()=>{
             <Tooltip cursor={{ strokeDasharray: '3 3' }} />
             <Scatter name="A school" data={[]} fill="#8884d8" line shape="circle" />
         </ScatterChart>
-    </ChartContainer>   : <NoLocationSelected/>     
+    </ChartContainer>: <NoExperimentOngoingComponent/> : <NoLocationSelected/>     
 }
 
+const NoExperimentOngoingComponent = ()=>{
+    return <div className='flex justify-evenly w-full h-full items-center'>
+        <NoExperimentOngoingIlustration width={250}/>
+        <div className='flex flex-col items-center gap-2'>
+            <p>You didn't start the experiment yet</p>
+            <Button>Start experiment</Button>
+        </div>
 
+    </div>
+}
 
 const LocationListComponent = ()=>{
     const {data, selectedLocation, setSelectedLocation} = useExperiments()
@@ -80,9 +100,9 @@ const LocationListComponent = ()=>{
     return data?.locations.map(l=>{
         const lastSensorData = l.sensors.length > 0 ? l.sensors[l.sensors.length - 1].y: null
         const isActive = selectedLocation && selectedLocation.id === l.id
-        return <div key={l.id} onClick={()=>setSelectedLocation(l)} className='w-full flex justify-between px-4 py-2 cursor-pointer items-center'>
+        return <div key={l.id} onClick={()=>setSelectedLocation(l)} className='w-full hover:bg-slate-950 flex justify-between px-4 py-2 cursor-pointer items-center'>
         <div className={cn(
-            'flex items-center gap-2 text-sm',
+            'flex items-center gap-2 text-sm ',
             isActive ? "font-bold text-[#9C88FF]":""
         )}>
             <MapPin/>
