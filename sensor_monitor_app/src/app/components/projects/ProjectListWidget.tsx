@@ -68,7 +68,7 @@ export const NoProjectsComponent = ({size}: {size: "sm" | "lg"})=>{
       'max-w-80 text-center', 
       size === "lg" ? "text-lg": "text-xs"
     )}>You don’t have any projects yet.</h6>
-   <AddProjectButton>
+   <AddProjectButton title=''>
       <Button size={size} onClick={()=>{
           setOpen(true)
         }} className='bg-secondary'>
