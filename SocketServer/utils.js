@@ -1,3 +1,7 @@
+import path from "path"
+import fs from "fs/promises"
+import {v4} from "uuid"
+
 import { connectedDevices, io } from "./server.js";
 
 export const validateCommand = (command, params) => {
@@ -103,3 +107,73 @@ export const reportErrorToClient = (error) => {
         timestamp: new Date().toJSON()
     });
 }
+
+
+export class DeviceManager {
+    constructor(deviceStoragePath = './devices') {
+      this.deviceStoragePath = deviceStoragePath;
+    }
+  
+    async initialize() {
+      try {
+        await fs.mkdir(this.deviceStoragePath, { recursive: true });
+      } catch (error) {
+        console.error('Error creating device storage directory:', error);
+        throw error;
+      }
+    }
+  
+    async getDeviceFilePath(deviceId) {
+      return path.join(this.deviceStoragePath, `${deviceId}.json`);
+    }
+  
+    async registerDevice(deviceInfo) {
+      try {
+        // Generate new device ID if not provided
+        const deviceId = deviceInfo.id || v4();
+        const timestamp = new Date().toISOString();
+        
+        const newDevice = {
+          ...deviceInfo,
+          id: deviceId,
+          createdAt: timestamp,
+          status: 'connected',
+          lastUpdatedAt: timestamp
+        };
+  
+        const filePath = await this.getDeviceFilePath(deviceId);
+        await fs.writeFile(filePath, JSON.stringify(newDevice, null, 2));
+        
+        return newDevice;
+      } catch (error) {
+        console.error('Error registering device:', error);
+        throw error;
+      }
+    }
+  
+    async updateDeviceStatus(deviceId, status) {
+      try {
+        const filePath = await this.getDeviceFilePath(deviceId);
+        const deviceData = JSON.parse(await fs.readFile(filePath, 'utf8'));
+        
+        deviceData.status = status;
+        deviceData.lastUpdatedAt = new Date().toISOString();
+        
+        await fs.writeFile(filePath, JSON.stringify(deviceData, null, 2));
+        return deviceData;
+      } catch (error) {
+        console.error('Error updating device status:', error);
+        throw error;
+      }
+    }
+  
+    async deviceExists(deviceId) {
+      try {
+        const filePath = await this.getDeviceFilePath(deviceId);
+        await fs.access(filePath);
+        return true;
+      } catch {
+        return false;
+      }
+    }
+  }

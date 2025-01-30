@@ -1,4 +1,4 @@
-import { handleDeviceRegistration, handleRpiDisconnect, parseCommands, registerRpi, registerWebClient, reportErrorToClient } from './utils.js';
+import { DeviceManager, handleDeviceRegistration, handleRpiDisconnect, parseCommands, registerRpi, registerWebClient, reportErrorToClient } from './utils.js';
 import 'dotenv/config';
 import express from 'express';
 import { v4 } from 'uuid';
@@ -27,7 +27,8 @@ let experimentStatus = {
 };
 export let connectedDevices = {}
 
-
+const deviceManager = new DeviceManager();
+deviceManager.initialize().catch(console.error);
 
 io.on('connection', (socket) => {
     console.log('New connection:', socket.id);
