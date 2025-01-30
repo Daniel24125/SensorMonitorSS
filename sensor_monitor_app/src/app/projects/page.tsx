@@ -1,12 +1,10 @@
 "use client"
 
-import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { Skeleton } from '@/components/ui/skeleton'
 import { TooltipWrapper } from '@/components/ui/tooltip'
-import { useDevices } from '@/contexts/devices'
-import { ProjectType, useProjects } from '@/contexts/projects'
+import {  useProjects } from '@/contexts/projects'
 import { cn } from '@/lib/utils'
 import {  FlaskConical,   SquareKanban } from 'lucide-react'
 import moment from 'moment'
