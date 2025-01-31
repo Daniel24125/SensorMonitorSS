@@ -1,9 +1,10 @@
-import { DeviceManager, handleDeviceRegistration, handleRpiDisconnect, parseCommands, registerRpi, registerWebClient, reportErrorToClient } from './utils.js';
+import { handleDeviceRegistration, handleRpiDisconnect, parseCommands, registerRpi, registerWebClient, reportErrorToClient } from './utils/utils.js';
 import 'dotenv/config';
 import express from 'express';
 import { v4 } from 'uuid';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
+import { DeviceManager } from './management/device_management.js';
 
 const app = express();
 const http = createServer(app);
@@ -34,30 +35,36 @@ io.on('connection', (socket) => {
     console.log('New connection:', socket.id);
    
     // Register client type
-    socket.on('register_client', (clientType) => {
+    socket.on('register_client', async (clientType) => {
         if (clientType === 'rpi') {
-            registerRpi(socket)
+            // registerRpi(socket)
+            console.log('RPi registered:', socket.id);
+
         } 
         else if (clientType === 'web') {
-            registerWebClient(socket)
+            console.log('Web client registered:', socket.id);
+            socket.join('web_clients');
+            const devices = await deviceManager.getAllDevices()
+            socket.emit('get_connected_devices', devices);
         }
     });
 
-    socket.on('get_rpi_config', (config) => {
+    socket.on('get_rpi_config', async (config) => {
         if(config){
-            handleDeviceRegistration(config, config.id, socket.id)
+            deviceManager.registerDevice(config, socket.id)
+            // handleDeviceRegistration(config, config.id, socket.id)
         }else{
-            socket.emit('get_connected_devices',  Object.values(connectedDevices));
+            const devices = await deviceManager.getAllDevices()
+            console.log(devices)
+            socket.emit('get_connected_devices', devices);
         }
     });
 
-    socket.on('refresh_device_data', (config) => {
-        const deviceID = Object.values(connectedDevices).filter(d=>d.socketID === socket.id)[0].id
-        connectedDevices[deviceID] = {
-            ...connectedDevices[deviceID],
-            ...config
-        }
-        io.to('web_clients').emit('get_connected_devices', Object.values(connectedDevices));
+    socket.on('refresh_device_data', async (config) => {
+        const device = await deviceManager.isDevice(socket.id)
+        await deviceManager.updateDeviceInfo(device.id, config)
+        const devices = deviceManager.getAllDevices()
+        io.to('web_clients').emit('get_connected_devices', devices);
     });
 
     socket.on("updateDeviceConfig", config =>{
@@ -89,7 +96,6 @@ io.on('connection', (socket) => {
                 sensors: operationContext === "location" ? isCreate ? [] : submitData.data.sensors: undefined
             }
 
-            console.log(parsedData)
             io.to(device.socketID).emit("updateDeviceConfig", {
                 ...submitData,
                 data: parsedData
@@ -138,11 +144,12 @@ io.on('connection', (socket) => {
     });
 
     // Handle disconnection
-    socket.on('disconnect', () => {
+    socket.on('disconnect', async () => {
         console.log("Client Disconnected")
-        const isDevice = Object.values(connectedDevices).filter(d=>d.socketID === socket.id).length > 0
+        const isDevice = await deviceManager.isDevice(socket.id)
         if (isDevice) {
-            handleRpiDisconnect(socket.id)
+            await deviceManager.updateDeviceStatus(isDevice.id, "disconnected", null)
+
         }
     });
 
