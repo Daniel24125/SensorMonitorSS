@@ -1,5 +1,5 @@
 
-import { connectedDevices, io } from "../server.js";
+import { io } from "../server.js";
 
 
 export const validateCommand = (command, params) => {
@@ -14,20 +14,6 @@ export const validateCommand = (command, params) => {
     return validCommands[command] && validCommands[command](params);
 };
 
-export const registerRpi = socket=>{
-    if (connectedDevices[socket.id]) {
-        // Disconnect existing RPi connection
-        socket.disconnect(true);
-        delete connectedDevices[socket.id]
-    }
-    console.log('RPi registered:', socket.id);
-}
-
-export const registerWebClient = socket =>{
-    console.log('Web client registered:', socket.id);
-    socket.join('web_clients');
-    socket.emit('get_connected_devices', Object.values(connectedDevices));
-}
 
 export const parseCommands = (socket, data)=>{
     const { command, params } = data;
@@ -63,39 +49,6 @@ export const parseCommands = (socket, data)=>{
     });
 }
 
-export const handleDeviceRegistration = (config, deviceID, socketID) =>{
-  
-    if(!connectedDevices.hasOwnProperty(deviceID)){
-        connectedDevices[deviceID] = {...config, socketID}
-    }else{
-        connectedDevices[deviceID] = {
-            ...connectedDevices[deviceID],
-            ...config,
-            status: "ready",
-            socketID
-        }
-    }
-
-    io.to('web_clients').emit('get_connected_devices', Object.values(connectedDevices));
-}
-
-export const handleRpiDisconnect = (socketID)=>{
-    console.log('RPi disconnected');
-    const deviceID = Object.values(connectedDevices).filter(d=>d.socketID === socketID)[0].id
-    
-    if(connectedDevices.hasOwnProperty(deviceID)){
-        connectedDevices[deviceID] = {
-            ...connectedDevices[deviceID],
-            status: "disconnected",
-            socketID: null
-        }
-    }else{
-        console.log("The device is not registered")
-    }
-   
-   
-    io.to('web_clients').emit('get_connected_devices', Object.values(connectedDevices));
-}
 
 export const reportErrorToClient = (error) => {
     console.error("An error occured while trying to send a device config command.", error)

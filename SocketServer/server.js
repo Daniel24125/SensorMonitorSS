@@ -1,4 +1,4 @@
-import { handleDeviceRegistration, handleRpiDisconnect, parseCommands, registerRpi, registerWebClient, reportErrorToClient } from './utils/utils.js';
+import {  parseCommands, reportErrorToClient } from './utils/utils.js';
 import 'dotenv/config';
 import express from 'express';
 import { v4 } from 'uuid';
@@ -26,7 +26,6 @@ let experimentStatus = {
     startTime: null,
     currentConfiguration: null
 };
-export let connectedDevices = {}
 
 const deviceManager = new DeviceManager();
 deviceManager.initialize().catch(console.error);
