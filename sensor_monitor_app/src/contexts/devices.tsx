@@ -151,7 +151,8 @@ const DevicesProvider = ({children}: DevicesProviderProps) => {
 
     React.useEffect(()=>{
         if(selectedDevice){
-            const updatedDeviceData = deviceList.filter(d=>d.id === selectedDevice.id)[0]
+            const updatedDeviceData = deviceList.find(d=>d.id === selectedDevice.id)
+            if(!updatedDeviceData) return
             if(updatedDeviceData.status === "disconnected"){
                 setSelectedDevice(null)
             }else{

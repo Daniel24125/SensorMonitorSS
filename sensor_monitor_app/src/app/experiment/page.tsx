@@ -12,6 +12,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { TooltipWrapper } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { CircleMinus, MoreVertical } from 'lucide-react';
+import SelectProjectTemplate from './components/SelectExperimentProject';
 
 const ExperimentPage = () => {
     const searchParams = useSearchParams();
@@ -65,33 +66,6 @@ const ExperimentOptions = ()=>{
         </DropdownMenuItem>
     </DropdownMenuContent>
   </DropdownMenu>
-}
-
-const SelectProjectTemplate = ()=>{
-    const {projectList} = useProjects()
-    const {registerProject} = useExperiments()
-
-    const handleChange = (value: string)=>{
-        registerProject(value)
-    }
-    
-    return <div className='w-full h-full flex justify-center items-center'>
-        <Select
-            onValueChange={handleChange} 
-            required 
-        >
-            <SelectTrigger className='h-auto max-w-72'>
-                <SelectValue  placeholder="Select a project" />
-            </SelectTrigger>
-            <SelectContent>
-                {projectList.map(p=>{
-                    return <SelectItem  key={p.id} value={p.id!}>
-                        {p.title}
-                    </SelectItem>
-                })}
-            </SelectContent>
-        </Select>
-    </div>
 }
 
 export default ExperimentPage

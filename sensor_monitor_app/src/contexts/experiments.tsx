@@ -4,6 +4,7 @@ import React from 'react';
 import { DeviceLocationType, PhSensorType, useDevices } from './devices';
 import { useProjects } from './projects';
 import Loading from '@/app/components/Loading';
+import { useUser } from '@auth0/nextjs-auth0';
 
 type ExperimentDataType = {
     x: number, //Represents the experiment time
@@ -24,7 +25,9 @@ type LogType = {
 
 export type ExperimentType = {
     id?: string,
+    deviceID: string
     projectID: string, 
+    userID: string,
     createdAt?: string, 
     duration: number,
     locations: ExperimentLocationsType[],
@@ -64,7 +67,8 @@ export const ExperimentProvider = ({
     const [selectedLocation, setSelectedLocation] = React.useState<null | DeviceLocationType>(null)
     const {getProjectByID, isLoading} = useProjects()
     const { getConfigurationByID} = useDevices()
-    
+    const {user} = useUser()
+
     React.useEffect(()=>{
         if(data && !selectedLocation){
             setSelectedLocation(data.locations[0])
@@ -78,6 +82,8 @@ export const ExperimentProvider = ({
             const configuration = getConfigurationByID(projectData.device, projectData.configuration)
             if(configuration){
                 setData({
+                    userID: user!.sub,
+                    deviceID: projectData.device,
                     projectID,
                     duration: 0,
                     locations: configuration!.locations.map(l=>{
@@ -90,6 +96,18 @@ export const ExperimentProvider = ({
             }
         }
     },[isLoading])
+
+    const startExperiment = React.useCallback(()=>{
+        
+    },[])
+
+    const pauseExperiment = React.useCallback(()=>{
+
+    },[])
+
+    const stopExperiment = React.useCallback(()=>{
+
+    },[])
 
     const value: ExperimentContextType = {
         data,

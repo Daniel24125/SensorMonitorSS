@@ -42,6 +42,7 @@ export class DeviceManager {
           JSON.stringify(devices, null, 2),
           'utf8'
         );
+        await this.sendDevicesToWebClients()
       } catch (error) {
         console.error('Error saving devices:', error);
         throw error;
@@ -78,7 +79,6 @@ export class DeviceManager {
 
         devices.push(newDevice);
         await this.saveDevices(devices);
-        await this.sendDevicesToWebClients()
         return newDevice;
       } catch (error) {
         console.error('Error registering device:', error);
@@ -102,7 +102,6 @@ export class DeviceManager {
         };
   
         await this.saveDevices(devices);
-        await this.sendDevicesToWebClients()
         return devices[deviceIndex];
       } catch (error) {
         console.error('Error updating device status:', error);

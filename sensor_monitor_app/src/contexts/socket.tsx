@@ -37,7 +37,7 @@ export const useSocket = (): SocketContextType => {
 };
 
 export const SocketProvider: React.FC<SocketProviderProps> = ({ 
-  url = 'https://sensormonitorss.onrender.com/',
+  url = 'http://localhost:8000',
   options = {},
   children 
 }) => {

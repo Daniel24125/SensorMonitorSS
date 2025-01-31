@@ -1,4 +1,4 @@
-import {  parseCommands, reportErrorToClient } from './utils/utils.js';
+import {   reportErrorToClient, validateCommand } from './utils/utils.js';
 import 'dotenv/config';
 import express from 'express';
 import { v4 } from 'uuid';
@@ -30,15 +30,50 @@ let experimentStatus = {
 const deviceManager = new DeviceManager();
 deviceManager.initialize().catch(console.error);
 
+
+const parseCommands = (socket, data)=>{
+    const { command, params } = data;
+
+    // Validate command
+    if (!validateCommand(command, params)) {
+        socket.emit('error', {
+            error: 'Invalid command or parameters',
+            command,
+            params
+        });
+        return;
+    }
+
+    console.log(`Command received: ${command}`, params);
+
+    // Handle experiment-related commands
+    if (command === 'startExperiment') {
+        experimentStatus.isRunning = true;
+        experimentStatus.startTime = new Date();
+        experimentStatus.currentConfiguration = params.configuration;
+    } else if (command === 'stopExperiment') {
+        experimentStatus.isRunning = false;
+        experimentStatus.startTime = null;
+    }
+
+    // Forward command to RPi
+    rpiSocket.emit('execute_command', {
+        command,
+        params,
+        timestamp: new Date().toISOString(),
+        senderId: socket.id
+    });
+}
+
+
+
 io.on('connection', (socket) => {
     console.log('New connection:', socket.id);
    
     // Register client type
     socket.on('register_client', async (clientType) => {
         if (clientType === 'rpi') {
-            // registerRpi(socket)
             console.log('RPi registered:', socket.id);
-
         } 
         else if (clientType === 'web') {
             console.log('Web client registered:', socket.id);
@@ -54,7 +89,6 @@ io.on('connection', (socket) => {
             // handleDeviceRegistration(config, config.id, socket.id)
         }else{
             const devices = await deviceManager.getAllDevices()
-            console.log(devices)
             socket.emit('get_connected_devices', devices);
         }
     });
@@ -111,11 +145,10 @@ io.on('connection', (socket) => {
     // Handle commands from web client
     socket.on('command', (data) => {
         // Check if RPi is connected
-        if (!rpiSocket) {
-            socket.emit('command_error', {
-                error: 'RPi not connected',
-                command
-            });
+        if (!Object.hasOwn(data.params, "deviceID")) {
+            reportErrorToClient({
+                message: "No device is associated with the command."
+            })
             return;
         }
        parseCommands(socket, data)
