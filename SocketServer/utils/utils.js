@@ -7,7 +7,12 @@ export const validateCommand = (command, params) => {
         'valve': (params) => params.valveId && typeof params.state === 'boolean',
         'configure': (params) => params.configuration && typeof params.configuration === 'object',
         'getReadings': (params) => true,
-        'startExperiment': (params) => params.configuration && typeof params.configuration === 'object',
+        'startExperiment': (params) => {
+            const {configurationID, projectID, userID} = params
+            return configurationID && typeof configurationID === 'string' &&
+            projectID && typeof projectID === 'string'&&
+            userID && typeof userID === 'string'
+        },
         'stopExperiment': (params) => true
     };
 

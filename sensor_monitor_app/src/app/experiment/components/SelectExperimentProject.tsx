@@ -1,5 +1,4 @@
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { TooltipWrapper } from '@/components/ui/tooltip'
 import { useDevices } from '@/contexts/devices'
 import { useExperiments } from '@/contexts/experiments'
 import { useProjects } from '@/contexts/projects'
@@ -8,7 +7,7 @@ import React from 'react'
 
 const SelectProjectTemplate = ()=>{
     const {projectList} = useProjects()
-    const {registerProject} = useExperiments()
+    const {registerProject, data} = useExperiments()
     const {isDeviceOn} = useDevices()
     
     const handleChange = (value: string)=>{
@@ -18,6 +17,7 @@ const SelectProjectTemplate = ()=>{
     return <div className='w-full h-full flex justify-center items-center'>
         <Select
             onValueChange={handleChange} 
+            value={data?.projectID}
             required 
         >
             <SelectTrigger className='h-auto max-w-72'>

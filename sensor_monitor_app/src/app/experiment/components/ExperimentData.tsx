@@ -83,12 +83,16 @@ const ChartComponent = ()=>{
 }
 
 const NoExperimentOngoingComponent = ()=>{
-    const {isExperimentDeviceOn} =  useExperiments()
+    const {isExperimentDeviceOn, isExperimentOngoing, startExperiment} =  useExperiments()
     return <div className='flex justify-evenly w-full h-full items-center'>
         <div className='flex flex-col items-center gap-2'>
             <h2 className='text-5xl font-bold'>Uups!</h2>
             <p>You didn&apos;t start the experiment yet</p>
-            <Button disabled={!isExperimentDeviceOn}>Start experiment</Button>
+            <Button onClick={()=>{
+                if(isExperimentDeviceOn && !isExperimentOngoing){
+                    startExperiment()
+                  }
+            }} disabled={!isExperimentDeviceOn}>Start experiment</Button>
         </div>
 
     </div>

@@ -65,8 +65,8 @@ const SelectProjectDialog = ({
   open: boolean 
   setOpen: React.Dispatch<React.SetStateAction<boolean>>
 })=>{
-  const {emit} = useSocket()
-  const {data} = useExperiments()
+  const {data, startExperiment} = useExperiments()
+  
   return <Dialog open={open} onOpenChange={(o)=>setOpen(o)}>
     <DialogContent className="sm:max-w-[425px]">
       <DialogHeader>
@@ -78,10 +78,9 @@ const SelectProjectDialog = ({
       <SelectProjectTemplate/>
       <DialogFooter>
         <Button disabled={!data || !data.projectID} variant={"ghost"} className='text-primary' onClick={()=>{
-          emit("command",{
-            "command": "startExperiment",
-            "params": data
-          })
+         if(data && data.projectID){
+          startExperiment()
+         }
       }}>Start experiment</Button>
         <Button variant={"ghost"} onClick={()=>setOpen(false)} >Cancel</Button>
       </DialogFooter>

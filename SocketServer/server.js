@@ -24,7 +24,9 @@ let rpiSocket = null;
 let experimentStatus = {
     isRunning: false,
     startTime: null,
-    currentConfiguration: null
+    configurationID: null,
+    projectID: null,
+    userID: null
 };
 
 const deviceManager = new DeviceManager();
@@ -33,36 +35,33 @@ deviceManager.initialize().catch(console.error);
 
 const parseCommands = (socket, data)=>{
     const { command, params } = data;
-
+    console.log(data)
     // Validate command
     if (!validateCommand(command, params)) {
-        socket.emit('error', {
-            error: 'Invalid command or parameters',
-            command,
-            params
-        });
-        return;
+        reportErrorToClient({message: 'Invalid command or parameters'});
+        return 
     }
 
     console.log(`Command received: ${command}`, params);
 
+    const {configurationID, userID, projectID, deviceID} = params
     // Handle experiment-related commands
     if (command === 'startExperiment') {
-        experimentStatus.isRunning = true;
-        experimentStatus.startTime = new Date();
-        experimentStatus.currentConfiguration = params.configuration;
+        experimentStatus = {
+            ...experimentStatus,
+            isRunning: true,
+            startTime: new Date(),
+            configurationID: configurationID,
+            userID: userID,
+            projectID: projectID,
+            deviceID: deviceID,
+        }
     } else if (command === 'stopExperiment') {
         experimentStatus.isRunning = false;
         experimentStatus.startTime = null;
     }
 
-    // Forward command to RPi
-    rpiSocket.emit('execute_command', {
-        command,
-        params,
-        timestamp: new Date().toISOString(),
-        senderId: socket.id
-    });
+    deviceManager.sendDeviceCommand(deviceID, experimentStatus)
 }
 
 
@@ -100,7 +99,7 @@ io.on('connection', (socket) => {
         io.to('web_clients').emit('get_connected_devices', devices);
     });
 
-    socket.on("updateDeviceConfig", config =>{
+    socket.on("updateDeviceConfig", async config =>{
         /* 
             config: {
                 deviceID: string, 
@@ -108,7 +107,7 @@ io.on('connection', (socket) => {
             }
         */
 
-       const device = connectedDevices[config["deviceID"]]
+       const device = await deviceManager.getDeviceByID(config["deviceID"])
        try {
             const submitData = config.data
             const isCreate =  submitData.operation === "create"
@@ -128,7 +127,7 @@ io.on('connection', (socket) => {
                 locations: operationContext === "configuration" ? isCreate ? [] : submitData.data.locations: undefined,
                 sensors: operationContext === "location" ? isCreate ? [] : submitData.data.sensors: undefined
             }
-
+            console.log(device)
             io.to(device.socketID).emit("updateDeviceConfig", {
                 ...submitData,
                 data: parsedData
@@ -143,7 +142,7 @@ io.on('connection', (socket) => {
     })
 
     // Handle commands from web client
-    socket.on('command', (data) => {
+    socket.on('user_command', (data) => {
         // Check if RPi is connected
         if (!Object.hasOwn(data.params, "deviceID")) {
             reportErrorToClient({
@@ -156,9 +155,10 @@ io.on('connection', (socket) => {
 
     // Handle sensor data from RPi
     socket.on('sensor_data', (data) => {
-        if (socket === rpiSocket && experimentStatus.isRunning) {
+        if (experimentStatus.isRunning) {
+            console.log("Message received from RPi")
             // Broadcast sensor data to all web clients
-            io.to('web_clients').emit('sensor_update', {
+            io.to('web_clients').emit('sensor_data', {
                 ...data,
                 timestamp: new Date().toISOString()
             });

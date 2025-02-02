@@ -34,6 +34,16 @@ export class DeviceManager {
         throw error;
       }
     }
+
+    async sendDeviceCommand(deviceID, cmd){
+      let device = await this.getDeviceByID(deviceID)
+      io.to(device.socketID).emit("command", cmd)
+    }
+
+    async getDeviceByID(deviceID){
+      const devices = await this.getAllDevices()
+      return devices.find(d=>d.id === deviceID)
+    }
   
     async saveDevices(devices) {
       try {

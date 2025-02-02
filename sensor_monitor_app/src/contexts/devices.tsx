@@ -137,13 +137,14 @@ const DevicesProvider = ({children}: DevicesProviderProps) => {
         if(isConnected){
             emit("register_client", "web")
             on<DeviceType[]>("get_connected_devices", (data)=>{
-                console.log(data)
-                setDeviceList(data)
-                if(deviceList.length > 0){
-                    toast({
-                        title: "Device info update",
-                        description: "The device information was successfuly updated!",
-                    })
+                if(Array.isArray(data)){
+                    setDeviceList(data)
+                    if(deviceList.length > 0){
+                        toast({
+                            title: "Device info update",
+                            description: "The device information was successfuly updated!",
+                        })
+                    }
                 }
             })
 

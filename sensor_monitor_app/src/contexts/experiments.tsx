@@ -5,6 +5,8 @@ import { DeviceLocationType, PhSensorType, useDevices } from './devices';
 import { useProjects } from './projects';
 import Loading from '@/app/components/Loading';
 import { useUser } from '@auth0/nextjs-auth0';
+import { useToast } from '@/hooks/use-toast';
+import { useSocket } from './socket';
 
 type ExperimentDataType = {
     x: number, //Represents the experiment time
@@ -27,6 +29,7 @@ export type ExperimentType = {
     id?: string,
     deviceID: string
     projectID: string, 
+    configurationID: string,
     userID: string,
     createdAt?: string, 
     duration: number,
@@ -72,6 +75,15 @@ export const ExperimentProvider = ({
     const {getProjectByID, isLoading} = useProjects()
     const { getConfigurationByID, isDeviceOn} = useDevices()
     const {user} = useUser()
+    const {toast} = useToast()
+    const {emit, on} = useSocket()
+
+
+    React.useEffect(()=>{
+        on("sensor_data",data=>{
+            console.log("DATA RECEIVED FROM RPi: ", data)
+        })
+    }, [])
 
     React.useEffect(()=>{
         if(data && !selectedLocation){
@@ -96,6 +108,7 @@ export const ExperimentProvider = ({
                     deviceID: projectData.device,
                     projectID,
                     duration: 0,
+                    configurationID: configuration.id,
                     locations: configuration!.locations.map(l=>{
                         return {
                             ...l, 
@@ -108,7 +121,19 @@ export const ExperimentProvider = ({
     },[isLoading])
 
     const startExperiment = React.useCallback(()=>{
-        console.log("START EXPERIMENT")
+        if(!isExperimentDeviceOn){
+            toast({
+                title: "Device no connected",
+                description: "The device is currently not connected. Please check the connection and try again later.",
+                variant: "destructive"
+            })
+            return 
+        }
+        emit("user_command", {
+            command: "startExperiment", 
+            params: data
+        })
+
     },[data])
 
     const pauseExperiment = React.useCallback(()=>{

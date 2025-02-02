@@ -45,7 +45,7 @@ const DeviceInfo = ()=>{
       </div> : "Select a device"}
     </SelectTrigger>
     <SelectContent>
-        {deviceList.map(d=>{
+        {deviceList && deviceList.map(d=>{
           return <SelectItem key={d.id} value={d.id}>
             <div className='flex gap-2 items-center p-2'>
               <DeviceStatusDot device={d}/> {d.name}
