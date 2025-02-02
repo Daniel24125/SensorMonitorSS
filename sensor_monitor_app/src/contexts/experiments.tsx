@@ -44,6 +44,10 @@ interface ExperimentContextType {
     registerProject: (projectID: string) => void
     selectedLocation: DeviceLocationType | null,
     setSelectedLocation: React.Dispatch<React.SetStateAction<DeviceLocationType | null>>
+    isExperimentDeviceOn: boolean
+    startExperiment: ()=>void
+    pauseExperiment: ()=>void
+    stopExperiment: ()=>void
 }
 
 
@@ -66,13 +70,19 @@ export const ExperimentProvider = ({
     const [isExperimentOngoing, setIsExperimentOngoing] = React.useState(false)
     const [selectedLocation, setSelectedLocation] = React.useState<null | DeviceLocationType>(null)
     const {getProjectByID, isLoading} = useProjects()
-    const { getConfigurationByID} = useDevices()
+    const { getConfigurationByID, isDeviceOn} = useDevices()
     const {user} = useUser()
 
     React.useEffect(()=>{
         if(data && !selectedLocation){
             setSelectedLocation(data.locations[0])
         }
+    },[data])
+
+    const isExperimentDeviceOn = React.useMemo(()=>{
+        if(!data) return false
+        const project = getProjectByID(data!.projectID)
+        return (project && isDeviceOn(project!.device)) as boolean
     },[data])
 
     const registerProject = React.useCallback((projectID: string)=>{
@@ -98,16 +108,17 @@ export const ExperimentProvider = ({
     },[isLoading])
 
     const startExperiment = React.useCallback(()=>{
-        
-    },[])
+        console.log("START EXPERIMENT")
+    },[data])
 
     const pauseExperiment = React.useCallback(()=>{
+        console.log("PAUSE EXPERIMENT")
 
-    },[])
+    },[data])
 
     const stopExperiment = React.useCallback(()=>{
-
-    },[])
+        console.log("STOP EXPERIMENT")
+    },[data])
 
     const value: ExperimentContextType = {
         data,
@@ -116,7 +127,11 @@ export const ExperimentProvider = ({
         setIsExperimentOngoing,
         registerProject,
         selectedLocation,
-        setSelectedLocation
+        setSelectedLocation,
+        isExperimentDeviceOn,
+        startExperiment,
+        pauseExperiment,
+        stopExperiment
     }
 
     if(isLoading) return <Loading/>

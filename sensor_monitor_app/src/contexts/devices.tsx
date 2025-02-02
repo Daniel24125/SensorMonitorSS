@@ -79,7 +79,9 @@ interface DeviceContextType {
     selectedDevice: null | DeviceType
     setSelectedDevice: React.Dispatch<React.SetStateAction<null | DeviceType>>,
     getDeviceByID: (deviceID: string)=> null | DeviceType | undefined
+    isDeviceOn: (deviceID: string) => boolean | undefined
     getConfigurationByID: (deviceID: string, configurationID: string) => null | undefined | DeviceConfigurationType
+
 }
 
 const DevicesContext = React.createContext<DeviceContextType | null>(null)
@@ -109,6 +111,12 @@ const DevicesProvider = ({children}: DevicesProviderProps) => {
         return list
     }, [isLoading, deviceList])
 
+    const isDeviceOn = React.useCallback((deviceID: string)=>{
+        const device = getDeviceByID(deviceID)
+        return device && device.status !== "disconnected"
+    }, [isLoading, deviceList])
+
+
     const getConfigurationByID = React.useCallback((deviceID: string, configurationID: string)=>{
         const device = getDeviceByID(deviceID)
         if(!device) return null
@@ -121,7 +129,8 @@ const DevicesProvider = ({children}: DevicesProviderProps) => {
         selectedDevice,
         setSelectedDevice, 
         getDeviceByID,
-        getConfigurationByID
+        getConfigurationByID,
+        isDeviceOn
     }
 
     React.useEffect(()=>{

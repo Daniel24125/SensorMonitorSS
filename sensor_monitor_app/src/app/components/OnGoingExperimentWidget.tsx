@@ -42,7 +42,11 @@ const NotOngoingExperiment = ()=>{
   },[hasDeviceConnected])
 
   return <div className='w-full h-full flex justify-center items-center'>
-    <div onClick={()=>setOpen(true)} style={{
+    <div onClick={()=>{
+      if(hasDeviceConnected){
+        setOpen(true)
+      }
+    }} style={{
       backgroundColor: `${color}4D`,
       border: `solid 20px ${color}33`,
       color: color
@@ -63,7 +67,6 @@ const SelectProjectDialog = ({
 })=>{
   const {emit} = useSocket()
   const {data} = useExperiments()
-
   return <Dialog open={open} onOpenChange={(o)=>setOpen(o)}>
     <DialogContent className="sm:max-w-[425px]">
       <DialogHeader>

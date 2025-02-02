@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { useDevices } from '@/contexts/devices'
 import { ProjectType, useProjects } from '@/contexts/projects'
 import { useWarningDialog } from '@/contexts/warning'
 import { Edit, FlaskConical, MoreHorizontal, Trash2 } from 'lucide-react'
@@ -8,6 +9,7 @@ import React from 'react'
 
 const ProjectOptions = ({onClick, project}: {onClick?: ()=>void, project: ProjectType}) => {
     const {setOpen, setEdit, handleDeleteProject} = useProjects()
+    const {isDeviceOn} = useDevices()
     const {setOptions, setOpen: setOpenWarning} = useWarningDialog()
     const router = useRouter()
 
@@ -18,7 +20,11 @@ const ProjectOptions = ({onClick, project}: {onClick?: ()=>void, project: Projec
             </Button>
         </DropdownMenuTrigger>
         {project && <DropdownMenuContent align="end">
-            <DropdownMenuItem onClick={() =>router.push(`/experiment?projectID=${project.id}`)}>
+            <DropdownMenuItem disabled={!isDeviceOn(project.device)} onClick={() =>{
+                if(isDeviceOn(project.device)){
+                    router.push(`/experiment?projectID=${project.id}`)
+                }
+            }}>
                 <FlaskConical/>
                 <span> Start Experiment</span>
             </DropdownMenuItem>

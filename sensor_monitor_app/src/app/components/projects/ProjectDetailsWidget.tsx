@@ -7,9 +7,11 @@ import { ExperimentType } from '@/contexts/experiments'
 import { useRouter } from 'next/navigation'
 import ProjectOptions from './ProjectOptions'
 import DeviceBadge from '@/app/devices/components/DeviceBadge'
+import { useDevices } from '@/contexts/devices'
 
 const ProjectDetails = () => {
   const {selectedProject} = useProjects()
+  const {isDeviceOn} = useDevices()
   const [selectedExperiment, setSelectedExperiment] = React.useState<ExperimentType | null>(null)
   const router = useRouter()
 
@@ -38,7 +40,11 @@ const ProjectDetails = () => {
       <div></div>
       </>: <NoDataToDisplay title={<>
           <h3 className='text-lg text-accent font-bold'>No experimental data to display</h3>
-          <Button onClick={()=>router.push(`/experiment?projectID=${selectedProject.id}`)}>Start a new experiment</Button>
+          <Button disabled={!isDeviceOn(selectedProject.device)} onClick={()=>{
+            if(isDeviceOn(selectedProject.device)){
+              router.push(`/experiment?projectID=${selectedProject.id}`)
+            }
+          }}>Start a new experiment</Button>
         </>}/>}
     </div>: <NoDataToDisplay title={<h3 className='text-lg text-accent font-bold'>No information to display</h3>}/>}
   </WidgetCard>

@@ -1,7 +1,6 @@
 import { NoLocationSelected } from '@/app/devices/components/LocationDetails'
 import { Button } from '@/components/ui/button'
 import { ChartConfig,ChartContainer} from '@/components/ui/chart'
-import { NoExperimentOngoingIlustration } from '@/components/ui/ilustrations'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { TooltipWrapper } from '@/components/ui/tooltip'
 import { useExperiments } from '@/contexts/experiments'
@@ -84,23 +83,29 @@ const ChartComponent = ()=>{
 }
 
 const NoExperimentOngoingComponent = ()=>{
+    const {isExperimentDeviceOn} =  useExperiments()
     return <div className='flex justify-evenly w-full h-full items-center'>
-        <NoExperimentOngoingIlustration width={250}/>
         <div className='flex flex-col items-center gap-2'>
+            <h2 className='text-5xl font-bold'>Uups!</h2>
             <p>You didn&apos;t start the experiment yet</p>
-            <Button>Start experiment</Button>
+            <Button disabled={!isExperimentDeviceOn}>Start experiment</Button>
         </div>
 
     </div>
 }
 
 const LocationListComponent = ()=>{
-    const {data, selectedLocation, setSelectedLocation} = useExperiments()
+    const {data, selectedLocation, setSelectedLocation, isExperimentDeviceOn, isExperimentOngoing} = useExperiments()
 
     return data?.locations.map(l=>{
         const lastSensorData = l.sensors.length > 0 ? l.sensors[l.sensors.length - 1].y: null
         const isActive = selectedLocation && selectedLocation.id === l.id
-        return <div key={l.id} onClick={()=>setSelectedLocation(l)} className='w-full hover:bg-slate-950 flex justify-between px-4 py-2 cursor-pointer items-center'>
+        return <div key={l.id} onClick={()=>{
+
+            if(isExperimentDeviceOn && isExperimentOngoing){
+                setSelectedLocation(l)
+            }
+        }} className='w-full hover:bg-slate-950 flex justify-between px-4 py-2 cursor-pointer items-center'>
         <div className={cn(
             'flex items-center gap-2 text-sm ',
             isActive ? "font-bold text-[#9C88FF]":""
