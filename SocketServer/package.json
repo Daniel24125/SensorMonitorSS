@@ -16,7 +16,7 @@
   "main": "dist/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "tsc && nodmeon server.js",
+    "start": "tsc && nodemon server.js",
     "lint": "eslint . --ext .ts"
   },
   "dependencies": {

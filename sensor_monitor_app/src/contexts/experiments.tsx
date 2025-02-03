@@ -13,7 +13,7 @@ type ExperimentDataType = {
     y: number  //Represents the experiment pH
 }
 
-interface ExperimentLocationsType extends DeviceLocationType {
+export interface ExperimentLocationsType extends DeviceLocationType {
     sensors: PhSensorType[] & ExperimentDataType[] | []
 }
 
@@ -73,15 +73,15 @@ export const ExperimentProvider = ({
     const [isExperimentOngoing, setIsExperimentOngoing] = React.useState(false)
     const [selectedLocation, setSelectedLocation] = React.useState<null | DeviceLocationType>(null)
     const {getProjectByID, isLoading} = useProjects()
-    const { getConfigurationByID, isDeviceOn} = useDevices()
+    const {deviceList, getConfigurationByID, isDeviceOn} = useDevices()
     const {user} = useUser()
     const {toast} = useToast()
     const {emit, on} = useSocket()
 
 
     React.useEffect(()=>{
-        on("sensor_data",data=>{
-            console.log("DATA RECEIVED FROM RPi: ", data)
+        on("experiment_data", data =>{
+
         })
     }, [])
 
@@ -95,7 +95,7 @@ export const ExperimentProvider = ({
         if(!data) return false
         const project = getProjectByID(data!.projectID)
         return (project && isDeviceOn(project!.device)) as boolean
-    },[data])
+    },[data, deviceList])
 
     const registerProject = React.useCallback((projectID: string)=>{
         const projectData = getProjectByID(projectID)

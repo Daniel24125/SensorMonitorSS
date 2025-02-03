@@ -118,7 +118,7 @@ export class DeviceManager {
     }
   }
 
-  async updateDeviceStatus(deviceId: string, status: string, socketID: string): Promise<Device> {
+  async updateDeviceStatus(deviceId: string, status: string, socketID?: string | undefined): Promise<Device> {
     try {
       const devices = await this.loadDevices();
       const deviceIndex = devices.findIndex(device => device.id === deviceId);
@@ -129,7 +129,7 @@ export class DeviceManager {
       devices[deviceIndex] = {
         ...devices[deviceIndex],
         status,
-        socketID,
+        socketID: socketID,
         lastUpdatedAt: new Date().toISOString()
       };
 

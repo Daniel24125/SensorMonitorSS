@@ -97,7 +97,7 @@ io.on('connection', (socket) => {
 
     socket.on('refresh_device_data', async (config: DeviceType) => {
         const device = await deviceManager.isDevice(socket.id)
-        await deviceManager.updateDeviceInfo(device.id, config)
+        await deviceManager.updateDeviceInfo(device!.id, config)
         const devices = deviceManager.getAllDevices()
         io.to('web_clients').emit('get_connected_devices', devices);
     });
@@ -124,14 +124,14 @@ io.on('connection', (socket) => {
                 locations: operationContext === "configuration" ? isCreate ? [] : submitData.data.locations: undefined,
                 sensors: operationContext === "location" ? isCreate ? [] : submitData.data.sensors: undefined
             }
-            io.to(device.socketID).emit("updateDeviceConfig", {
+            io.to(device.socketID as string).emit("updateDeviceConfig", {
                 ...submitData,
                 data: parsedData
             })
         } catch (error) {
             reportErrorToClient({
                 message: error as string | Error,
-                device_id: device? device.id : null
+                device_id: device? device.id : undefined 
             })
         }
 
@@ -167,7 +167,7 @@ io.on('connection', (socket) => {
         console.log("Client Disconnected")
         const isDevice = await deviceManager.isDevice(socket.id)
         if (isDevice) {
-            await deviceManager.updateDeviceStatus(isDevice.id, "disconnected", null)
+            await deviceManager.updateDeviceStatus(isDevice.id, "disconnected")
 
         }
     });
