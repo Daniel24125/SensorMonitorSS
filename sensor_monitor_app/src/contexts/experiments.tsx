@@ -11,11 +11,13 @@ import { useSocket } from './socket';
 type ExperimentDataType = {
     x: number, //Represents the experiment time
     y: number  //Represents the experiment pH
+    timestamp: string
 }
 
-interface ExperimentLocationsType extends DeviceLocationType {
-    sensors: PhSensorType[] & ExperimentDataType[] | []
-}
+// interface ExperimentLocationsType extends DeviceLocationType {
+//     sensors: PhSensorType[] & ExperimentDataType[] | []
+// }
+
 
 type LogType = {
     id: string, 
@@ -33,7 +35,7 @@ export type ExperimentType = {
     userID: string,
     createdAt?: string, 
     duration: number,
-    locations: ExperimentLocationsType[],
+    data: ExperimentDataType[],
     logs?: LogType[]
   } 
 
@@ -109,12 +111,13 @@ export const ExperimentProvider = ({
                     projectID,
                     duration: 0,
                     configurationID: configuration.id,
-                    locations: configuration!.locations.map(l=>{
-                        return {
-                            ...l, 
-                            sensors: []
-                        }
-                    })
+                    data: []
+                    //  configuration!.locations.map(l=>{
+                    //     return {
+                    //         ...l, 
+                    //         sensors: []
+                    //     }
+                    // })
                 })
             }
         }
