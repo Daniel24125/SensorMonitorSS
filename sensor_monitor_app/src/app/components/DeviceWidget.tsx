@@ -53,7 +53,6 @@ const NoDeviceDetected = ()=>{
 
 const DeviceCardComponent = ({device}:{device: DeviceType})=>{
     const {setSelectedDevice} = useDevices()
-    
     return <DashboardCard 
         setSelected={()=>setSelectedDevice(device)}
         title={device.name}

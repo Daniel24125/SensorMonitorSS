@@ -1,26 +1,59 @@
 import { Button } from '@/components/ui/button'
 import { TooltipWrapper } from '@/components/ui/tooltip'
 import { useExperiments } from '@/contexts/experiments'
-import { Play } from 'lucide-react'
+import { Pause, Play, StopCircle } from 'lucide-react'
 import React from 'react'
 
 const ExperimentControls = () => {
-  const {isExperimentDeviceOn, startExperiment, isExperimentOngoing} = useExperiments()
+  const {isExperimentDeviceOn, startExperiment, isExperimentOngoing, stopExperiment, pauseExperiment} = useExperiments()
 
   return (
     <div className='flex gap-2 '>
-        <TooltipWrapper title="Start experiment">
-            <Button onClick={()=>{
-              if(isExperimentDeviceOn && !isExperimentOngoing){
-                startExperiment()
-              }
-            }} disabled={!isExperimentDeviceOn}
-             size={"icon"}>
-                <Play/>
-            </Button>
-        </TooltipWrapper>
+      {isExperimentOngoing ? <ControlButton
+        title='Start monitoring'
+        onClickFn={startExperiment}
+        Icon={Play}
+      /> : <>
+        <ControlButton
+          title='Pause monitoring'
+          onClickFn={pauseExperiment}
+          Icon={Pause}
+          className='bg-yellow-500'
+        /> 
+        <ControlButton
+          title='Stop monitoring'
+          onClickFn={stopExperiment}
+          Icon={StopCircle}
+        /> 
+      </>}
     </div>
   )
 }
+
+const ControlButton = ({
+  title, 
+  onClickFn, 
+  Icon,
+  className
+}:{
+  title: string, 
+  onClickFn: ()=>void, 
+  Icon: typeof StopCircle,
+  className?: string
+})=>{
+  const {isExperimentDeviceOn} = useExperiments()
+
+  return <TooltipWrapper title={title}>
+  <Button className={className} variant="ghost" size="icon" onClick={()=>{
+    if(isExperimentDeviceOn){
+      onClickFn()
+    }
+  }} disabled={!isExperimentDeviceOn}
+   >
+      <Icon/>
+  </Button>
+</TooltipWrapper>
+}
+
 
 export default ExperimentControls

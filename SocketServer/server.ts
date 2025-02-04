@@ -5,6 +5,8 @@ import { v4 } from 'uuid';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { DeviceManager } from './management/device_management.js';
+import { DeviceType, ExperimentStatusType, UpdateDeviceConfigType } from './types/experiment.js';
+import { CommandDataType, ParseCommandsType } from './types/sockets.js';
 
 const app = express();
 const http = createServer(app);
@@ -20,20 +22,21 @@ export { io };
 const PORT = process.env.PORT || 8000;
 
 // Track RPi connection and experiment status
-let rpiSocket = null;
-let experimentStatus = {
+let experimentStatus: ExperimentStatusType = {
     isRunning: false,
     startTime: null,
     configurationID: null,
+    deviceID: null,
     projectID: null,
-    userID: null
+    userID: null,
+    duration: 0
 };
 
-const deviceManager = new DeviceManager();
+const deviceManager = new DeviceManager(io);
 deviceManager.initialize().catch(console.error);
 
 
-const parseCommands = (socket, data)=>{
+const parseCommands: ParseCommandsType = (data)=>{
     const { command, params } = data;
     console.log(data)
     // Validate command
@@ -44,23 +47,23 @@ const parseCommands = (socket, data)=>{
 
     console.log(`Command received: ${command}`, params);
 
-    const {configurationID, userID, projectID, deviceID} = params
     // Handle experiment-related commands
+    const {configurationID, userID, projectID, deviceID} = params
     if (command === 'startExperiment') {
         experimentStatus = {
             ...experimentStatus,
             isRunning: true,
-            startTime: new Date(),
-            configurationID: configurationID,
-            userID: userID,
-            projectID: projectID,
-            deviceID: deviceID,
+            startTime: new Date().toISOString(),
+            duration: 0,
+            configurationID: configurationID!,
+            userID: userID!,
+            projectID: projectID!,
+            deviceID,
         }
     } else if (command === 'stopExperiment') {
         experimentStatus.isRunning = false;
         experimentStatus.startTime = null;
     }
-
     deviceManager.sendDeviceCommand(deviceID, experimentStatus)
 }
 
@@ -70,7 +73,7 @@ io.on('connection', (socket) => {
     console.log('New connection:', socket.id);
    
     // Register client type
-    socket.on('register_client', async (clientType) => {
+    socket.on('register_client', async (clientType: "rpi" | "web") => {
         if (clientType === 'rpi') {
             console.log('RPi registered:', socket.id);
         } 
@@ -92,30 +95,24 @@ io.on('connection', (socket) => {
         }
     });
 
-    socket.on('refresh_device_data', async (config) => {
+    socket.on('refresh_device_data', async (config: DeviceType) => {
         const device = await deviceManager.isDevice(socket.id)
-        await deviceManager.updateDeviceInfo(device.id, config)
+        await deviceManager.updateDeviceInfo(device!.id, config)
         const devices = deviceManager.getAllDevices()
         io.to('web_clients').emit('get_connected_devices', devices);
     });
 
-    socket.on("updateDeviceConfig", async config =>{
-        /* 
-            config: {
-                deviceID: string, 
-                data: any
-            }
-        */
+    socket.on("updateDeviceConfig", async (res: UpdateDeviceConfigType) =>{
 
-       const device = await deviceManager.getDeviceByID(config["deviceID"])
+       const device = await deviceManager.getDeviceByID(res.deviceID)
        try {
-            const submitData = config.data
+            const submitData = res.data
             const isCreate =  submitData.operation === "create"
             const operationContext = submitData.context 
             if(!device || device.status === "disconnected"){
                 throw Error("The device you are trying to communicate is not connected. Please make sure the device is turned on.")
             }
-            if(!config.data){
+            if(!res.data){
                 throw Error("Invalid command format")
             }
 
@@ -127,22 +124,21 @@ io.on('connection', (socket) => {
                 locations: operationContext === "configuration" ? isCreate ? [] : submitData.data.locations: undefined,
                 sensors: operationContext === "location" ? isCreate ? [] : submitData.data.sensors: undefined
             }
-            console.log(device)
-            io.to(device.socketID).emit("updateDeviceConfig", {
+            io.to(device.socketID as string).emit("updateDeviceConfig", {
                 ...submitData,
                 data: parsedData
             })
         } catch (error) {
             reportErrorToClient({
-                message: error.message,
-                device_id: device? device.id : null
+                message: error as string | Error,
+                device_id: device? device.id : undefined 
             })
         }
 
     })
 
     // Handle commands from web client
-    socket.on('user_command', (data) => {
+    socket.on('user_command', (data: CommandDataType) => {
         // Check if RPi is connected
         if (!Object.hasOwn(data.params, "deviceID")) {
             reportErrorToClient({
@@ -150,7 +146,7 @@ io.on('connection', (socket) => {
             })
             return;
         }
-       parseCommands(socket, data)
+       parseCommands(data)
     });
 
     // Handle sensor data from RPi
@@ -165,22 +161,13 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Handle command responses from RPi
-    socket.on('command_response', (data) => {
-        const { senderId, response, status } = data;
-        io.to('web_clients').emit('command_result', {
-            response,
-            status,
-            timestamp: new Date().toISOString()
-        });
-    });
-
+  
     // Handle disconnection
     socket.on('disconnect', async () => {
         console.log("Client Disconnected")
         const isDevice = await deviceManager.isDevice(socket.id)
         if (isDevice) {
-            await deviceManager.updateDeviceStatus(isDevice.id, "disconnected", null)
+            await deviceManager.updateDeviceStatus(isDevice.id, "disconnected")
 
         }
     });
@@ -203,7 +190,6 @@ io.on('connection', (socket) => {
 app.get('/health', (req, res) => {
     res.status(200).json({
         status: 'healthy',
-        rpiConnected: !!rpiSocket,
         experimentStatus
     });
 });

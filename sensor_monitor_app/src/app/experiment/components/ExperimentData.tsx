@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button'
 import { ChartConfig,ChartContainer} from '@/components/ui/chart'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { TooltipWrapper } from '@/components/ui/tooltip'
-import { useExperiments } from '@/contexts/experiments'
+import { ExperimentLocationsType, useExperiments } from '@/contexts/experiments'
+import { useSocket } from '@/contexts/socket'
 import { cn } from '@/lib/utils'
 import { CircleCheck, CircleMinus, MapPin } from 'lucide-react'
 import React from 'react'
@@ -63,6 +64,13 @@ const ChartHeader = ()=>{
 
 const ChartComponent = ()=>{
     const {selectedLocation, isExperimentOngoing} = useExperiments()
+    const {on} = useSocket()
+    
+    React.useEffect(()=>{
+        on<ExperimentLocationsType>("sensor_data",data=>{
+            console.log("DATA RECEIVED FROM RPi: ", data)
+        })
+    }, [])
 
     return selectedLocation ? isExperimentOngoing ? <ChartContainer config={chartConfig} className="min-h-[200px] w-full h-full">
         <ScatterChart

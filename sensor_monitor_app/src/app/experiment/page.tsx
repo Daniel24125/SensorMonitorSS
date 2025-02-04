@@ -47,8 +47,10 @@ const ExperimentHeader = ()=>{
 }
 
 const ExperimentOptions = ()=>{
+  const {isExperimentDeviceOn,  isExperimentOngoing} = useExperiments()
+  
     return <DropdownMenu>
-    <DropdownMenuTrigger>
+    <DropdownMenuTrigger disabled={!isExperimentDeviceOn || !isExperimentOngoing}>
       <TooltipWrapper title="Experiment options">
         <Button variant="outline" size="icon">
           <MoreVertical/>
@@ -56,8 +58,8 @@ const ExperimentOptions = ()=>{
       </TooltipWrapper>
     </DropdownMenuTrigger>
     <DropdownMenuContent>
-        <DropdownMenuItem className="cursor-pointer" onClick={()=>{
-      
+        <DropdownMenuItem disabled={!isExperimentDeviceOn || !isExperimentOngoing} className="cursor-pointer" onClick={()=>{
+          
         }}>
           <div className="flex items-center gap-2">
             <CircleMinus size={13}/>
