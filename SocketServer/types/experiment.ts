@@ -1,11 +1,43 @@
+type ExperimentDataType = {
+    x: number, //Represents the experiment time
+    y: number  //Represents the experiment pH
+    timestamp: string
+}
+
+
+export type LocationChartDataType = {
+    id: string, 
+    data: ExperimentDataType[]
+}
+
+type LogType = {
+    id: string, 
+    type: "error" | "info" | "warning",
+    desc: string, 
+    logTime: string, 
+    location: string
+}
+
+interface ExperimentGeneralData{
+    duration: number,
+    logs?: LogType[]
+    createdAt?: string, 
+}
+
+export interface ExperimentType extends ExperimentGeneralData{
+    id?: string,
+    deviceID: string
+    projectID: string, 
+    configurationID: string,
+    userID: string,
+    locations: LocationChartDataType[],
+  } 
+
+
+
 export type ExperimentStatusType = {
-    isRunning: boolean,
-    startTime: null | string,
-    configurationID: null | string,
-    projectID: null | string,
-    userID: null | string,
-    deviceID: null | string
-    duration: number
+    isExperimentOngoing: boolean,
+    data: null | ExperimentType
 }
 
 
@@ -48,12 +80,15 @@ export type DeviceConfigurationType = {
     locations: DeviceLocationType[]
 }
 
+export type DeviceStatus = "ready" | "busy" | "disconnected"
+
 export type DeviceType = {
     id: string
     name: string
     createdAt: string
+    socketID?: string,
     lastUpdatedAt?: string
-    status: "ready" | "busy" | "disconnected"
+    status: DeviceStatus
     configurations: DeviceConfigurationType[]
 }
 

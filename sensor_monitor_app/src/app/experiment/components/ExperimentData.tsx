@@ -3,7 +3,8 @@ import { Button } from '@/components/ui/button'
 import { ChartConfig,ChartContainer} from '@/components/ui/chart'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { TooltipWrapper } from '@/components/ui/tooltip'
-import { ExperimentLocationsType, useExperiments } from '@/contexts/experiments'
+import { useDevices } from '@/contexts/devices'
+import { LocationChartDataType, useExperiments } from '@/contexts/experiments'
 import { useSocket } from '@/contexts/socket'
 import { cn } from '@/lib/utils'
 import { CircleCheck, CircleMinus, MapPin } from 'lucide-react'
@@ -67,7 +68,7 @@ const ChartComponent = ()=>{
     const {on} = useSocket()
     
     React.useEffect(()=>{
-        on<ExperimentLocationsType>("sensor_data",data=>{
+        on<LocationChartDataType[]>("sensor_data",data=>{
             console.log("DATA RECEIVED FROM RPi: ", data)
         })
     }, [])
@@ -108,14 +109,16 @@ const NoExperimentOngoingComponent = ()=>{
 
 const LocationListComponent = ()=>{
     const {data, selectedLocation, setSelectedLocation, isExperimentDeviceOn, isExperimentOngoing} = useExperiments()
+    const {getConfigurationByID} = useDevices()
 
     return data?.locations.map(l=>{
-        const lastSensorData = l.sensors.length > 0 ? l.sensors[l.sensors.length - 1].y: null
+        const lastSensorData = l.data.length > 0 ? l.data[l.data.length - 1].y: null
         const isActive = selectedLocation && selectedLocation.id === l.id
+        const configuration = getConfigurationByID(data.deviceID, data.configurationID)
+        const location = configuration?.locations.find(loc=>loc.id === l.id)!
         return <div key={l.id} onClick={()=>{
-
             if(isExperimentDeviceOn && isExperimentOngoing){
-                setSelectedLocation(l)
+                setSelectedLocation(location)
             }
         }} className='w-full hover:bg-slate-950 flex justify-between px-4 py-2 cursor-pointer items-center'>
         <div className={cn(
@@ -123,7 +126,7 @@ const LocationListComponent = ()=>{
             isActive ? "font-bold text-[#9C88FF]":""
         )}>
             <MapPin/>
-            {l.name}
+            {location.name}
         </div>
         <div className={cn(
             "w-10 h-5 flex justify-center items-center rounded-full text-sm",

@@ -5,7 +5,7 @@ import { v4 } from 'uuid';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { DeviceManager } from './management/device_management.js';
-import { DeviceType, ExperimentStatusType, UpdateDeviceConfigType } from './types/experiment.js';
+import { DeviceType, ExperimentStatusType, ExperimentType, UpdateDeviceConfigType } from './types/experiment.js';
 import { CommandDataType, ParseCommandsType } from './types/sockets.js';
 
 const app = express();
@@ -23,22 +23,20 @@ const PORT = process.env.PORT || 8000;
 
 // Track RPi connection and experiment status
 let experimentStatus: ExperimentStatusType = {
-    isRunning: false,
-    startTime: null,
-    configurationID: null,
-    deviceID: null,
-    projectID: null,
-    userID: null,
-    duration: 0
+    isExperimentOngoing: false,
+    data: null
 };
 
 const deviceManager = new DeviceManager(io);
 deviceManager.initialize().catch(console.error);
 
+const updateClientsExperimentData = (isExperimentOngoing: boolean, data: Partial<ExperimentType | null>)=>{
+    io.to('web_clients').emit("experiment_status", {isExperimentOngoing})
+    io.to('web_clients').emit("experiment_data", data)
+}
 
-const parseCommands: ParseCommandsType = (data)=>{
+const parseCommands: ParseCommandsType = async (data)=>{
     const { command, params } = data;
-    console.log(data)
     // Validate command
     if (!validateCommand(command, params)) {
         reportErrorToClient({message: 'Invalid command or parameters'});
@@ -50,21 +48,44 @@ const parseCommands: ParseCommandsType = (data)=>{
     // Handle experiment-related commands
     const {configurationID, userID, projectID, deviceID} = params
     if (command === 'startExperiment') {
+        const createdAt =  new Date().toISOString()
+        const device = await deviceManager.getDeviceByID(deviceID)
+        const configuration = device!.configurations.find(c =>c.id === configurationID)
+        const locations = configuration!.locations.map(l=>{
+            return {
+                id: l.id,
+                data: []
+            }
+        })
         experimentStatus = {
             ...experimentStatus,
-            isRunning: true,
-            startTime: new Date().toISOString(),
-            duration: 0,
-            configurationID: configurationID!,
-            userID: userID!,
-            projectID: projectID!,
-            deviceID,
+            isExperimentOngoing: true,
+            data: {
+                duration: 0,
+                configurationID: configurationID!,
+                userID: userID!,
+                projectID: projectID!,
+                deviceID,
+                createdAt: createdAt,
+                locations 
+            }
         }
+        updateClientsExperimentData(true, {createdAt})
+        deviceManager.updateDeviceStatus(deviceID, "busy")
+
     } else if (command === 'stopExperiment') {
-        experimentStatus.isRunning = false;
-        experimentStatus.startTime = null;
+        experimentStatus = {
+            isExperimentOngoing: false, 
+            data: null
+        }
+        updateClientsExperimentData(false, null)
+        deviceManager.updateDeviceStatus(deviceID, "ready")
+
     }
-    deviceManager.sendDeviceCommand(deviceID, experimentStatus)
+    deviceManager.sendDeviceCommand(deviceID, {
+        cmd: command, 
+        data: experimentStatus.data!
+    })
 }
 
 
@@ -82,6 +103,7 @@ io.on('connection', (socket) => {
             socket.join('web_clients');
             const devices = await deviceManager.getAllDevices()
             socket.emit('get_connected_devices', devices);
+            updateClientsExperimentData(experimentStatus.isExperimentOngoing, experimentStatus.data)
         }
     });
 
@@ -151,7 +173,7 @@ io.on('connection', (socket) => {
 
     // Handle sensor data from RPi
     socket.on('sensor_data', (data) => {
-        if (experimentStatus.isRunning) {
+        if (experimentStatus.isExperimentOngoing) {
             console.log("Message received from RPi")
             // Broadcast sensor data to all web clients
             io.to('web_clients').emit('sensor_data', {
@@ -161,6 +183,13 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on("update_experiment_status", (status)=>{
+        experimentStatus.data = {
+            ...experimentStatus.data, 
+            ...status
+        }
+        updateClientsExperimentData(true, status)
+    })
   
     // Handle disconnection
     socket.on('disconnect', async () => {
@@ -168,7 +197,6 @@ io.on('connection', (socket) => {
         const isDevice = await deviceManager.isDevice(socket.id)
         if (isDevice) {
             await deviceManager.updateDeviceStatus(isDevice.id, "disconnected")
-
         }
     });
 

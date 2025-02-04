@@ -37,13 +37,24 @@ const ExperimentPage = () => {
 }
 
 const ExperimentHeader = ()=>{
-    return <div className='w-full flex justify-between items-center'>
-        <ExperimentControls/>
-        <div className='flex gap-2 items-center'>
-            <p className='text-4xl font-bold'>00:00:00</p>
-            <ExperimentOptions/>
-        </div>
-    </div>
+  const {data} = useExperiments()
+
+  const formatedTime = React.useMemo(()=>{
+    if(!data) return  "00:00:00"
+    const hours = Math.floor(data.duration / 3600);
+    const minutes = Math.floor((data.duration % 3600) / 60);
+    const secs = data.duration % 60;
+    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  }, [data])
+
+  
+  return <div className='w-full flex justify-between items-center'>
+      <ExperimentControls/>
+      <div className='flex gap-2 items-center'>
+          <p className='text-4xl font-bold'>{formatedTime}</p>
+          <ExperimentOptions/>
+      </div>
+  </div>
 }
 
 const ExperimentOptions = ()=>{

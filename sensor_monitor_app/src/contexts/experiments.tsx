@@ -7,6 +7,7 @@ import Loading from '@/app/components/Loading';
 import { useUser } from '@auth0/nextjs-auth0';
 import { useToast } from '@/hooks/use-toast';
 import { useSocket } from './socket';
+import { useWarningDialog } from './warning';
 
 type ExperimentDataType = {
     x: number, //Represents the experiment time
@@ -17,7 +18,10 @@ type ExperimentDataType = {
 // interface ExperimentLocationsType extends DeviceLocationType {
 //     sensors: PhSensorType[] & ExperimentDataType[] | []
 // }
-
+export type LocationChartDataType = {
+    id: string, 
+    data: ExperimentDataType[]
+}
 
 type LogType = {
     id: string, 
@@ -27,22 +31,29 @@ type LogType = {
     location: string
 }
 
-export type ExperimentType = {
+interface ExperimentGeneralData{
+    duration: number,
+    logs?: LogType[]
+    createdAt?: string, 
+}
+
+export interface ExperimentType extends ExperimentGeneralData{
     id?: string,
     deviceID: string
     projectID: string, 
     configurationID: string,
     userID: string,
-    createdAt?: string, 
-    duration: number,
-    data: ExperimentDataType[],
-    logs?: LogType[]
+    locations: LocationChartDataType[],
   } 
+
+
 
 
 // Define types for the socket context
 interface ExperimentContextType {
     data: null | ExperimentType,
+    isExperimentLoading: boolean
+    setIsExperimentLoading: React.Dispatch<React.SetStateAction<boolean>>
     setData: React.Dispatch<React.SetStateAction< null | ExperimentType>>
     isExperimentOngoing: boolean
     setIsExperimentOngoing: React.Dispatch<React.SetStateAction<boolean>>
@@ -73,17 +84,25 @@ export const ExperimentProvider = ({
 }:{children: React.ReactNode})=>{
     const [data, setData] = React.useState<null | ExperimentType>(null)
     const [isExperimentOngoing, setIsExperimentOngoing] = React.useState(false)
+    const [isExperimentLoading, setIsExperimentLoading] = React.useState(false)
     const [selectedLocation, setSelectedLocation] = React.useState<null | DeviceLocationType>(null)
     const {getProjectByID, isLoading} = useProjects()
     const {deviceList, getConfigurationByID, isDeviceOn} = useDevices()
     const {user} = useUser()
     const {toast} = useToast()
     const {emit, on} = useSocket()
-
+    const {setOptions, setOpen} = useWarningDialog()
 
     React.useEffect(()=>{
-        on("experiment_data", data =>{
-
+        on<ExperimentGeneralData>("experiment_data", receivedData =>{
+            console.log(receivedData)
+            setData(prev=>prev ? {
+                    ...prev, 
+                    ...receivedData
+                } : null)
+        })
+        on<{isExperimentOngoing: boolean}>("experiment_status", data =>{
+            setIsExperimentOngoing(data.isExperimentOngoing)
         })
     }, [])
 
@@ -102,7 +121,6 @@ export const ExperimentProvider = ({
 
     const registerProject = React.useCallback((projectID: string)=>{
         const projectData = getProjectByID(projectID)
-        
         if(projectData){
             const configuration = getConfigurationByID(projectData.device, projectData.configuration)
             if(configuration){
@@ -112,13 +130,12 @@ export const ExperimentProvider = ({
                     projectID,
                     duration: 0,
                     configurationID: configuration.id,
-                    data: []
-                    //  configuration!.locations.map(l=>{
-                    //     return {
-                    //         ...l, 
-                    //         sensors: []
-                    //     }
-                    // })
+                    locations: configuration!.locations.map(l=>{
+                        return {
+                            id: l.id,
+                            data: []
+                        }
+                    })
                 })
             }
         }
@@ -133,6 +150,7 @@ export const ExperimentProvider = ({
             })
             return 
         }
+        setIsExperimentLoading(true)
         emit("user_command", {
             command: "startExperiment", 
             params: data
@@ -142,11 +160,26 @@ export const ExperimentProvider = ({
 
     const pauseExperiment = React.useCallback(()=>{
         console.log("PAUSE EXPERIMENT")
-
+      
     },[data])
 
     const stopExperiment = React.useCallback(()=>{
         console.log("STOP EXPERIMENT")
+        setOptions({
+            title: "Stop the experiment",
+            description: "Stopping the experiment is not reversible!",
+            deleteFn: ()=>{
+                emit("user_command", {
+                    command: "stopExperiment",
+                    params: {
+                        deviceID: data!.deviceID
+                    }
+                })
+                setOpen(false)
+            }
+        })
+        setOpen(true)
+        
     },[data])
 
     const value: ExperimentContextType = {
@@ -160,7 +193,9 @@ export const ExperimentProvider = ({
         isExperimentDeviceOn,
         startExperiment,
         pauseExperiment,
-        stopExperiment
+        stopExperiment,
+        isExperimentLoading,
+        setIsExperimentLoading
     }
 
     if(isLoading) return <Loading/>

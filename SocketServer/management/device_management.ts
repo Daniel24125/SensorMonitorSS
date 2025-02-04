@@ -2,20 +2,13 @@ import path from "path";
 import fs from "fs/promises";
 import { Server } from "socket.io";
 import { v4 as uuidv4 } from 'uuid';
+import { DeviceStatus, DeviceType,  ExperimentType } from "../types/experiment";
 
-// Define interfaces for our data structures
-interface DeviceInfo {
-  id?: string;
-  socketID?: string;
-  [key: string]: any; // Allow for additional dynamic device info properties
-}
 
-interface Device extends DeviceInfo {
-  id: string;
-  status: string;
-  socketID?: string;
-  createdAt: string;
-  lastUpdatedAt: string;
+
+type DeviceCommandType = {
+  cmd: "startExperiment" | "stopExperiment" | "pauseExperiment",
+  data: ExperimentType
 }
 
 export class DeviceManager {
@@ -45,29 +38,30 @@ export class DeviceManager {
     }
   }
 
-  async loadDevices(): Promise<Device[]> {
+  async loadDevices(): Promise<DeviceType[]> {
     try {
       const data = await fs.readFile(this.storageFilePath, 'utf8');
-      return JSON.parse(data) as Device[];
+      return JSON.parse(data) as DeviceType[];
     } catch (error) {
       console.error('Error loading devices:', error);
       throw error;
     }
   }
 
-  async sendDeviceCommand(deviceID: string, cmd: any): Promise<void> {
+
+  async sendDeviceCommand(deviceID: string, data: DeviceCommandType): Promise<void> {
     const device = await this.getDeviceByID(deviceID);
     if (device?.socketID) {
-      this.io.to(device.socketID).emit("command", cmd);
+      this.io.to(device.socketID).emit("command", data);
     }
   }
 
-  async getDeviceByID(deviceID: string): Promise<Device | undefined> {
+  async getDeviceByID(deviceID: string): Promise<DeviceType | undefined> {
     const devices = await this.getAllDevices();
     return devices.find(d => d.id === deviceID);
   }
 
-  async saveDevices(devices: Device[]): Promise<void> {
+  async saveDevices(devices: DeviceType[]): Promise<void> {
     try {
       await fs.writeFile(
         this.storageFilePath,
@@ -81,16 +75,16 @@ export class DeviceManager {
     }
   }
 
-  async getAllDevices(): Promise<Device[]> {
+  async getAllDevices(): Promise<DeviceType[]> {
     return await this.loadDevices();
   }
 
-  async isDevice(socketID: string): Promise<Device | undefined> {
+  async isDevice(socketID: string): Promise<DeviceType | undefined> {
     const devices = await this.getAllDevices();
     return devices.find(d => d.socketID === socketID);
   }
 
-  async registerDevice(deviceInfo: DeviceInfo, socketID: string): Promise<Device> {
+  async registerDevice(deviceInfo: DeviceType, socketID: string): Promise<DeviceType> {
     try {
       const devices = await this.loadDevices();
       const timestamp = new Date().toJSON();
@@ -100,7 +94,7 @@ export class DeviceManager {
         return await this.updateDeviceStatus(deviceInfo.id!, "ready", socketID);
       }
 
-      const newDevice: Device = {
+      const newDevice: DeviceType = {
         ...deviceInfo,
         id: deviceInfo.id || uuidv4(),
         createdAt: timestamp,
@@ -118,7 +112,7 @@ export class DeviceManager {
     }
   }
 
-  async updateDeviceStatus(deviceId: string, status: string, socketID?: string | undefined): Promise<Device> {
+  async updateDeviceStatus(deviceId: string, status: DeviceStatus, socketID?: string | undefined): Promise<DeviceType> {
     try {
       const devices = await this.loadDevices();
       const deviceIndex = devices.findIndex(device => device.id === deviceId);
@@ -129,7 +123,7 @@ export class DeviceManager {
       devices[deviceIndex] = {
         ...devices[deviceIndex],
         status,
-        socketID: socketID,
+        socketID: socketID ? socketID : devices[deviceIndex].socketID,
         lastUpdatedAt: new Date().toISOString()
       };
 
@@ -141,7 +135,7 @@ export class DeviceManager {
     }
   }
 
-  async updateDeviceInfo(deviceId: string, info: Partial<DeviceInfo>): Promise<Device> {
+  async updateDeviceInfo(deviceId: string, info: Partial<DeviceType>): Promise<DeviceType> {
     try {
       const devices = await this.loadDevices();
       const deviceIndex = devices.findIndex(device => device.id === deviceId);
@@ -173,7 +167,7 @@ export class DeviceManager {
   }
 
   // Utility method to help with race conditions
-  async atomicUpdate<T>(updateFn: (devices: Device[]) => Promise<T>): Promise<T> {
+  async atomicUpdate<T>(updateFn: (devices: DeviceType[]) => Promise<T>): Promise<T> {
     let retries = 3;
     while (retries > 0) {
       try {

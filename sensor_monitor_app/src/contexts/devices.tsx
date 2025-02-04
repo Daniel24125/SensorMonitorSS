@@ -34,7 +34,7 @@ export type PhSensorType = {
     checkInterval: number
     createdAt?: string
     updatedAt?: string
-    updatedBy?: User
+    updatedBy?: string
 }
 
 type TemperatureSensorType = {
@@ -48,7 +48,7 @@ export type DeviceLocationType ={
     name: string, 
     createdAt: string, 
     updatedAt?: string 
-    updatedBy: User, 
+    updatedBy?: string, 
     sensors: PhSensorType[]
 }
 
