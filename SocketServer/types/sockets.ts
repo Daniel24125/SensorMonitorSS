@@ -1,15 +1,10 @@
+import { ExperimentType } from "./experiment"
 
-export type CommandParamsType = {
-    deviceID: string
-    configurationID?: undefined| string
-    userID?: undefined| string
-    projectID?: undefined| string
-}
 
 
 export type CommandDataType = {
     command: AvailableCommansType, 
-    params: CommandParamsType
+    params: ExperimentType
 }
 
 export type ParseCommandsType =  (data: CommandDataType) =>void
@@ -22,10 +17,10 @@ export type ErrorType = {
 
 type AvailableCommansType = "startExperiment" | "stopExperiment" 
 
-export type ValidateCommandType = (command: AvailableCommansType, params: CommandParamsType)=>boolean
+export type ValidateCommandType = (command: AvailableCommansType, params: ExperimentType)=>boolean
 
 
 export type ValidCommandsType ={
-    startExperiment: (params: CommandParamsType) =>boolean,
-    stopExperiment: (params: CommandParamsType)=>boolean
+    startExperiment: (params: ExperimentType) =>boolean,
+    stopExperiment: (params: ExperimentType)=>boolean
 }

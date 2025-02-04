@@ -1,12 +1,12 @@
 
 import { io } from "../server.js";
-import { CommandParamsType, ErrorType, ValidateCommandType, ValidCommandsType } from "../types/sockets.js";
+import { ErrorType, ValidateCommandType, ValidCommandsType } from "../types/sockets.js";
 
 const validCommands = {
     // 'valve': (params: CommandParamsType) => params.valveId && typeof params.state === 'boolean',
     // 'configure': (params: CommandParamsType) => params.configuration && typeof params.configuration === 'object',
     // 'getReadings': (params: CommandParamsType) => true,
-    'startExperiment': (params: CommandParamsType) => {
+    'startExperiment': (params) => {
         const {configurationID, projectID, userID} = params
         return Boolean(configurationID) && typeof configurationID === 'string' &&
         Boolean(projectID) && typeof projectID === 'string'&&

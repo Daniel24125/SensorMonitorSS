@@ -41,6 +41,7 @@ export interface ExperimentType extends ExperimentGeneralData{
     id?: string,
     deviceID: string
     projectID: string, 
+    dataAquisitionInterval: number
     configurationID: string,
     userID: string,
     locations: LocationChartDataType[],
@@ -127,6 +128,7 @@ export const ExperimentProvider = ({
                 setData({
                     userID: user!.sub,
                     deviceID: projectData.device,
+                    dataAquisitionInterval: projectData.dataAquisitionInterval,
                     projectID,
                     duration: 0,
                     configurationID: configuration.id,

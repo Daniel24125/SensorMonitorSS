@@ -1,7 +1,7 @@
 type ExperimentDataType = {
     x: number, //Represents the experiment time
     y: number  //Represents the experiment pH
-    timestamp: string
+    id: string
 }
 
 
@@ -28,6 +28,7 @@ export interface ExperimentType extends ExperimentGeneralData{
     id?: string,
     deviceID: string
     projectID: string, 
+    dataAquisitionInterval: number,
     configurationID: string,
     userID: string,
     locations: LocationChartDataType[],

@@ -43,31 +43,19 @@ const parseCommands: ParseCommandsType = async (data)=>{
         return 
     }
 
-    console.log(`Command received: ${command}`, params);
+    console.log(`Command received: ${command}`);
 
     // Handle experiment-related commands
-    const {configurationID, userID, projectID, deviceID} = params
+    const {deviceID} = params
     if (command === 'startExperiment') {
         const createdAt =  new Date().toISOString()
-        const device = await deviceManager.getDeviceByID(deviceID)
-        const configuration = device!.configurations.find(c =>c.id === configurationID)
-        const locations = configuration!.locations.map(l=>{
-            return {
-                id: l.id,
-                data: []
-            }
-        })
+       
         experimentStatus = {
             ...experimentStatus,
             isExperimentOngoing: true,
             data: {
-                duration: 0,
-                configurationID: configurationID!,
-                userID: userID!,
-                projectID: projectID!,
-                deviceID,
-                createdAt: createdAt,
-                locations 
+                ...params,
+                createdAt,
             }
         }
         updateClientsExperimentData(true, {createdAt})
