@@ -101,6 +101,7 @@ export const ExperimentProvider = ({
                     ...prev, 
                     ...receivedData
                 } : null)
+            console.log(data)
         })
         on<{isExperimentOngoing: boolean}>("experiment_status", data =>{
             setIsExperimentOngoing(data.isExperimentOngoing)

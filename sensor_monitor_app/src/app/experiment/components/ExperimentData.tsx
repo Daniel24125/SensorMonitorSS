@@ -82,6 +82,7 @@ const ChartComponent = ()=>{
     const chartData = React.useMemo(()=>{
         if(!selectedLocation) return []
         const locationsData = data?.locations.find(l=>l.id === selectedLocation!.id)
+        
         if(!locationsData) return []
         return locationsData!.data
     }, [data, selectedLocation])
@@ -110,11 +111,7 @@ const NoExperimentOngoingComponent = ()=>{
         <div className='flex flex-col items-center gap-2'>
             <h2 className='text-5xl font-bold'>Waiting!</h2>
             <p>You didn&apos;t start the experiment yet</p>
-            {/* <Button onClick={()=>{
-                if(isExperimentDeviceOn && !isExperimentOngoing){
-                    startExperiment()
-                  }
-            }} disabled={!isExperimentDeviceOn}>Start experiment</Button> */}
+           
         </div>
 
     </div>

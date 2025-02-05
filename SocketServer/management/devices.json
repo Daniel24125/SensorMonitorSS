@@ -3,7 +3,7 @@
     "id": "3735ddca-c421-446c-b8e4-cabf408e9cc4",
     "name": "pH Monitor Device",
     "createdAt": "2025-02-05T16:09:30.225Z",
-    "status": "ready",
+    "status": "disconnected",
     "configurations": [
       {
         "id": "eb90fc2d-8b47-4ce7-b0f5-0ae2b988856c",
@@ -59,7 +59,7 @@
         "lastUpdatedAt": "2025-01-24T14:17:06.732Z"
       }
     ],
-    "lastUpdatedAt": "2025-02-05T16:25:25.267Z",
-    "socketID": "NF8PSPf3gx9BPYgcAAAG"
+    "lastUpdatedAt": "2025-02-05T18:42:55.431Z",
+    "socketID": "j7vFFwGzkpC3l1KzAAAh"
   }
 ]

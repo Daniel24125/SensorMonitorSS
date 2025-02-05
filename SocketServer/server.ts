@@ -48,27 +48,9 @@ const parseCommands: ParseCommandsType = async (data)=>{
     // Handle experiment-related commands
     const {deviceID} = params
     if (command === 'startExperiment') {
-        const createdAt =  new Date().toISOString()
-       
-        experimentStatus = {
-            ...experimentStatus,
-            isExperimentOngoing: true,
-            data: {
-                ...params,
-                createdAt,
-            }
-        }
-        updateClientsExperimentData(true, {createdAt})
-        deviceManager.updateDeviceStatus(deviceID, "busy")
-
+        startExperiment(params)
     } else if (command === 'stopExperiment') {
-        experimentStatus = {
-            isExperimentOngoing: false, 
-            data: null
-        }
-        updateClientsExperimentData(false, null)
-        deviceManager.updateDeviceStatus(deviceID, "ready")
-
+        stopExperiment(deviceID)
     }
     deviceManager.sendDeviceCommand(deviceID, {
         cmd: command, 
@@ -76,6 +58,43 @@ const parseCommands: ParseCommandsType = async (data)=>{
     })
 }
 
+const startExperiment = (params: ExperimentType)=>{
+    console.log("Start the Experiment")
+    const {deviceID} = params
+
+    const createdAt =  new Date().toISOString()
+       
+    experimentStatus = {
+        ...experimentStatus,
+        isExperimentOngoing: true,
+        data: {
+            ...params,
+            createdAt,
+        }
+    }
+    updateClientsExperimentData(true, {createdAt})
+    deviceManager.updateDeviceStatus(deviceID, "busy")
+
+}
+
+const stopExperiment = (deviceID:string)=>{
+    io.to('web_clients').emit('sensor_data', {
+        locations: experimentStatus.data!.locations.map(l=>{
+            return{
+                id: l.id, 
+                data: []
+            }
+        }),
+    });
+    experimentStatus = {
+        isExperimentOngoing: false, 
+        data: null
+    }
+    updateClientsExperimentData(false, {
+        duration: 0
+    })
+    deviceManager.updateDeviceStatus(deviceID, "ready")
+}
 
 
 io.on('connection', (socket) => {
