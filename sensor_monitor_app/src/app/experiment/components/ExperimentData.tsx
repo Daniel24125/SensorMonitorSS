@@ -64,14 +64,28 @@ const ChartHeader = ()=>{
 }
 
 const ChartComponent = ()=>{
-    const {selectedLocation, isExperimentOngoing} = useExperiments()
+    const {selectedLocation, isExperimentOngoing, setData, data} = useExperiments()
     const {on} = useSocket()
     
     React.useEffect(()=>{
-        on<LocationChartDataType[]>("sensor_data",data=>{
-            console.log("DATA RECEIVED FROM RPi: ", data)
+        on<{locations: LocationChartDataType[], timestamp: string}>("sensor_data",data=>{
+            setData(prev=>{
+                if(!prev) return null
+                return {
+                    ...prev,
+                    locations: data.locations
+                }
+            })
         })
     }, [])
+
+    const chartData = React.useMemo(()=>{
+        if(!selectedLocation) return []
+        const locationsData = data?.locations.find(l=>l.id === selectedLocation!.id)
+        if(!locationsData) return []
+        return locationsData!.data
+    }, [data, selectedLocation])
+
 
     return selectedLocation ? isExperimentOngoing ? <ChartContainer config={chartConfig} className="min-h-[200px] w-full h-full">
         <ScatterChart
@@ -86,7 +100,7 @@ const ChartComponent = ()=>{
             <XAxis type="number" dataKey="x" name="Time" unit="s" />
             <YAxis type="number" dataKey="y" name="pH"  />
             <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-            <Scatter name="A school" data={[]} fill="#8884d8" line shape="circle" />
+            <Scatter name="A school" data={chartData} fill="#8884d8" line shape="circle" />
         </ScatterChart>
     </ChartContainer>: <NoExperimentOngoingComponent/> : <NoLocationSelected/>     
 }

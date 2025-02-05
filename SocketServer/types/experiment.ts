@@ -1,7 +1,6 @@
 type ExperimentDataType = {
     x: number, //Represents the experiment time
     y: number  //Represents the experiment pH
-    id: string
 }
 
 

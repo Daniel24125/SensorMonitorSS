@@ -5,7 +5,7 @@ import { v4 } from 'uuid';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { DeviceManager } from './management/device_management.js';
-import { DeviceType, ExperimentStatusType, ExperimentType, UpdateDeviceConfigType } from './types/experiment.js';
+import { DeviceType, ExperimentStatusType, ExperimentType, LocationChartDataType, UpdateDeviceConfigType } from './types/experiment.js';
 import { CommandDataType, ParseCommandsType } from './types/sockets.js';
 
 const app = express();
@@ -160,12 +160,19 @@ io.on('connection', (socket) => {
     });
 
     // Handle sensor data from RPi
-    socket.on('sensor_data', (data) => {
+    socket.on('sensor_data', (sensorData: {data: {id: string, x: number, y: number}[]}) => {
         if (experimentStatus.isExperimentOngoing) {
-            console.log("Message received from RPi")
+            console.log("Data received from RPi", sensorData)
             // Broadcast sensor data to all web clients
+            sensorData.data.forEach((l, index) =>{
+                const location = experimentStatus.data!.locations[index]
+                experimentStatus.data!.locations[index] = {
+                    id: l.id,
+                    data: [...location.data, {x: l.x,y: l.y}]
+                }
+            })
             io.to('web_clients').emit('sensor_data', {
-                ...data,
+                locations: experimentStatus.data!.locations,
                 timestamp: new Date().toISOString()
             });
         }
@@ -177,6 +184,7 @@ io.on('connection', (socket) => {
             ...status
         }
         updateClientsExperimentData(true, status)
+        console.log("update_experiment_status",experimentStatus)
     })
   
     // Handle disconnection
