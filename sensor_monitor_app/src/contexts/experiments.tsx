@@ -8,6 +8,7 @@ import { useUser } from '@auth0/nextjs-auth0';
 import { useToast } from '@/hooks/use-toast';
 import { useSocket } from './socket';
 import { useWarningDialog } from './warning';
+import { createExperiment } from '@/actions/experiments';
 
 type ExperimentDataType = {
     x: number, //Represents the experiment time
@@ -167,7 +168,6 @@ export const ExperimentProvider = ({
     },[data])
 
     const stopExperiment = React.useCallback(()=>{
-        console.log("STOP EXPERIMENT")
         setOptions({
             title: "Stop the experiment",
             description: "Stopping the experiment is not reversible!",
@@ -182,7 +182,7 @@ export const ExperimentProvider = ({
             }
         })
         setOpen(true)
-        
+        createExperiment(data!)
     },[data])
 
     const value: ExperimentContextType = {

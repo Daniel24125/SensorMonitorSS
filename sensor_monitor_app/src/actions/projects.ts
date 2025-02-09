@@ -5,42 +5,24 @@ import { auth0 } from "@/lib/auth0";
 import { revalidatePath } from "next/cache";
 import {db} from '@/lib/firebase';
 import { addDoc, collection, deleteDoc, doc, getDocs, query, updateDoc, where } from "firebase/firestore";
-import { parseFirestoreData } from "@/lib/utils";
+import { parseError, parseFirestoreData } from "@/lib/utils";
+import { getExperiments } from "./experiments";
 
 const collectionRef = collection(db, "projects")
 
-const parseError = (error: typeof Error | string)=>{
-    const message = error instanceof Error ? error.message : error   
-    console.error("An error occured on the projects actions: ", message) 
-    return {
-        data: null,
-        error: message
-    }
-}
+
 
 // Define the return type interface
-interface ProjectsResponse {
-    data: ProjectType[] | null
+export interface ActionResponse<T> {
+    data: T | null
     error?: string | ErrorConstructor
-  }
+}
   
 
-type GetProjectsType = () => Promise<ProjectsResponse>
-
-type CreateProjectType = (data: ProjectType ) => Promise<boolean | ProjectsResponse>
-type EditProjectType = (data: ProjectType) => Promise<boolean | ProjectsResponse>
-type DeleteProjectType = (projectID: string) => Promise<boolean | ProjectsResponse>
-
-// let projectList: ProjectType[] = [
-//     {
-//         id: "3735ddca-c421-446c-b8e4-vsdsd1516sdv", 
-//         title: "Monitoring the growth of micro alge pH through time",
-//         experiments: [],
-//         device: "3735ddca-c421-446c-b8e4-cabf408e9cc4",
-//         dataAquisitionInterval: 10,
-//         createdAt: new Date().toJSON()
-//     }
-// ]
+type GetProjectsType = () => Promise<ActionResponse<ProjectType[]>>
+type CreateProjectType = (data: ProjectType ) => Promise<boolean | ActionResponse<ProjectType>>
+type EditProjectType = (data: ProjectType) => Promise<boolean | ActionResponse<ProjectType>>
+type DeleteProjectType = (projectID: string) => Promise<boolean | ActionResponse<ProjectType>>
 
 export const getProjects: GetProjectsType = async () =>{
     
@@ -52,9 +34,22 @@ export const getProjects: GetProjectsType = async () =>{
 
         const q = query(collectionRef, where("userID", "==", session.user.sub))
         const data = await getDocs(q)
-        return {
-            data: parseFirestoreData<ProjectType>(data)
+        const parsedData = parseFirestoreData<ProjectType>(data)
+
+        for (let i in parsedData){
+            const p = parsedData[i]
+            const {data: experiments} = await getExperiments(p.id!)
+            if(!experiments){
+                throw Error("It was not possible to fetch the experiments for this project")
+            }
+            parsedData[i] = {
+                ...p, 
+                experiments
+            }
         }
+      
+        return {data: parsedData}
+
     } catch (error) {
         return parseError(error as typeof Error | string)
     }
@@ -65,7 +60,7 @@ export const createProject: CreateProjectType = async (data) =>{
     try{
         const session = await auth0.getSession()
         if(!session){
-           throw new Error("You must be logged in to get the projects list")   
+           throw new Error("You must be logged in to get create a project")   
         }
         await addDoc(collectionRef, {
             ...data, 
@@ -85,7 +80,7 @@ export const editProject: EditProjectType = async (project) =>{
     try{
         const session = await auth0.getSession()
         if(!session){
-           throw new Error("You must be logged in to get the projects list")
+           throw new Error("You must be logged in to edit a project")
             
         }
         const projectRef = doc(db, "projects", project.id!);
@@ -105,7 +100,7 @@ export const deleteProject: DeleteProjectType = async (projectID) =>{
     try{
         const session = await auth0.getSession()
         if(!session){
-           throw new Error("You must be logged in to get the projects list")
+           throw new Error("You must be logged in to delete a project")
             
         }
         await deleteDoc(doc(db, "projects",projectID));

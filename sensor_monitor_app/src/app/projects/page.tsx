@@ -16,7 +16,7 @@ import DeviceBadge from '../devices/components/DeviceBadge'
 
 const Page = () => {
     const {projectList, setSelectedProject} = useProjects()
-
+    console.log(projectList)
     return (
         <div  className='w-full flex justify-evenly h-full'>
             <ScrollArea className='w-full'>

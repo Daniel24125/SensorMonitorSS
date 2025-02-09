@@ -19,3 +19,11 @@ export async function delay(ms: number) {
   return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+export const parseError = (error: typeof Error | string)=>{
+    const message = error instanceof Error ? error.message : error   
+    console.error("An error occured on the projects actions: ", message) 
+    return {
+        data: null,
+        error: message
+    }
+}
