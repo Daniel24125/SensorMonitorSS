@@ -63,7 +63,7 @@ const ChartHeader = ()=>{
     </div>
 }
 
-const ChartComponent = ()=>{
+export const ChartComponent = ()=>{
     const {selectedLocation, isExperimentOngoing, setData, data} = useExperiments()
     const {on} = useSocket()
     
@@ -88,7 +88,9 @@ const ChartComponent = ()=>{
     }, [data, selectedLocation])
 
 
-    return selectedLocation ? isExperimentOngoing ? <ChartContainer config={chartConfig} className="min-h-[200px] w-full h-full">
+    return selectedLocation ? isExperimentOngoing ? <ChartContainer 
+        config={chartConfig} 
+        className="min-h-[200px] w-full h-full max-h-72">
         <ScatterChart
           margin={{
               top: 20,
@@ -117,7 +119,11 @@ const NoExperimentOngoingComponent = ()=>{
     </div>
 }
 
-const LocationListComponent = ()=>{
+type LocationListPropsTyep={
+    showIcon?: boolean
+    className?: string
+}
+export const LocationListComponent = ({showIcon=true, className}: LocationListPropsTyep)=>{
     const {data, selectedLocation, setSelectedLocation, isExperimentDeviceOn, isExperimentOngoing} = useExperiments()
     const {getConfigurationByID} = useDevices()
 
@@ -130,12 +136,12 @@ const LocationListComponent = ()=>{
             if(isExperimentDeviceOn && isExperimentOngoing){
                 setSelectedLocation(location)
             }
-        }} className='w-full hover:bg-slate-950 flex justify-between px-4 py-2 cursor-pointer items-center'>
+        }} className='w-full hover:bg-slate-950 flex justify-between px-4 py-2 cursor-pointer items-center gap-2'>
         <div className={cn(
             'flex items-center gap-2 text-sm ',
             isActive ? "font-bold text-[#9C88FF]":""
         )}>
-            <MapPin/>
+            {showIcon && <MapPin/>}
             {location.name}
         </div>
         <div className={cn(

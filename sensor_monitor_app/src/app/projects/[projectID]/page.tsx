@@ -13,7 +13,7 @@ const Page = async ({params}: {params: Promise<{ projectID: string }>}) => {
 
 
     return (<ProjectDetailsProvider projectID={projectID}>
-        <div className='w-full flex-col pt-10'>
+        <div className='w-full flex-col pt-10 h-full'>
             <ProjectHeader/>
             <ProjectExperiments/>
         </div>

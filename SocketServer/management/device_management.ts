@@ -3,11 +3,12 @@ import fs from "fs/promises";
 import { Server } from "socket.io";
 import { v4 as uuidv4 } from 'uuid';
 import { DeviceStatus, DeviceType,  ExperimentType } from "../types/experiment";
+import { AvailableCommandsType } from "../types/sockets";
 
 
 
 type DeviceCommandType = {
-  cmd: "startExperiment" | "stopExperiment" | "pauseExperiment",
+  cmd: AvailableCommandsType,
   data: ExperimentType
 }
 

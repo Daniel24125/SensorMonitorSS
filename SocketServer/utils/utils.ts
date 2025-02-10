@@ -12,7 +12,9 @@ const validCommands = {
         Boolean(projectID) && typeof projectID === 'string'&&
         Boolean(userID) && typeof userID === 'string'
     },
-    'stopExperiment': (params) => Boolean(params.deviceID) && typeof params.deviceID === "string"
+    'stopExperiment': (params) => Boolean(params.deviceID) && typeof params.deviceID === "string",
+    'pauseExperiment': () => true,
+    'resumeExperiment': () => true,
 } satisfies ValidCommandsType;
 
 export const validateCommand: ValidateCommandType = (command, params) => {

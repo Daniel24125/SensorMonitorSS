@@ -30,8 +30,12 @@ const ProjectDetails = () => {
   >
     {selectedProject ? <div className='flex w-full h-full'>
       {selectedProject.experiments!.length > 0 ? <>
-        <div className='w-52 bg-card flex flex-col rounded-xl h-full p-2'>
-        {selectedProject.experiments?.map(e=>{
+        <div className='w-52 bg-card flex flex-col rounded-xl h-full p-2 gap-2'>
+        {selectedProject.experiments?.sort((a,b)=>{
+                    const aMiliseconds = moment(a.createdAt).unix()
+                    const bMiliseconds = moment(b.createdAt).unix()
+                    return bMiliseconds - aMiliseconds
+                }).map(e=>{
           return <ExperimentCard
             key={e.id}
             experiment={e}
@@ -64,7 +68,7 @@ export const ExperimentCard = ({
     onClick: ()=>void
   })=>{
   return <div key={experiment.id} onClick={onClick} className={cn(
-    'w-full p-2 rounded-xl flex flex-col bg-secondary-background hover:border-2 hover:border-[#0984E3] cursor-pointer',
+    'w-full p-2 rounded-xl flex flex-col bg-secondary-background border-2 border-secondary-background hover:border-2 hover:border-[#0984E3] cursor-pointer',
     className
   )}>
     <p className='text-sm font-bold'>{experiment.id}</p>
@@ -72,7 +76,7 @@ export const ExperimentCard = ({
   </div>
 }
 
-const NoDataToDisplay = ({title}: {title: React.ReactNode})=>{
+export const NoDataToDisplay = ({title}: {title: React.ReactNode})=>{
   return <div className='w-full h-full flex justify-center items-center flex-col gap-3'>
     {title}
   </div>

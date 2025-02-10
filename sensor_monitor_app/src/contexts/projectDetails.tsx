@@ -4,6 +4,8 @@ import React, { createContext,  useContext, useTransition } from 'react';
 import { ProjectType, useProjects } from './projects';
 import { ExperimentType, LocationChartDataType } from './experiments';
 import { DeviceType, useDevices } from './devices';
+import { deleteExperiment } from '@/actions/experiments';
+import { useToast } from '@/hooks/use-toast';
 
 
 // Define types for the socket context
@@ -14,6 +16,7 @@ interface ProjectContextType {
     setSelectedLocation: React.Dispatch<React.SetStateAction<LocationChartDataType | null>>
     selectedExperiment: ExperimentType | null
     setSelectedExperiment: React.Dispatch<React.SetStateAction<ExperimentType | null>>
+    deleteProjectExperiment: ()=>void
 }
 
 const ProjectContext = createContext<ProjectContextType | null>(null);
@@ -32,16 +35,27 @@ export const ProjectDetailsProvider = ({
 }:{children: React.ReactNode, projectID: string}) =>{
     const [selectedExperiment, setSelectedExperiment] = React.useState<ExperimentType | null>(null)
     const [selectedLocation, setSelectedLocation] = React.useState<LocationChartDataType | null>(null)
-    const {getProjectByID, isLoading} = useProjects()
+    const {getProjectByID, isLoading, projectList, getProjectList} = useProjects()
     const {getDeviceByID} = useDevices()
+    const {toast} = useToast()
 
     const project = React.useMemo(()=>{
         return getProjectByID(projectID)
-    }, [projectID])
+    }, [projectID, projectList])
 
     const device: DeviceType |undefined |  null = React.useMemo(()=>{
         return project ? getDeviceByID(project?.device): null
     }, [projectID])
+
+    const deleteProjectExperiment = React.useCallback(()=>{
+        if(!selectedExperiment) return 
+        deleteExperiment(selectedExperiment!.id!)
+        toast({
+            title: "Experiment Deletion",
+            description: "The experimental data was successfuly deleted!",
+        })
+        getProjectList()
+    },[project, selectedExperiment])
 
     React.useEffect(()=>{
         if(!project || !project.experiments || project.experiments?.length === 0 || selectedExperiment) return 
@@ -65,6 +79,7 @@ export const ProjectDetailsProvider = ({
         setSelectedExperiment,
         selectedLocation,
         setSelectedLocation,
+        deleteProjectExperiment
     }
 
     return <ProjectContext value={value}>

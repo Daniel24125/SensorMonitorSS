@@ -49,6 +49,10 @@ const parseCommands: ParseCommandsType = async (data)=>{
     const {deviceID} = params
     if (command === 'startExperiment') {
         startExperiment(params)
+    } else if (command === 'pauseExperiment') {
+        pauseExperiment()
+    } else if (command === 'resumeExperiment') {
+        resumeExperiment()
     } else if (command === 'stopExperiment') {
         stopExperiment(deviceID)
     }
@@ -74,7 +78,23 @@ const startExperiment = (params: ExperimentType)=>{
     }
     updateClientsExperimentData(true, {createdAt})
     deviceManager.updateDeviceStatus(deviceID, "busy")
+}
 
+const pauseExperiment = ()=>{
+    console.log("Pause the Experiment")
+    io.to('web_clients').emit("experiment_status", {
+        isExperimentOngoing: true,
+        status: "paused"
+    })
+    
+}
+
+const resumeExperiment = ()=>{
+    console.log("Resume the Experiment")
+    io.to('web_clients').emit("experiment_status", {
+        isExperimentOngoing: true,
+        status: "running"
+    })
 }
 
 const stopExperiment = (deviceID:string)=>{

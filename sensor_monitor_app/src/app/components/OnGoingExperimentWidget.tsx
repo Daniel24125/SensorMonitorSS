@@ -5,9 +5,10 @@ import { ExternalLink, Play } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useExperiments } from '@/contexts/experiments'
 import { useDevices } from '@/contexts/devices'
-import { useSocket } from '@/contexts/socket'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import SelectProjectTemplate from '../experiment/components/SelectExperimentProject'
+import ExperimentControls from '../experiment/components/ExperimentControls'
+import { ChartComponent, LocationListComponent } from '../experiment/components/ExperimentData'
 
 const OnGoingExperimentWidget = () => {
   const router = useRouter()
@@ -26,8 +27,24 @@ const OnGoingExperimentWidget = () => {
 }
 
 const OnGoingExperimentData = ()=>{
-  return ""
+
+  return <div className='w-full h-full flex justify-between'>
+    <div className='h-full flex flex-col w-48 justify-between shrink-0'>
+      <div className='w-full h-48 bg-card rounded-2xl shrink-0 flex justify-center items-center'>
+
+      </div>
+      <div className='flex justify-center items-center w-full h-20 bg-card shrink rounded-2xl'>
+        <ExperimentControls/>
+      </div>
+    </div>
+    <ChartComponent/>
+    <div className='flex flex-col h-full justify-center'>
+      <LocationListComponent  showIcon={false}/>
+    </div>
+  </div>
 }
+
+
 
 const NotOngoingExperiment = ()=>{
   const {deviceList} = useDevices()
@@ -66,7 +83,8 @@ const SelectProjectDialog = ({
   setOpen: React.Dispatch<React.SetStateAction<boolean>>
 })=>{
   const {data, startExperiment} = useExperiments()
-  
+  const router = useRouter()
+
   return <Dialog open={open} onOpenChange={(o)=>setOpen(o)}>
     <DialogContent className="sm:max-w-[425px]">
       <DialogHeader>
@@ -80,6 +98,7 @@ const SelectProjectDialog = ({
         <Button disabled={!data || !data.projectID} variant={"ghost"} className='text-primary' onClick={()=>{
          if(data && data.projectID){
           startExperiment()
+          // router.push(`/experiment`)
          }
       }}>Start experiment</Button>
         <Button variant={"ghost"} onClick={()=>setOpen(false)} >Cancel</Button>

@@ -38,9 +38,12 @@ interface ExperimentGeneralData{
     createdAt?: string, 
 }
 
+type ExperimentStatus = "ready" | "paused" | "running"
+
 export interface ExperimentType extends ExperimentGeneralData{
     id?: string,
-    deviceID: string
+    deviceID: string,
+    status: ExperimentStatus,
     projectID: string, 
     dataAquisitionInterval: number
     configurationID: string,
@@ -65,6 +68,7 @@ interface ExperimentContextType {
     isExperimentDeviceOn: boolean
     startExperiment: ()=>void
     pauseExperiment: ()=>void
+    resumeExperiment: ()=>void
     stopExperiment: ()=>void
 }
 
@@ -88,7 +92,7 @@ export const ExperimentProvider = ({
     const [isExperimentOngoing, setIsExperimentOngoing] = React.useState(false)
     const [isExperimentLoading, setIsExperimentLoading] = React.useState(false)
     const [selectedLocation, setSelectedLocation] = React.useState<null | DeviceLocationType>(null)
-    const {getProjectByID, isLoading} = useProjects()
+    const {getProjectByID, isLoading, getProjectList} = useProjects()
     const {deviceList, getConfigurationByID, isDeviceOn} = useDevices()
     const {user} = useUser()
     const {toast} = useToast()
@@ -97,15 +101,17 @@ export const ExperimentProvider = ({
 
     React.useEffect(()=>{
         on<ExperimentGeneralData>("experiment_data", receivedData =>{
-            console.log(receivedData)
             setData(prev=>prev ? {
                     ...prev, 
                     ...receivedData
                 } : null)
-            console.log(data)
         })
-        on<{isExperimentOngoing: boolean}>("experiment_status", data =>{
+        on<{isExperimentOngoing: boolean, status: ExperimentStatus}>("experiment_status", data =>{
             setIsExperimentOngoing(data.isExperimentOngoing)
+            setData(prev=>prev ? {
+                ...prev, 
+                status: data.status ? data.status : "running"
+            } : null)
         })
     }, [])
 
@@ -133,6 +139,7 @@ export const ExperimentProvider = ({
                     dataAquisitionInterval: projectData.dataAquisitionInterval,
                     projectID,
                     duration: 0,
+                    status: "ready",
                     configurationID: configuration.id,
                     locations: configuration!.locations.map(l=>{
                         return {
@@ -159,12 +166,25 @@ export const ExperimentProvider = ({
             command: "startExperiment", 
             params: data
         })
+        setData(prev=>prev ? {
+            ...prev, 
+            status: "running"
+        } : null)
+    
 
     },[data])
-
     const pauseExperiment = React.useCallback(()=>{
-        console.log("PAUSE EXPERIMENT")
-      
+        emit("user_command", {
+            command: "pauseExperiment", 
+            params: data
+        })
+    },[data])
+
+    const resumeExperiment = React.useCallback(()=>{
+        emit("user_command", {
+            command: "resumeExperiment", 
+            params: data
+        })
     },[data])
 
     const stopExperiment = React.useCallback(()=>{
@@ -183,6 +203,7 @@ export const ExperimentProvider = ({
         })
         setOpen(true)
         createExperiment(data!)
+        getProjectList()
     },[data])
 
     const value: ExperimentContextType = {
@@ -198,7 +219,8 @@ export const ExperimentProvider = ({
         pauseExperiment,
         stopExperiment,
         isExperimentLoading,
-        setIsExperimentLoading
+        setIsExperimentLoading,
+        resumeExperiment
     }
 
     if(isLoading) return <Loading/>

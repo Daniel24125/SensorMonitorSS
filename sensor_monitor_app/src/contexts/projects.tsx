@@ -23,6 +23,7 @@ interface ProjectsContextType {
     edit: boolean, 
     setOpen: React.Dispatch<React.SetStateAction<boolean>>
     setEdit: React.Dispatch<React.SetStateAction<boolean>>
+    getProjectList: ()=>void
 }
 
 
@@ -154,6 +155,7 @@ export const ProjectProvider = ({
     setOpen,
     edit,
     setEdit, 
+    getProjectList
   };
 
   return (

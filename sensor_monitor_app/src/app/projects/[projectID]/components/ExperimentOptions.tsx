@@ -1,12 +1,13 @@
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import { useProjectDetails } from '@/contexts/projectDetails'
 import { useWarningDialog } from '@/contexts/warning'
 import { MoreVertical, Save, Trash2 } from 'lucide-react'
 import React from 'react'
 
 const ExperimentOptions = ({onClick}: {onClick?: ()=>void}) => {
     const {setOptions, setOpen: setOpenWarning} = useWarningDialog()
-
+    const {deleteProjectExperiment} = useProjectDetails()
 
     return <DropdownMenu>
     <DropdownMenuTrigger  asChild>
@@ -26,7 +27,10 @@ const ExperimentOptions = ({onClick}: {onClick?: ()=>void}) => {
                 setOptions({
                     title: "Delete Experiment",
                     description: "This operation is not reversible!", 
-                    deleteFn: async ()=>{}
+                    deleteFn: async ()=>{
+                        deleteProjectExperiment()
+                        setOpenWarning(false)
+                    }
                 })
                 setOpenWarning(true)
             }}>
