@@ -3,7 +3,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { useDevices } from '@/contexts/devices'
 import { ProjectType, useProjects } from '@/contexts/projects'
 import { useWarningDialog } from '@/contexts/warning'
-import { Edit, FlaskConical, MoreHorizontal, Trash2 } from 'lucide-react'
+import { Edit, FlaskConical, MoreHorizontal, Save, Trash2 } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import React from 'react'
 
@@ -27,6 +27,12 @@ const ProjectOptions = ({onClick, project}: {onClick?: ()=>void, project: Projec
             }}>
                 <FlaskConical/>
                 <span> Start Experiment</span>
+            </DropdownMenuItem>
+            <DropdownMenuItem disabled={!isDeviceOn(project.device)} onClick={() =>{
+                console.log("Export Data")
+            }}>
+                <Save/>
+                <span> Export Data</span>
             </DropdownMenuItem>
             <DropdownMenuItem onClick={() =>{
                 setOpen(true)

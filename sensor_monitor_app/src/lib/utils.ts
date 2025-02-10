@@ -27,3 +27,10 @@ export const parseError = (error: typeof Error | string)=>{
         error: message
     }
 }
+
+export const getformatedExperimentTime = (duration: number)=>{
+  const hours = Math.floor(duration / 3600);
+  const minutes = Math.floor((duration % 3600) / 60);
+  const secs = duration % 60;
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+}

@@ -91,7 +91,8 @@ export const ProjectProvider = ({
       } else {
         setProjectList(result.data ? result.data : [])
         if(result.data && !selectedProject){
-          setSelectedProject(result.data[0])
+          const p = result.data[0]
+          setSelectedProject(p)
         }
       }
       setIsFetching(false)
@@ -152,7 +153,7 @@ export const ProjectProvider = ({
     open,
     setOpen,
     edit,
-    setEdit
+    setEdit, 
   };
 
   return (

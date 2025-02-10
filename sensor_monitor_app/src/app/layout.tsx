@@ -37,7 +37,7 @@ export default async function RootLayout({
             >
               <main className="bg-background p-3 flex h-screen">
                 <Navigation/>
-                <div className="w-full flex flex-col">
+                <div className="w-full flex flex-col h-full">
                   <Topbar/>
                   <section id="content" className="flex flex-col items-start justify-start h-full w-full px-3 flex-grow flex-shrink basis-auto" >
                     {children}

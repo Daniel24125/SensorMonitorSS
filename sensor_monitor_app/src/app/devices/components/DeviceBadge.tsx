@@ -11,7 +11,6 @@ const DeviceBadge = ({project}: {project: ProjectType})=>{
         return deviceList.filter(d=>d.id === project.device)[0]
     },[])
 
-    console.log(projectDevice)
 
     return projectDevice && <Badge>
         {projectDevice.name}

@@ -8,6 +8,7 @@ import { useRouter } from 'next/navigation'
 import ProjectOptions from './ProjectOptions'
 import DeviceBadge from '@/app/devices/components/DeviceBadge'
 import { useDevices } from '@/contexts/devices'
+import { cn } from '@/lib/utils'
 
 const ProjectDetails = () => {
   const {selectedProject} = useProjects()
@@ -15,26 +16,31 @@ const ProjectDetails = () => {
   const [selectedExperiment, setSelectedExperiment] = React.useState<ExperimentType | null>(null)
   const router = useRouter()
 
-  return <WidgetCard title={selectedProject ? selectedProject.title :"Project Details"} className='w-full' secondaryAction={
-    <div className='flex items-center gap-4'>
-      {selectedProject && <DeviceBadge project={selectedProject} />}
-      <ProjectOptions
-        project={selectedProject!}
-      />
-    </div>
-  }>
+  return <WidgetCard 
+    title={selectedProject ? selectedProject.title :"Project Details"} 
+    className='w-full' 
+    secondaryAction={
+      <div className='flex items-center gap-4'>
+        {selectedProject && <DeviceBadge project={selectedProject} />}
+        <ProjectOptions
+          project={selectedProject!}
+        />
+      </div>
+    }
+  >
     {selectedProject ? <div className='flex w-full h-full'>
       {selectedProject.experiments!.length > 0 ? <>
-        <div className='w-40 bg-card flex flex-col rounded-xl h-full'>
+        <div className='w-52 bg-card flex flex-col rounded-xl h-full p-2'>
         {selectedProject.experiments?.map(e=>{
-          return <div key={e.id} style={{
-            border: selectedExperiment && selectedExperiment.id === e.id ? "solid 2px #0984E3" : "none"
-          }} onClick={()=>{
-            setSelectedExperiment(e)
-          }} className='w-full p-2 rounded-xl flex flex-col bg-secondary-background'>
-            <p>{e.id}</p>
-            <p className='text-xs text-accent'>{moment(e.createdAt).format("DD/MM/YYY - hh:mm a")}</p>
-          </div>
+          return <ExperimentCard
+            key={e.id}
+            experiment={e}
+            className={selectedExperiment && selectedExperiment.id === e.id ? "border-2 border-[#0984E3] ": ""}
+            onClick={()=>{
+              setSelectedExperiment(e)
+            }}
+            
+          />
         })}
       </div>
       <div></div>
@@ -48,6 +54,22 @@ const ProjectDetails = () => {
         </>}/>}
     </div>: <NoDataToDisplay title={<h3 className='text-lg text-accent font-bold'>No information to display</h3>}/>}
   </WidgetCard>
+}
+
+export const ExperimentCard = ({
+  experiment, className, onClick}
+  : {
+    experiment: ExperimentType
+    className?: string, 
+    onClick: ()=>void
+  })=>{
+  return <div key={experiment.id} onClick={onClick} className={cn(
+    'w-full p-2 rounded-xl flex flex-col bg-secondary-background hover:border-2 hover:border-[#0984E3] cursor-pointer',
+    className
+  )}>
+    <p className='text-sm font-bold'>{experiment.id}</p>
+    <p className='text-xs text-accent'>{moment(experiment.createdAt).format("DD/MM/YYY - hh:mm a")}</p>
+  </div>
 }
 
 const NoDataToDisplay = ({title}: {title: React.ReactNode})=>{

@@ -13,6 +13,7 @@ import { TooltipWrapper } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { CircleMinus, MoreVertical } from 'lucide-react';
 import SelectProjectTemplate from './components/SelectExperimentProject';
+import { getformatedExperimentTime } from '@/lib/utils';
 
 const ExperimentPage = () => {
     const searchParams = useSearchParams();
@@ -41,10 +42,7 @@ const ExperimentHeader = ()=>{
 
   const formatedTime = React.useMemo(()=>{
     if(!data) return  "00:00:00"
-    const hours = Math.floor(data.duration / 3600);
-    const minutes = Math.floor((data.duration % 3600) / 60);
-    const secs = data.duration % 60;
-    return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+    return getformatedExperimentTime(data.duration)
   }, [data])
 
   

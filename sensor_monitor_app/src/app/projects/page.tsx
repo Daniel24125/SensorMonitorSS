@@ -12,11 +12,13 @@ import React from 'react'
 import { NoProjectsComponent } from '../components/projects/ProjectListWidget'
 import ProjectOptions from '../components/projects/ProjectOptions'
 import DeviceBadge from '../devices/components/DeviceBadge'
+import { useRouter } from 'next/navigation'
 
 
 const Page = () => {
     const {projectList, setSelectedProject} = useProjects()
-    console.log(projectList)
+    const router = useRouter()
+
     return (
         <div  className='w-full flex justify-evenly h-full'>
             <ScrollArea className='w-full'>
@@ -45,7 +47,7 @@ const Page = () => {
                                 </div>
                             </div>
                             <div className='w-full flex justify-end'>
-                                <Button variant="outline">More details</Button>
+                                <Button onClick={()=>router.push(`/projects/${p.id}`)} variant="outline">More details</Button>
                             </div>
 
                         </div>

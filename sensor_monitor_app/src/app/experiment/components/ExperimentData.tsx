@@ -19,7 +19,7 @@ import {   ScatterChart,
  
 
 
-const chartConfig = {
+export const chartConfig = {
     sensorData: {
       label: "pH Value",
       color: "#2563eb",
@@ -101,7 +101,7 @@ const ChartComponent = ()=>{
             <XAxis type="number" dataKey="x" name="Time" unit="s" />
             <YAxis type="number" dataKey="y" name="pH"  />
             <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-            <Scatter name="A school" data={chartData} fill="#8884d8" line shape="circle" />
+            <Scatter name="pH Data" data={chartData} fill="#8884d8" line shape="circle" />
         </ScatterChart>
     </ChartContainer>: <NoExperimentOngoingComponent/> : <NoLocationSelected/>     
 }
