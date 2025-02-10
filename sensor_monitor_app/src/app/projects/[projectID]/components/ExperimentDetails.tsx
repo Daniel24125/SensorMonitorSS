@@ -4,6 +4,7 @@ import LocationSelection from './LocationSelection'
 import { getformatedExperimentTime } from '@/lib/utils'
 import ExperimentOptions from './ExperimentOptions'
 import ProjectExperimentData from './ProjectExperimentData'
+import ProjectExperimentLogs from './ProjectExperimentLogs'
 
 const ExperimentDetails = () => {
     const {selectedExperiment} = useProjectDetails()
@@ -13,7 +14,7 @@ const ExperimentDetails = () => {
         return getformatedExperimentTime(selectedExperiment.duration)
     },[selectedExperiment])
 
-    return <div className='w-full h-full p-2'>
+    return <div className='w-full h-full p-2 flex flex-col justify-start items-start gap-5'>
         <header className='w-full flex justify-between items-center'>
             <h4 className='text-lg font-bold'>Experiment {selectedExperiment!.id}</h4>
             <div className='flex gap-2 items-center'>
@@ -23,6 +24,7 @@ const ExperimentDetails = () => {
             </div>
         </header>
         <ProjectExperimentData/>
+        <ProjectExperimentLogs/>
     </div>
 }
 

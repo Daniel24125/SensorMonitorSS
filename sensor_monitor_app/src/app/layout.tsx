@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import Topbar from "./components/template/topbar/Topbar";
 import { SocketProvider } from "@/contexts/socket";
 import { Toaster } from "@/components/ui/toaster";
+import { ScrollArea } from "@/components/ui/scroll-area";
 
 
 export const metadata: Metadata = {
@@ -35,13 +36,13 @@ export default async function RootLayout({
               enableSystem
               disableTransitionOnChange
             >
-              <main className="bg-background p-3 flex h-screen">
+              <main className="bg-background p-3 flex h-screen ">
                 <Navigation/>
-                <div className="w-full flex flex-col h-full">
+                <div className="w-full flex flex-col h-full ">
                   <Topbar/>
-                  <section id="content" className="flex flex-col items-start justify-start h-full w-full px-3 flex-grow flex-shrink basis-auto" >
-                    {children}
-                  </section>
+                    <section id="content" className="flex flex-col items-start justify-start h-full w-full px-3 flex-grow flex-shrink basis-auto relative overflow-auto" >
+                      {children}
+                    </section>
                 </div>
                 <Toaster/>
               </main>

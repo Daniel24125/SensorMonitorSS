@@ -12,11 +12,14 @@ import React from 'react'
 const ProjectHeader = () => {
     const {project, device} = useProjectDetails()
     
+    const color = React.useMemo(()=>{
+        return deviceIconColors[device!.status]
+    },[device!.status])
        
     return (
         <div className='w-full flex justify-between items-start'>
             <div className='flex gap-5'>
-                <CardAvatar className='rounded-xl' color={deviceIconColors[device!.status]}>
+                <CardAvatar className='rounded-xl' color={color}>
                     <RadioReceiver/>
                 </CardAvatar>
                 <div className='flex flex-col'>

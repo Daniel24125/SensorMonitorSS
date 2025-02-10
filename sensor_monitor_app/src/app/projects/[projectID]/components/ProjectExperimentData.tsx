@@ -7,7 +7,8 @@ import { CartesianGrid, Label, Scatter, ScatterChart, Tooltip, XAxis, YAxis } fr
 const ProjectExperimentData = () => {
     const {selectedLocation} = useProjectDetails()
 
-    return <ChartContainer config={chartConfig} className="min-h-[200px] w-full h-1/2">
+
+    return <ChartContainer config={chartConfig} className="min-h-[200px] w-full h-1/2" >
     <ScatterChart
         margin={{
             top: 20,
@@ -22,7 +23,7 @@ const ProjectExperimentData = () => {
         </XAxis>
         <YAxis type="number" dataKey="y" name="pH"  label={{ value: 'pH', angle: -90, position: 'insideLeft' }}/>
         <Tooltip cursor={{ strokeDasharray: '3 3' }} />
-        <Scatter name="A school" data={selectedLocation!.data} fill="#8884d8" line shape="circle" />
+        <Scatter name="pH data" data={selectedLocation!.data} fill="#8884d8" line shape="circle" />
     </ScatterChart>
     </ChartContainer>
 }

@@ -48,9 +48,13 @@ export const ProjectDetailsProvider = ({
         const experiment = project.experiments[0]
         setSelectedLocation(experiment.locations[0])
         setSelectedExperiment(experiment)
-        
     },[project])
     
+    React.useEffect(()=>{
+        if(!project || !project.experiments || project.experiments?.length === 0 || !selectedExperiment) return 
+        setSelectedLocation(selectedExperiment.locations[0])
+    },[selectedExperiment])
+
     if(!isLoading && (!project || !device)) throw Error("No project found") 
     if(isLoading) return ""
     
