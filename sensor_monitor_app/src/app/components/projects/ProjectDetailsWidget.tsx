@@ -3,18 +3,32 @@ import WidgetCard from '../ui/WidgetCard'
 import { useProjects } from '@/contexts/projects'
 import moment from 'moment'
 import { Button } from '@/components/ui/button'
-import { ExperimentType } from '@/contexts/experiments'
+import { ExperimentType, LocationChartDataType } from '@/contexts/experiments'
 import { useRouter } from 'next/navigation'
 import ProjectOptions from './ProjectOptions'
 import DeviceBadge from '@/app/devices/components/DeviceBadge'
 import { useDevices } from '@/contexts/devices'
 import { cn } from '@/lib/utils'
+import { ScrollArea } from '@/components/ui/scroll-area'
+import ExperimentDetails from '@/app/projects/[projectID]/components/ExperimentDetails'
+import { ChartContainer } from '@/components/ui/chart'
+import { chartConfig } from '@/app/experiment/components/ExperimentData'
+import { CartesianGrid, Label, Scatter, ScatterChart, Tooltip, XAxis, YAxis } from 'recharts'
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
+import { deleteExperiment } from '@/actions/experiments'
+import ExperimentOptions from '@/app/projects/[projectID]/components/ExperimentOptions'
+import { useToast } from '@/hooks/use-toast'
 
 const ProjectDetails = () => {
   const {selectedProject} = useProjects()
   const {isDeviceOn} = useDevices()
   const [selectedExperiment, setSelectedExperiment] = React.useState<ExperimentType | null>(null)
   const router = useRouter()
+
+  React.useEffect(()=>{
+    if(!selectedProject || !selectedProject.experiments || selectedProject.experiments?.length === 0 || selectedExperiment ) return 
+    setSelectedExperiment(selectedProject!.experiments![0])
+  },[selectedProject])
 
   return <WidgetCard 
     title={selectedProject ? selectedProject.title :"Project Details"} 
@@ -28,26 +42,27 @@ const ProjectDetails = () => {
       </div>
     }
   >
-    {selectedProject ? <div className='flex w-full h-full'>
+    {selectedProject ? <div className='flex w-full flex-1 h-full'>
       {selectedProject.experiments!.length > 0 ? <>
-        <div className='w-52 bg-card flex flex-col rounded-xl h-full p-2 gap-2'>
-        {selectedProject.experiments?.sort((a,b)=>{
-                    const aMiliseconds = moment(a.createdAt).unix()
-                    const bMiliseconds = moment(b.createdAt).unix()
-                    return bMiliseconds - aMiliseconds
-                }).map(e=>{
-          return <ExperimentCard
-            key={e.id}
-            experiment={e}
-            className={selectedExperiment && selectedExperiment.id === e.id ? "border-2 border-[#0984E3] ": ""}
-            onClick={()=>{
-              setSelectedExperiment(e)
-            }}
-            
-          />
-        })}
-      </div>
-      <div></div>
+      <ScrollArea className='w-52 bg-card h-[calc(100%-60px)] rounded-xl shrink-0'>
+        <div className='flex flex-col  p-2 gap-2'>
+            {selectedProject.experiments?.sort((a,b)=>{
+                const aMiliseconds = moment(a.createdAt).unix()
+                const bMiliseconds = moment(b.createdAt).unix()
+                return bMiliseconds - aMiliseconds
+            }).map(e=>{
+              return <ExperimentCard
+                key={e.id}
+                experiment={e}
+                className={selectedExperiment && selectedExperiment.id === e.id ? "border-2 border-[#0984E3] ": ""}
+                onClick={()=>{
+                  setSelectedExperiment(e)
+                }}
+              />
+            })}
+        </div>
+      </ScrollArea>
+      <SelectedExperimentDetails selectedExperiment={selectedExperiment}/>
       </>: <NoDataToDisplay title={<>
           <h3 className='text-lg text-accent font-bold'>No experimental data to display</h3>
           <Button disabled={!isDeviceOn(selectedProject.device)} onClick={()=>{
@@ -59,6 +74,104 @@ const ProjectDetails = () => {
     </div>: <NoDataToDisplay title={<h3 className='text-lg text-accent font-bold'>No information to display</h3>}/>}
   </WidgetCard>
 }
+
+const SelectedExperimentDetails = ({selectedExperiment}: {selectedExperiment: ExperimentType | null})=>{
+  const [selectedLocation, setSelectedLocation] = React.useState<LocationChartDataType | null>(null)
+  const {toast} = useToast()
+  const {getProjectList} = useProjects()
+
+  React.useEffect(()=>{
+    if(!selectedExperiment) return 
+    setSelectedLocation(selectedExperiment.locations[0])
+  },[selectedExperiment])
+
+  const deleteProjectExperiment = React.useCallback(()=>{
+        if(!selectedExperiment) return 
+        deleteExperiment(selectedExperiment!.id!)
+        toast({
+            title: "Experiment Deletion",
+            description: "The experimental data was successfuly deleted!",
+        })
+        getProjectList()
+    },[selectedExperiment])
+
+  return selectedExperiment ? <div className='w-full h-full p-2 flex flex-col justify-start items-start gap-5'>
+    <header className='w-full flex justify-between items-center'>
+        <h4 className='text-lg font-bold'>Experiment {selectedExperiment!.id}</h4>
+        <div className='flex gap-2 items-center'>
+            {selectedLocation && <SelectedExperimentLocationSelection 
+              selectedExperiment={selectedExperiment}
+              setSelectedLocation={setSelectedLocation}
+              selectedLocation={selectedLocation}
+            />}
+            <ExperimentOptions deleteProjectExperiment={deleteProjectExperiment}/>
+        </div>
+    </header>
+    {selectedLocation && <SelectedExperimentData selectedLocation={selectedLocation}/>}
+  </div> : <NoDataToDisplay title={<h3 className='text-lg text-accent font-bold'>No experiment selected</h3>}/>
+}
+
+
+
+const SelectedExperimentLocationSelection = ({selectedLocation, selectedExperiment, setSelectedLocation}:
+  {
+    selectedLocation: LocationChartDataType
+    selectedExperiment: ExperimentType | null
+    setSelectedLocation: React.Dispatch<React.SetStateAction<LocationChartDataType | null>>
+  })=>{
+    const {getDeviceByID} = useDevices()
+    const {selectedProject} = useProjects()
+
+    const device = React.useMemo(()=>{
+      if(!selectedProject) return 
+      return getDeviceByID(selectedProject.device)
+    },[selectedProject])
+
+    const configuration = React.useMemo(()=>{
+      if(!selectedProject || !device) return 
+      return device?.configurations.find(c=>c.id === selectedProject!.configuration)
+    },[selectedProject])
+
+
+  return configuration && <Select value={selectedLocation!.id} onValueChange={value=>{
+    const locationData = selectedExperiment?.locations.find(l=>l.id === value)
+    setSelectedLocation(locationData!)
+  }}>
+    <SelectTrigger  className="bg-[#8C7AE6] bg-opacity-10 text-[#8C7AE6] border-none rounded-full">
+      <SelectValue placeholder="Select a location" />
+    </SelectTrigger>
+    <SelectContent>
+        {selectedExperiment!.locations.map(l=>{
+            const locationData = configuration?.locations.find(loc=>loc.id === l.id)
+            return <SelectItem key={l.id} value={l.id}>{locationData?.name}</SelectItem>
+        })}
+      
+    </SelectContent>
+  </Select>
+}
+
+
+const SelectedExperimentData = ({selectedLocation}: {selectedLocation: LocationChartDataType})=>{
+  return <ChartContainer config={chartConfig} className="min-h-[200px] w-full h-1/2 " >
+    <ScatterChart
+        margin={{
+            top: 20,
+            right: 20,
+            bottom: 0,
+            left: 0,
+        }}
+    >
+        <CartesianGrid />
+        <XAxis type="number" dataKey="x" name="Time" unit="s" >
+            <Label value="Time (s)" offset={0} position="insideBottom" />
+        </XAxis>
+        <YAxis type="number" dataKey="y" name="pH"  label={{ value: 'pH', angle: -90, position: 'insideLeft' }}/>
+        <Tooltip cursor={{ strokeDasharray: '3 3' }} />
+        <Scatter name="pH data" data={selectedLocation!.data} fill="#8884d8" line shape="circle" />
+    </ScatterChart>
+    </ChartContainer>
+}
+
 
 export const ExperimentCard = ({
   experiment, className, onClick}

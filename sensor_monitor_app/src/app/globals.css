@@ -7,6 +7,10 @@ body {
   pointer-events: auto !important;
 }
 
+* {
+  box-sizing: border-box;
+}
+
 @layer base {
   :root {
     --secondary-background: 213 8% 89%;

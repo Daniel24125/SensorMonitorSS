@@ -7,7 +7,7 @@ import ProjectExperimentData from './ProjectExperimentData'
 import ProjectExperimentLogs from './ProjectExperimentLogs'
 
 const ExperimentDetails = () => {
-    const {selectedExperiment} = useProjectDetails()
+    const {selectedExperiment, deleteProjectExperiment} = useProjectDetails()
     
     const duration = React.useMemo(()=>{
         if(!selectedExperiment) return "00:00:00"
@@ -20,7 +20,7 @@ const ExperimentDetails = () => {
             <div className='flex gap-2 items-center'>
                 <LocationSelection/>
                 <h4 className='text-3xl font-bold'>{duration}</h4>
-                <ExperimentOptions/>
+                <ExperimentOptions deleteProjectExperiment={deleteProjectExperiment}/>
             </div>
         </header>
         <ProjectExperimentData/>

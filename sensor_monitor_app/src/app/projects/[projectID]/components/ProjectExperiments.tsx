@@ -16,7 +16,7 @@ const ProjectExperiments = () => {
 
     return (selectedExperiment ? <div className='w-full h-full flex pt-5'>
         <ExperimentList/>
-        <ExperimentDetails/>
+        <ExperimentDetails />
       </div> :  <NoDataToDisplay title={<>
         <h3 className='text-lg text-accent font-bold'>No experimental data to display</h3>
         <Button disabled={!isDeviceOn(project!.device)} onClick={()=>{

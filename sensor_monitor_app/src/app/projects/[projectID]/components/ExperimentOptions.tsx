@@ -1,13 +1,11 @@
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
-import { useProjectDetails } from '@/contexts/projectDetails'
 import { useWarningDialog } from '@/contexts/warning'
 import { MoreVertical, Save, Trash2 } from 'lucide-react'
 import React from 'react'
 
-const ExperimentOptions = ({onClick}: {onClick?: ()=>void}) => {
+const ExperimentOptions = ({onClick, deleteProjectExperiment}: {onClick?: ()=>void, deleteProjectExperiment: ()=>void}) => {
     const {setOptions, setOpen: setOpenWarning} = useWarningDialog()
-    const {deleteProjectExperiment} = useProjectDetails()
 
     return <DropdownMenu>
     <DropdownMenuTrigger  asChild>
