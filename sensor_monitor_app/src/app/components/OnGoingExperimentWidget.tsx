@@ -9,6 +9,8 @@ import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, D
 import SelectProjectTemplate from '../experiment/components/SelectExperimentProject'
 import ExperimentControls from '../experiment/components/ExperimentControls'
 import { ChartComponent, LocationListComponent } from '../experiment/components/ExperimentData'
+import { getformatedExperimentTime } from '@/lib/utils'
+import CircularProgress from '@/components/ui/circular-progress'
 
 const OnGoingExperimentWidget = () => {
   const router = useRouter()
@@ -31,7 +33,7 @@ const OnGoingExperimentData = ()=>{
   return <div className='w-full h-full flex justify-between'>
     <div className='h-full flex flex-col w-48 justify-between shrink-0'>
       <div className='w-full h-48 bg-card rounded-2xl shrink-0 flex justify-center items-center'>
-
+        <ExperimentDuration/>
       </div>
       <div className='flex justify-center items-center w-full h-20 bg-card shrink rounded-2xl'>
         <ExperimentControls/>
@@ -44,7 +46,11 @@ const OnGoingExperimentData = ()=>{
   </div>
 }
 
-
+const ExperimentDuration = ()=>{
+  const {data} = useExperiments()
+  return <CircularProgress size={200} progress={(data!.duration%60)/60} label={getformatedExperimentTime(data!.duration)}/>
+  
+}
 
 const NotOngoingExperiment = ()=>{
   const {deviceList} = useDevices()
@@ -71,6 +77,7 @@ const NotOngoingExperiment = ()=>{
       <Play size={50}/>
     </div>
     <SelectProjectDialog open={open} setOpen={setOpen}/>
+
   </div>
 }
 
@@ -83,7 +90,6 @@ const SelectProjectDialog = ({
   setOpen: React.Dispatch<React.SetStateAction<boolean>>
 })=>{
   const {data, startExperiment} = useExperiments()
-  const router = useRouter()
 
   return <Dialog open={open} onOpenChange={(o)=>setOpen(o)}>
     <DialogContent className="sm:max-w-[425px]">
@@ -98,7 +104,6 @@ const SelectProjectDialog = ({
         <Button disabled={!data || !data.projectID} variant={"ghost"} className='text-primary' onClick={()=>{
          if(data && data.projectID){
           startExperiment()
-          // router.push(`/experiment`)
          }
       }}>Start experiment</Button>
         <Button variant={"ghost"} onClick={()=>setOpen(false)} >Cancel</Button>
