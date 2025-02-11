@@ -9,11 +9,13 @@ export type LocationChartDataType = {
     data: ExperimentDataType[]
 }
 
-type LogType = {
+export type PossibleLogTypes = "error" | "info" | "warning"
+
+export type LogType = {
     id: string, 
-    type: "error" | "info" | "warning",
+    type: PossibleLogTypes,
     desc: string, 
-    logTime: string, 
+    createdAt: string, 
     location: string
 }
 

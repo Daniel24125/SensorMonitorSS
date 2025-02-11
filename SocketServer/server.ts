@@ -5,7 +5,7 @@ import { v4 } from 'uuid';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import { DeviceManager } from './management/device_management.js';
-import { DeviceType, ExperimentStatusType, ExperimentType, LocationChartDataType, UpdateDeviceConfigType } from './types/experiment.js';
+import { DeviceType, ExperimentStatusType, ExperimentType, PossibleLogTypes, UpdateDeviceConfigType } from './types/experiment.js';
 import { CommandDataType, ParseCommandsType } from './types/sockets.js';
 
 const app = express();
@@ -65,17 +65,17 @@ const parseCommands: ParseCommandsType = async (data)=>{
 const startExperiment = (params: ExperimentType)=>{
     console.log("Start the Experiment")
     const {deviceID} = params
-
     const createdAt =  new Date().toISOString()
-       
     experimentStatus = {
         ...experimentStatus,
         isExperimentOngoing: true,
         data: {
             ...params,
             createdAt,
+            logs: []
         }
     }
+    updateExperimentLog("info", "Experiment started", "Device")
     updateClientsExperimentData(true, {createdAt})
     deviceManager.updateDeviceStatus(deviceID, "busy")
 }
@@ -86,7 +86,7 @@ const pauseExperiment = ()=>{
         isExperimentOngoing: true,
         status: "paused"
     })
-    
+    updateExperimentLog("info", "Experiment paused", "Device")
 }
 
 const resumeExperiment = ()=>{
@@ -95,9 +95,11 @@ const resumeExperiment = ()=>{
         isExperimentOngoing: true,
         status: "running"
     })
+    updateExperimentLog("info", "Experiment resumed", "Device")
 }
 
 const stopExperiment = (deviceID:string)=>{
+    updateExperimentLog("info", "Experiment ended", "Device")
     io.to('web_clients').emit('sensor_data', {
         locations: experimentStatus.data!.locations.map(l=>{
             return{
@@ -116,6 +118,19 @@ const stopExperiment = (deviceID:string)=>{
     deviceManager.updateDeviceStatus(deviceID, "ready")
 }
 
+const updateExperimentLog = (type: PossibleLogTypes, desc: string, location: string)=>{
+    if(experimentStatus.data && experimentStatus.data.logs){
+        const log = {
+            id: v4(),
+            type, 
+            desc, 
+            createdAt: new Date().toISOString(),
+            location
+        }
+        experimentStatus.data.logs.push(log)
+        io.to('web_clients').emit("update_experiment_log", experimentStatus.data.logs)
+    }
+}
 
 io.on('connection', (socket) => {
     console.log('New connection:', socket.id);
@@ -223,7 +238,10 @@ io.on('connection', (socket) => {
             ...status
         }
         updateClientsExperimentData(true, status)
-        console.log("update_experiment_status",experimentStatus)
+    })
+
+    socket.on("update_experiment_log", (log)=>{
+        updateExperimentLog(log.type, log.desc, log.location)
     })
   
     // Handle disconnection
@@ -237,13 +255,6 @@ io.on('connection', (socket) => {
 
     // Handle errors
     socket.on('error', (error) => {
-        /*
-            Receives errors from the device socket client
-            error: {
-                message: string,
-                device_id: string
-            }
-        */ 
         console.error('Socket error:', error);
         reportErrorToClient(error)
     });

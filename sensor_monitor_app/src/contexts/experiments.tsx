@@ -16,9 +16,7 @@ type ExperimentDataType = {
     timestamp: string
 }
 
-// interface ExperimentLocationsType extends DeviceLocationType {
-//     sensors: PhSensorType[] & ExperimentDataType[] | []
-// }
+
 export type LocationChartDataType = {
     id: string, 
     data: ExperimentDataType[]
@@ -28,7 +26,7 @@ type LogType = {
     id: string, 
     type: "error" | "info" | "warning",
     desc: string, 
-    logTime: string, 
+    createdAt: string, 
     location: string
 }
 
@@ -106,6 +104,14 @@ export const ExperimentProvider = ({
                     ...receivedData
                 } : null)
         })
+
+        on<LogType[]>("update_experiment_log", logs =>{
+            setData(prev=>prev ? {
+                ...prev, 
+                logs
+            } : null)
+        })
+
         on<{isExperimentOngoing: boolean, status: ExperimentStatus}>("experiment_status", data =>{
             setIsExperimentOngoing(data.isExperimentOngoing)
             setData(prev=>prev ? {

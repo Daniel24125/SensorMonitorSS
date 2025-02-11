@@ -4,7 +4,6 @@ import React from 'react'
 import {  useSearchParams } from 'next/navigation';
 import { useExperiments } from '@/contexts/experiments';
 import { useProjects } from '@/contexts/projects';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import ExperimentControls from './components/ExperimentControls';
 import ExperimentData from './components/ExperimentData';
 import ExperimentLogs from './components/ExperimentLogs';
