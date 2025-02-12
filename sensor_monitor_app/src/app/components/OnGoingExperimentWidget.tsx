@@ -5,7 +5,7 @@ import { ExternalLink, Play } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { useExperiments } from '@/contexts/experiments'
 import { useDevices } from '@/contexts/devices'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import SelectProjectTemplate from '../experiment/components/SelectExperimentProject'
 import ExperimentControls from '../experiment/components/ExperimentControls'
 import { ChartComponent, LocationListComponent } from '../experiment/components/ExperimentData'
@@ -29,27 +29,30 @@ const OnGoingExperimentWidget = () => {
 }
 
 const OnGoingExperimentData = ()=>{
-
-  return <div className='w-full h-full flex justify-between'>
-    <div className='h-full flex flex-col w-48 justify-between shrink-0'>
-      <div className='w-full h-48 bg-card rounded-2xl shrink-0 flex justify-center items-center'>
-        <ExperimentDuration/>
-      </div>
-      <div className='flex justify-center items-center w-full h-20 bg-card shrink rounded-2xl'>
+  const {data} = useExperiments()
+  console.log(data)
+  const time = React.useMemo(()=>{
+    return data? data.duration : 0
+  },[data])
+  return <div className='w-full h-[calc(100%-55px)] flex justify-between'>
+    <div className='h-full flex flex-col w-1/5 min-w-40 max-w-44 justify-between shrink-0'>
+      <div className='w-full h-full bg-card rounded-2xl shrink-0 flex flex-col items-center'>
+      <CircularProgress size="md"
+        progress={
+          (time%60)/60 
+        } label={
+          getformatedExperimentTime(time, false)
+        }/>
         <ExperimentControls/>
       </div>
+      {/* <div className='flex justify-center items-center w-full h-10 bg-card shrink rounded-2xl'>
+      </div> */}
     </div>
     <ChartComponent/>
     <div className='flex flex-col h-full justify-center'>
       <LocationListComponent  showIcon={false}/>
     </div>
   </div>
-}
-
-const ExperimentDuration = ()=>{
-  const {data} = useExperiments()
-  return <CircularProgress size={200} progress={(data!.duration%60)/60} label={getformatedExperimentTime(data!.duration)}/>
-  
 }
 
 const NotOngoingExperiment = ()=>{

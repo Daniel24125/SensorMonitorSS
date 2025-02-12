@@ -10,7 +10,6 @@ import DeviceBadge from '@/app/devices/components/DeviceBadge'
 import { useDevices } from '@/contexts/devices'
 import { cn } from '@/lib/utils'
 import { ScrollArea } from '@/components/ui/scroll-area'
-import ExperimentDetails from '@/app/projects/[projectID]/components/ExperimentDetails'
 import { ChartContainer } from '@/components/ui/chart'
 import { chartConfig } from '@/app/experiment/components/ExperimentData'
 import { CartesianGrid, Label, Scatter, ScatterChart, Tooltip, XAxis, YAxis } from 'recharts'
@@ -185,7 +184,7 @@ export const ExperimentCard = ({
     className
   )}>
     <p className='text-sm font-bold'>{experiment.id}</p>
-    <p className='text-xs text-accent'>{moment(experiment.createdAt).format("DD/MM/YYY - hh:mm a")}</p>
+    <p className='text-xs text-accent'>{moment(experiment.createdAt).format("DD/MM/YYYY - hh:mm a")}</p>
   </div>
 }
 

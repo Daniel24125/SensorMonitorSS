@@ -36,7 +36,7 @@ export const getProjects: GetProjectsType = async () =>{
         const data = await getDocs(q)
         const parsedData = parseFirestoreData<ProjectType>(data)
 
-        for (let i in parsedData){
+        for (const i in parsedData){
             const p = parsedData[i]
             const {data: experiments} = await getExperiments(p.id!)
             if(!experiments){

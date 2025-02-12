@@ -1,7 +1,7 @@
 "use client"
 
 import React from 'react';
-import { DeviceLocationType, PhSensorType, useDevices } from './devices';
+import { DeviceLocationType, useDevices } from './devices';
 import { useProjects } from './projects';
 import Loading from '@/app/components/Loading';
 import { useUser } from '@auth0/nextjs-auth0';
@@ -94,32 +94,45 @@ export const ExperimentProvider = ({
     const {deviceList, getConfigurationByID, isDeviceOn} = useDevices()
     const {user} = useUser()
     const {toast} = useToast()
-    const {emit, on} = useSocket()
+    const {isConnected,emit, on} = useSocket()
     const {setOptions, setOpen} = useWarningDialog()
 
+  
     React.useEffect(()=>{
-        on<ExperimentGeneralData>("experiment_data", receivedData =>{
-            setData(prev=>prev ? {
+        if(isConnected){
+            on<ExperimentType>("experiment_data", receivedData =>{
+                if(!receivedData) return 
+                if(receivedData.projectID){
+                    setData(receivedData)
+                }else{
+                    setData(prev=>prev ? {
+                        ...prev, 
+                        ...receivedData
+                    } : null)
+                }
+            })
+    
+            on<LogType[]>("update_experiment_log", logs =>{
+                setData(prev=>prev ? {
                     ...prev, 
-                    ...receivedData
+                    logs
                 } : null)
-        })
-
-        on<LogType[]>("update_experiment_log", logs =>{
-            setData(prev=>prev ? {
-                ...prev, 
-                logs
-            } : null)
-        })
-
-        on<{isExperimentOngoing: boolean, status: ExperimentStatus}>("experiment_status", data =>{
-            setIsExperimentOngoing(data.isExperimentOngoing)
-            setData(prev=>prev ? {
-                ...prev, 
-                status: data.status ? data.status : "running"
-            } : null)
-        })
-    }, [])
+            })
+    
+            on<{isExperimentOngoing: boolean, status: ExperimentStatus}>("experiment_status", expStatus =>{
+                setIsExperimentOngoing(expStatus.isExperimentOngoing)
+                setData(prev=>prev ? {
+                    ...prev, 
+                    status: expStatus.status ? expStatus.status : "running"
+                } : null)
+            })
+            on<ExperimentType>("force_shutdown", receivedData =>{
+                console.log("Force shutdow")
+                createExperiment(receivedData)
+                getProjectList()
+            })
+        }
+    }, [isConnected])
 
     React.useEffect(()=>{
         if(data && !selectedLocation){
@@ -167,7 +180,6 @@ export const ExperimentProvider = ({
             })
             return 
         }
-        setIsExperimentLoading(true)
         emit("user_command", {
             command: "startExperiment", 
             params: data
@@ -179,6 +191,7 @@ export const ExperimentProvider = ({
     
 
     },[data])
+    
     const pauseExperiment = React.useCallback(()=>{
         emit("user_command", {
             command: "pauseExperiment", 

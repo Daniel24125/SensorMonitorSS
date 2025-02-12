@@ -5,7 +5,7 @@ import { Pause, Play, StopCircle } from 'lucide-react'
 import React from 'react'
 
 const ExperimentControls = () => {
-  const {data,startExperiment, isExperimentOngoing, stopExperiment, pauseExperiment, resumeExperiment} = useExperiments()
+  const {data, startExperiment, isExperimentOngoing, stopExperiment, pauseExperiment, resumeExperiment} = useExperiments()
 
   return (
     <div className='flex gap-2 '>

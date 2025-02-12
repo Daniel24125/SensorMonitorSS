@@ -9,17 +9,20 @@ import { NoProjectsIlustration } from '@/components/ui/ilustrations'
 import AddProjectButton from './AddProjectButton'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 const ProjectListWidget = () => {
-  const { isLoading} = useProjects()
+  const { isLoading, projectList} = useProjects()
   const router = useRouter()
 
-  return (<WidgetCard title='Your Projects' secondaryAction={
+  return (<WidgetCard title={`Your Projects (${isLoading ? "0": projectList.length})`} secondaryAction={
     <Button onClick={()=>router.push("/projects")} size="icon" variant="ghost">
       <ExternalLink/>
   </Button>
   } className='w-80 flex-shrink-0'>
-    {isLoading ? <ProjectLoadingCard/> : <ProjectListComponent/>}
+    <ScrollArea className='w-full'>
+      {isLoading ? <ProjectLoadingCard/> : <ProjectListComponent/>}
+    </ScrollArea>
   </WidgetCard>
   )
 }

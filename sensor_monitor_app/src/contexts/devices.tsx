@@ -6,7 +6,6 @@ import { useToast } from '@/hooks/use-toast';
 import { ProjectProvider } from './projects';
 import WarningDialogProvider from './warning';
 import { useUser } from '@auth0/nextjs-auth0';
-import Loading from '@/app/components/Loading';
 import { ExperimentProvider } from './experiments';
 
 export interface User {
@@ -174,8 +173,6 @@ const DevicesProvider = ({children}: DevicesProviderProps) => {
     }, [deviceList])
 
   
-    if(isLoading) return <Loading/>
-
     return <DevicesContext.Provider value={value}>
         <WarningDialogProvider>
             <ProjectProvider>

@@ -11,7 +11,7 @@ const ExperimentDetails = () => {
     
     const duration = React.useMemo(()=>{
         if(!selectedExperiment) return "00:00:00"
-        return getformatedExperimentTime(selectedExperiment.duration)
+        return getformatedExperimentTime(selectedExperiment.duration, true)
     },[selectedExperiment])
 
     return <div className='w-full h-full p-2 flex flex-col justify-start items-start gap-5'>

@@ -2,17 +2,19 @@ import { cn } from '@/lib/utils'
 import React from 'react'
 
 type CircularProgressPropsType = {
-    size?: number,
+    size?: "sm" | "md" | "lg",
     progress: number,
     label: string
 }
 
-const CircularProgress = ({size=200, progress, label}: CircularProgressPropsType) => {
+const CircularProgress = ({size="md", progress, label}: CircularProgressPropsType) => {
   return <div className="flex items-center justify-center h-full">
-  <div style={{
-    width: size, 
-    height: size
-  }} className="relative ">
+  <div className={cn(
+    "relative",
+    size === "sm" ? "w-24 h-24":"",
+    size === "md" ? "w-28 h-28 lg:w-36 lg:h-36 ":"",
+    size === "lg" ? "w-48 h-48":"",
+  )}>
     <svg className="absolute top-0 left-0 w-full h-full transform -rotate-90" viewBox="0 0 100 100">
       <circle cx="50" cy="50" r="40" fill="transparent" stroke="#19191B" strokeWidth="2" />
       <circle
@@ -32,7 +34,12 @@ const CircularProgress = ({size=200, progress, label}: CircularProgressPropsType
         </linearGradient>
       </defs>
     </svg>
-    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-3xl font-bold text-gray-900 dark:text-gray-50">
+    <div className={cn(
+      "absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 font-bold text-gray-900 dark:text-gray-50",
+      size === "sm" ? "text-xl":"",
+      size === "md" ? "text-3xl":"",
+      size === "lg" ? "text-5xl":"",
+    )}>
       {label}
     </div>
   </div>

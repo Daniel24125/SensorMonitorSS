@@ -28,9 +28,9 @@ export const parseError = (error: typeof Error | string)=>{
     }
 }
 
-export const getformatedExperimentTime = (duration: number)=>{
+export const getformatedExperimentTime: (duration: number, showSeconds?:boolean)=>string = (duration, showSeconds=true)=>{
   const hours = Math.floor(duration / 3600);
   const minutes = Math.floor((duration % 3600) / 60);
   const secs = duration % 60;
-  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}${showSeconds ? `:${secs.toString().padStart(2, '0')}`: ""}`;
 }

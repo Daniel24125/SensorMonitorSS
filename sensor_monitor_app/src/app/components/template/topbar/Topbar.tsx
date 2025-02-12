@@ -13,7 +13,7 @@ import AddProjectButton from '../../projects/AddProjectButton'
 
 const Topbar = () => {
   return (
-    <div className='w-full flex justify-between items-center p-3 flex-grow-0 flex-shrink basis-auto'>
+    <div className='w-full flex justify-between items-center p-3 '>
         <SearchProject/>
         <div className='flex items-center gap-3'>
           <DeviceInfo/>

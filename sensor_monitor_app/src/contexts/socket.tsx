@@ -118,12 +118,12 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
     });
   }, [socket, isConnected]);
 
-  const on = <T,>(event: string, callback: (data: T) => void): void => {
+  const on = useCallback(<T,>(event: string, callback: (data: T) => void): void => {
     console.log(`On ${event}`);
-    if (socket) {
+    if (socket && isConnected) {
       socket.on(event, callback);
     }
-  };
+  },[socket, isConnected]);
 
   const off = <T,>(event: string, callback?: (data: T) => void): void => {
     if (socket) {

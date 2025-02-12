@@ -1,11 +1,12 @@
 "use client"
 
-import React, { createContext,  useContext, useTransition } from 'react';
+import React, { createContext,  useContext } from 'react';
 import { ProjectType, useProjects } from './projects';
 import { ExperimentType, LocationChartDataType } from './experiments';
 import { DeviceType, useDevices } from './devices';
 import { deleteExperiment } from '@/actions/experiments';
 import { useToast } from '@/hooks/use-toast';
+import { useRouter } from 'next/navigation';
 
 
 // Define types for the socket context
@@ -38,6 +39,7 @@ export const ProjectDetailsProvider = ({
     const {getProjectByID, isLoading, projectList, getProjectList} = useProjects()
     const {getDeviceByID} = useDevices()
     const {toast} = useToast()
+    const router = useRouter()
 
     const project = React.useMemo(()=>{
         return getProjectByID(projectID)
@@ -68,8 +70,11 @@ export const ProjectDetailsProvider = ({
         if(!project || !project.experiments || project.experiments?.length === 0 || !selectedExperiment) return 
         setSelectedLocation(selectedExperiment.locations[0])
     },[selectedExperiment])
-
-    if(!isLoading && (!project || !device)) throw Error("No project found") 
+   
+    if(!isLoading && (!project || !device)) {
+        router.push("/")
+        return ""
+    }
     if(isLoading) return ""
     
     const value: ProjectContextType = {

@@ -3,13 +3,21 @@ import React from 'react'
 import ProjectHeader from './components/ProjectHeader'
 import ProjectExperiments from './components/ProjectExperiments'
 import { ProjectDetailsProvider } from '@/contexts/projectDetails'
+import Loading from '@/app/components/Loading'
 
 const Page = async ({params}: {params: Promise<{ projectID: string }>}) => {
-    const projectID = await React.useMemo(async ()=>{
-        return (await params).projectID
-    }, [])
+    const [projectID, setProjectID] = React.useState<null | string>(null)
+  
+    React.useEffect(()=>{
+        const getProjectID = async ()=>{
+            const urlParams = await params
+            setProjectID(urlParams.projectID) 
+           
+        }
+        getProjectID()
+    },[])
 
-    
+    if(!projectID) return <Loading/>
 
 
     return (<ProjectDetailsProvider projectID={projectID}>

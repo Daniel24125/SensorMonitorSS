@@ -4,7 +4,7 @@ import { ChartConfig,ChartContainer} from '@/components/ui/chart'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { TooltipWrapper } from '@/components/ui/tooltip'
 import { useDevices } from '@/contexts/devices'
-import { LocationChartDataType, useExperiments } from '@/contexts/experiments'
+import {  LocationChartDataType, useExperiments } from '@/contexts/experiments'
 import { useSocket } from '@/contexts/socket'
 import { cn } from '@/lib/utils'
 import { CircleCheck, CircleMinus, MapPin } from 'lucide-react'
@@ -77,6 +77,7 @@ export const ChartComponent = ()=>{
                 }
             })
         })
+      
     }, [])
 
     const chartData = React.useMemo(()=>{
@@ -121,9 +122,9 @@ const NoExperimentOngoingComponent = ()=>{
 
 type LocationListPropsTyep={
     showIcon?: boolean
-    className?: string
 }
-export const LocationListComponent = ({showIcon=true, className}: LocationListPropsTyep)=>{
+
+export const LocationListComponent = ({showIcon=true}: LocationListPropsTyep)=>{
     const {data, selectedLocation, setSelectedLocation, isExperimentDeviceOn, isExperimentOngoing} = useExperiments()
     const {getConfigurationByID} = useDevices()
 
