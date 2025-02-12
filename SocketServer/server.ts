@@ -54,7 +54,9 @@ const parseCommands: ParseCommandsType = async (data)=>{
     } else if (command === 'resumeExperiment') {
         resumeExperiment()
     } else if (command === 'stopExperiment') {
-        stopExperiment(deviceID)
+        updateExperimentLog("info", "Experiment ended", "Device")
+        stopExperiment()
+        deviceManager.updateDeviceStatus(deviceID, "ready")
     }
     deviceManager.sendDeviceCommand(deviceID, {
         cmd: command, 
@@ -98,8 +100,7 @@ const resumeExperiment = ()=>{
     updateExperimentLog("info", "Experiment resumed", "Device")
 }
 
-const stopExperiment = (deviceID:string)=>{
-    updateExperimentLog("info", "Experiment ended", "Device")
+const stopExperiment = ()=>{
     io.to('web_clients').emit('sensor_data', {
         locations: experimentStatus.data!.locations.map(l=>{
             return{
@@ -115,7 +116,6 @@ const stopExperiment = (deviceID:string)=>{
     updateClientsExperimentData(false, {
         duration: 0
     })
-    deviceManager.updateDeviceStatus(deviceID, "ready")
 }
 
 const webClientConnection = async (socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any> )=>{
@@ -253,6 +253,11 @@ io.on('connection', (socket) => {
         const isDevice = await deviceManager.isDevice(socket.id)
         if (isDevice) {
             await deviceManager.updateDeviceStatus(isDevice.id, "disconnected")
+            if(experimentStatus.isExperimentOngoing){
+                io.to("web_clients").emit("force_shutdown", experimentStatus.data)
+                stopExperiment()
+                updateExperimentLog("error", "The device was disconnected", "Device")
+            }
         }
     });
 
