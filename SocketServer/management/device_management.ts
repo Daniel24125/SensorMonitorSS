@@ -26,13 +26,13 @@ export class DeviceManager {
       // Create directory if it doesn't exist
       const directory = path.dirname(this.storageFilePath);
       await fs.mkdir(directory, { recursive: true });
-
       // Check if file exists, if not create it with empty array
       try {
         await fs.access(this.storageFilePath);
       } catch {
         await this.saveDevices([]);
       }
+      await this.disconnectAllDevices()
     } catch (error) {
       console.error('Error initializing device storage:', error);
       throw error;
@@ -49,6 +49,14 @@ export class DeviceManager {
     }
   }
 
+  async disconnectAllDevices(){
+    console.log("Disconnecting all devices...")
+    const devices = await this.loadDevices()
+    for(let d of devices){
+      const {id} = d
+      await this.updateDeviceStatus(id, "disconnected")
+    }
+  }
 
   async sendDeviceCommand(deviceID: string, data: DeviceCommandType): Promise<void> {
     const device = await this.getDeviceByID(deviceID);

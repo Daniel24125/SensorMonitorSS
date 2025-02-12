@@ -3,7 +3,7 @@ import 'dotenv/config';
 import express from 'express';
 import { v4 } from 'uuid';
 import { createServer } from 'http';
-import { Server } from 'socket.io';
+import { DefaultEventsMap, Server, Socket } from 'socket.io';
 import { DeviceManager } from './management/device_management.js';
 import { DeviceType, ExperimentStatusType, ExperimentType, PossibleLogTypes, UpdateDeviceConfigType } from './types/experiment.js';
 import { CommandDataType, ParseCommandsType } from './types/sockets.js';
@@ -118,7 +118,16 @@ const stopExperiment = (deviceID:string)=>{
     deviceManager.updateDeviceStatus(deviceID, "ready")
 }
 
+const webClientConnection = async (socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any> )=>{
+    console.log('Web client registered:', socket.id);
+    socket.join('web_clients');
+    const devices = await deviceManager.getAllDevices()
+    socket.emit('get_connected_devices', devices);
+    updateClientsExperimentData(experimentStatus.isExperimentOngoing, experimentStatus.data)
+}
+
 const updateExperimentLog = (type: PossibleLogTypes, desc: string, location: string)=>{
+    console.log(`Log received: ${desc}`)
     if(experimentStatus.data && experimentStatus.data.logs){
         const log = {
             id: v4(),
@@ -134,18 +143,13 @@ const updateExperimentLog = (type: PossibleLogTypes, desc: string, location: str
 
 io.on('connection', (socket) => {
     console.log('New connection:', socket.id);
-   
     // Register client type
     socket.on('register_client', async (clientType: "rpi" | "web") => {
         if (clientType === 'rpi') {
             console.log('RPi registered:', socket.id);
         } 
         else if (clientType === 'web') {
-            console.log('Web client registered:', socket.id);
-            socket.join('web_clients');
-            const devices = await deviceManager.getAllDevices()
-            socket.emit('get_connected_devices', devices);
-            updateClientsExperimentData(experimentStatus.isExperimentOngoing, experimentStatus.data)
+            await webClientConnection(socket)
         }
     });
 
@@ -216,7 +220,6 @@ io.on('connection', (socket) => {
     // Handle sensor data from RPi
     socket.on('sensor_data', (sensorData: {data: {id: string, x: number, y: number}[]}) => {
         if (experimentStatus.isExperimentOngoing) {
-            console.log("Data received from RPi", sensorData)
             // Broadcast sensor data to all web clients
             sensorData.data.forEach((l, index) =>{
                 const location = experimentStatus.data!.locations[index]
