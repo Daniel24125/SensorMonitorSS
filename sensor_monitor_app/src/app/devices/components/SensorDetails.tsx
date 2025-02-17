@@ -2,7 +2,7 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { ResponsiveDialog } from '@/components/ui/responsive-dialog'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { PhSensorModeType, PhSensorType, useDevices } from '@/contexts/devices'
+import { DevicePortType, PhSensorModeType, PhSensorType, useDevices } from '@/contexts/devices'
 import { useSocket } from '@/contexts/socket'
 import React from 'react'
 import { useLocations } from './LocationDetails'
@@ -61,8 +61,7 @@ const defaultSensorData: PhSensorType = {
     margin: 0.1,
     maxValveTimeOpen: 30,
     targetPh: 7,
-    probePort: 17,
-    valvePort: 18,
+    devicePort: "i1",
     checkInterval: 10
 }
 
@@ -173,31 +172,36 @@ export const SensorForm = ()=>{
                             onChange={handleChange}
                         />
                     </FormInput>
-                    <FormInput label='pH Electrode Port'>
-                        <Input
-                            placeholder='pH Electrode Port'
-                            id="probePort"
-                            name="probePort"
-                            value={form.probePort}
-                            required
-                            type='number'
-                            step={1}
-                            onChange={handleChange}
-                        />
+                    
+                    <FormInput label='Device Port' description='Select the device port'>
+                        <Select value={form.devicePort} onValueChange={(value: DevicePortType)=>{
+                            setForm(prev=>{
+                                return {
+                                    ...prev, 
+                                    "devicePort": value
+                                }
+                            })
+                        }}>
+                            <SelectTrigger>
+                                <SelectValue placeholder="Device Port" />
+                            </SelectTrigger>
+                            <SelectContent>
+                                <SelectItem value="i1">Port 1 </SelectItem>
+                                <SelectItem value="i2">Port 2 </SelectItem>
+                                <SelectItem value="i3">Port 3 </SelectItem>
+                                <SelectItem value="i4">Port 4 </SelectItem>
+                                <SelectItem value="i5">Port 5 </SelectItem>
+                                <SelectItem value="i6">Port 6 </SelectItem>
+                                <SelectItem value="i7">Port 7 </SelectItem>
+                                <SelectItem value="i8">Port 8 </SelectItem>
+                                <SelectItem value="i9">Port 9 </SelectItem>
+                                <SelectItem value="i10">Port 10 </SelectItem>
+                                <SelectItem value="i11">Port 11 </SelectItem>
+                                <SelectItem value="i12">Port 12 </SelectItem>
+                            </SelectContent>
+                        </Select>
                     </FormInput>
-                    <FormInput label='Actuation Valve Port' >
-                        <Input
-                            placeholder='Actuation Valve Port'
-                            id="valvePort"
-                            name="valvePort"
-                            value={form.valvePort}
-                            required
-                            type='number'
-                            step={1}
-                            onChange={handleChange}
-                        />
-                    </FormInput>
-                    <FormInput label='Check Measurment Interval' description='Period of time in which the device will compare the measured pH with the target pH'>
+                    {/* <FormInput label='Check Measurment Interval' description='Period of time in which the device will compare the measured pH with the target pH'>
                         <Input
                             placeholder='Check Measurment Interval'
                             id="checkInterval"
@@ -208,7 +212,7 @@ export const SensorForm = ()=>{
                             step={1}
                             onChange={handleChange}
                         />
-                    </FormInput>
+                    </FormInput> */}
                 </div>
             </ScrollArea>
             <Button className='w-full mt-5'>
@@ -271,15 +275,14 @@ const SingleSensorTemplate = ({sensorData}: {sensorData?:PhSensorType})=>{
             
         </header>
         <div className='w-full flex justify-between py-6'>
-            <SensorPropertieTemplate icon={Plug2} title='Electrode Port' info={`Port ${sensor.probePort}`}/> 
-            <SensorPropertieTemplate icon={PanelLeftOpen} title='Valve Port' info={`Port ${sensor.valvePort}`}/> 
-        </div>
-        <div className='w-full flex justify-between py-6'>
+            <SensorPropertieTemplate icon={Plug2} title='Electrode Port' info={`Port ${sensor.devicePort}`}/> 
             <SensorPropertieTemplate icon={ShieldCheck} title='Acceptance Margin' info={sensor.margin}/> 
-            <SensorPropertieTemplate icon={Clock2} title='Maximum Valve Time' info={`${sensor.maxValveTimeOpen} seconds`} /> 
         </div>
         <div className='w-full flex justify-between py-6'>
+            <SensorPropertieTemplate icon={Clock2} title='Maximum Valve Time' info={`${sensor.maxValveTimeOpen} seconds`} /> 
             <SensorPropertieTemplate icon={Calendar} title='Sensor registered At' info={moment(sensor.createdAt).format("DD/MM/YYYY - hh:mm a")}/> 
+        </div>
+        <div className='w-full flex justify-between py-6'>
             <SensorPropertieTemplate icon={CircleFadingArrowUp} title='Last updated at' info={sensor.updatedAt ? moment(sensor.updatedAt).format("DD/MM/YYYY") : "Never updated"} /> 
         </div>
     </div>
