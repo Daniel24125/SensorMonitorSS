@@ -24,14 +24,17 @@ const DeviceInformation = ()=>{
             <h2 className="text-2xl font-bold">{selectedData?.name} </h2>
             {selectedData!.lastUpdatedAt && <h5 className="text-accent text-sm">Configuration last updated {new Intl.DateTimeFormat().format(new Date(selectedData!.lastUpdatedAt))}</h5>}
           </div>
-          <ConfigurationOptions/>
+          <div className="flex gap-3 items-center">
+            <DeviceConfigurationTabs/>
+            <ConfigurationOptions/>
+          </div>
         </header>
       </LocationDetails>
     </SensorProvider>
   </div>
 }
 
-const ConfigurationOptions = ()=>{
+export const ConfigurationOptions = ()=>{
   const handleOpen = useDeleteConfig("configuration")
   const {setOpen, setEdit} = useConfigurations()
 

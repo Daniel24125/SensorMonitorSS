@@ -94,10 +94,12 @@ const SelectedExperimentDetails = ({selectedExperiment}: {selectedExperiment: Ex
         getProjectList()
     },[selectedExperiment])
 
-  return selectedExperiment ? <div className='w-full h-full p-2 flex flex-col justify-start items-start gap-5'>
-    <header className='w-full flex justify-between items-center'>
+  return selectedExperiment ? <div className='w-full h-full p-2 flex justify-start items-start relative'>
+    {/* <header className='w-full flex justify-between items-center'>
         <h4 className='text-lg font-bold'>Experiment {selectedExperiment!.id}</h4>
-        <div className='flex gap-2 items-center'>
+    </header> */}
+    {selectedLocation && <SelectedExperimentData selectedLocation={selectedLocation}/>}
+        <div className='flex gap-2 items-center absolute top-0 right-0'>
             {selectedLocation && <SelectedExperimentLocationSelection 
               selectedExperiment={selectedExperiment}
               setSelectedLocation={setSelectedLocation}
@@ -105,8 +107,6 @@ const SelectedExperimentDetails = ({selectedExperiment}: {selectedExperiment: Ex
             />}
             <ExperimentOptions deleteProjectExperiment={deleteProjectExperiment}/>
         </div>
-    </header>
-    {selectedLocation && <SelectedExperimentData selectedLocation={selectedLocation}/>}
   </div> : <NoDataToDisplay title={<h3 className='text-lg text-accent font-bold'>No experiment selected</h3>}/>
 }
 
@@ -136,7 +136,7 @@ const SelectedExperimentLocationSelection = ({selectedLocation, selectedExperime
     const locationData = selectedExperiment?.locations.find(l=>l.id === value)
     setSelectedLocation(locationData!)
   }}>
-    <SelectTrigger  className="bg-[#8C7AE6] bg-opacity-10 text-[#8C7AE6] border-none rounded-full">
+    <SelectTrigger  className="bg-[#1f1d2a]  text-[#8C7AE6] border-none rounded-full">
       <SelectValue placeholder="Select a location" />
     </SelectTrigger>
     <SelectContent>
@@ -151,7 +151,7 @@ const SelectedExperimentLocationSelection = ({selectedLocation, selectedExperime
 
 
 const SelectedExperimentData = ({selectedLocation}: {selectedLocation: LocationChartDataType})=>{
-  return <ChartContainer config={chartConfig} className="min-h-[200px] w-full h-1/2 " >
+  return <ChartContainer config={chartConfig} className="w-full h-3/4 " >
     <ScatterChart
         margin={{
             top: 20,

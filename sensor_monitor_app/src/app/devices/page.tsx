@@ -2,7 +2,7 @@
 import React from 'react'
 import WidgetCard from '../components/ui/WidgetCard'
 import { DeviceConfigurationType, useDevices } from '@/contexts/devices'
-import DeviceInformation, { DeviceConfigurationTabs, NoSelectedDevice } from './components/DeviceDetails'
+import DeviceInformation, { ConfigurationOptions, DeviceConfigurationTabs, NoSelectedDevice } from './components/DeviceDetails'
 import ConfigurationManager from './components/ConfigurationManager'
 import { NextPage } from 'next'
 import { ConfigurationContext, useConfigurations } from '@/hooks/use-configurations'
@@ -46,21 +46,27 @@ const DevicePage: NextPage = () => {
   }
 
   return <ConfigurationContext.Provider value={value}>
-    <WidgetCard 
-      secondaryAction={
-        selectedDevice && <DeviceConfigurationTabs/>
-      } 
-      className='w-full' 
-      title={"Device Details"} 
-    >
-      {selectedDevice ? <>
+    {selectedDevice ? <>
         <DeviceInformation/>
         <ConfigurationManager 
           useContext={useConfigurations}
           channelContext="configuration"
         />
       </> : <NoSelectedDevice/>}
-    </WidgetCard>
+    {/* <WidgetCard 
+      secondaryAction={
+        selectedDevice && <>
+          <DeviceConfigurationTabs/>
+        </>
+      } 
+      className='w-full' 
+      title={selectedDevice && <div className="flex flex-col gap-1 h-14">
+        <span className="text-2xl font-bold">{selectedDevice.name} </span>
+        {selectedDevice!.lastUpdatedAt && <span className="text-accent text-sm">Configuration last updated {new Intl.DateTimeFormat().format(new Date(selectedDevice!.lastUpdatedAt))}</span>}
+      </div>} 
+    >
+      
+    </WidgetCard> */}
   </ConfigurationContext.Provider> 
 }
 

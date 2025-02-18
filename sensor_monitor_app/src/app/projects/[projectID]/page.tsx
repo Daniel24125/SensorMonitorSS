@@ -1,3 +1,4 @@
+"use client"
 
 import React from 'react'
 import ProjectHeader from './components/ProjectHeader'
@@ -5,7 +6,7 @@ import ProjectExperiments from './components/ProjectExperiments'
 import { ProjectDetailsProvider } from '@/contexts/projectDetails'
 import Loading from '@/app/components/Loading'
 
-const Page = async ({params}: {params: Promise<{ projectID: string }>}) => {
+const Page = ({params}: {params: Promise<{ projectID: string }>}) => {
     const [projectID, setProjectID] = React.useState<null | string>(null)
   
     React.useEffect(()=>{

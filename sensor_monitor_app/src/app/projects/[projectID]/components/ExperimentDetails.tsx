@@ -4,7 +4,7 @@ import LocationSelection from './LocationSelection'
 import { getformatedExperimentTime } from '@/lib/utils'
 import ExperimentOptions from './ExperimentOptions'
 import ProjectExperimentData from './ProjectExperimentData'
-import ProjectExperimentLogs from './ProjectExperimentLogs'
+import ProjectExperimentLogs from './logs/ProjectExperimentLogs'
 
 const ExperimentDetails = () => {
     const {selectedExperiment, deleteProjectExperiment} = useProjectDetails()
@@ -24,7 +24,11 @@ const ExperimentDetails = () => {
             </div>
         </header>
         <ProjectExperimentData/>
-        <ProjectExperimentLogs/>
+        <ProjectExperimentLogs 
+            deviceID={selectedExperiment ? selectedExperiment.deviceID:''}
+            configurationID={selectedExperiment ? selectedExperiment.configurationID:''}
+            logs={selectedExperiment && selectedExperiment.logs ? selectedExperiment.logs : null}
+            />
     </div>
 }
 
