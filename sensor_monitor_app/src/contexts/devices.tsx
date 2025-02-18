@@ -21,6 +21,7 @@ export interface User {
 }
 
 export type PhSensorModeType =  "acidic" | "alkaline" | "auto"
+export type DevicePortType =  "i1" | "i2" | "i3" | "i4" | "i5" | "i6" | "i7" | "i8" | "i9" | "i10" | "i11" | "i12"
 
 export type PhSensorType = {
     id?: string
@@ -28,8 +29,7 @@ export type PhSensorType = {
     margin: number 
     maxValveTimeOpen: number 
     targetPh: number 
-    probePort: number
-    valvePort: number 
+    devicePort: DevicePortType
     checkInterval: number
     createdAt?: string
     updatedAt?: string
