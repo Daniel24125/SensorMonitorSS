@@ -3,13 +3,14 @@ import { LogType } from '@/contexts/experiments'
 import moment from 'moment'
 import React from 'react'
 import { SeverityBadge, severityColors } from './LogFilter'
+import { ScrollArea } from '@/components/ui/scroll-area'
 
 type LogTableProps = {
   logs: LogType[] | null 
 }
 const LogTable = ({logs}:LogTableProps) => {
     if(!logs) return <h1>No data to display</h1>
-    return (
+    return (<ScrollArea className='h-[400px]'>
         <Table>
             <TableCaption>A list of all experiment logs.</TableCaption>
             <TableHeader>
@@ -22,9 +23,10 @@ const LogTable = ({logs}:LogTableProps) => {
                 </TableRow>
             </TableHeader>
             <TableBody>
+        
                 {logs!.map((l,i)=>{
                     return<TableRow key={l.id}>
-                        <TableCell>{i}</TableCell>
+                        <TableCell className='text-accent'>{i}</TableCell>
                         <TableCell>{l.desc}</TableCell>
                         <TableCell>{moment(l.createdAt).format("DD/MM/YYYY - hh:mm:ss a")}</TableCell>
                         <TableCell>
@@ -37,6 +39,7 @@ const LogTable = ({logs}:LogTableProps) => {
                 })}
             </TableBody>
         </Table>
+    </ScrollArea>
     )
 }
 
