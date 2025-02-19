@@ -50,7 +50,7 @@ const LogFilter = ({logs, setDisplayLogs, deviceID, configurationID}: LogFilterP
 
     const configuration = React.useMemo(()=>getConfigurationByID(deviceID, configurationID),[])
     React.useEffect(()=>{
-        setDisplayLogs(prev=>{
+        setDisplayLogs(()=>{
             if(!logs) return logs
             if(!severity && location === "all") return logs
             if(!severity && location !== "all") return logs.filter(l=>l.location === location)
@@ -97,6 +97,7 @@ const LogFilter = ({logs, setDisplayLogs, deviceID, configurationID}: LogFilterP
                     <div className='w-full flex justify-between'>
                         {Object.values(severityColors).map((d)=>{
                             return <SeverityBadge
+                                key={d.label}
                                 onClick={()=>{
                                     setSeverity(prev => prev === d.value ? null : d.value)
                                 }}

@@ -2,7 +2,7 @@ import { Table, TableBody, TableCaption, TableCell, TableHead, TableHeader, Tabl
 import { LogType } from '@/contexts/experiments'
 import moment from 'moment'
 import React from 'react'
-import { SeverityBadge, severityColors } from './LogFilter'
+import { SeverityBadge } from './LogFilter'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
 type LogTableProps = {

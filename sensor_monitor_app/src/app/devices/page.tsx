@@ -1,8 +1,7 @@
 "use client"
 import React from 'react'
-import WidgetCard from '../components/ui/WidgetCard'
 import { DeviceConfigurationType, useDevices } from '@/contexts/devices'
-import DeviceInformation, { ConfigurationOptions, DeviceConfigurationTabs, NoSelectedDevice } from './components/DeviceDetails'
+import DeviceInformation, { NoSelectedDevice } from './components/DeviceDetails'
 import ConfigurationManager from './components/ConfigurationManager'
 import { NextPage } from 'next'
 import { ConfigurationContext, useConfigurations } from '@/hooks/use-configurations'
