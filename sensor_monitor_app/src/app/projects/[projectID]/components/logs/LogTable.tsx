@@ -9,7 +9,7 @@ type LogTableProps = {
   logs: LogType[] | null 
 }
 const LogTable = ({logs}:LogTableProps) => {
-    if(!logs) return <h1>No data to display</h1>
+    if(!logs) return <h1>Waiting fo experiment logs</h1>
     return (<ScrollArea className='h-[400px]'>
         <Table>
             <TableCaption>A list of all experiment logs.</TableCaption>

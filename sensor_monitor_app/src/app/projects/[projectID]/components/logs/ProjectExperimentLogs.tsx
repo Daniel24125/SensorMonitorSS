@@ -19,7 +19,7 @@ const ProjectExperimentLogs = ({
 
   React.useEffect(()=>{
     setDisplayLogs(logs ? logs : [])  
-  },[])
+  },[logs])
 
   return (
     <div className='p-3 w-full flex flex-col border rounded-2xl gap-4'>
