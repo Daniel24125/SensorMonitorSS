@@ -37,7 +37,7 @@ export const useSocket = (): SocketContextType => {
 };
 
 export const SocketProvider: React.FC<SocketProviderProps> = ({ 
-  url = 'http://localhost:8000',
+  url = process.env.NEXT_PUBLIC_SOCKET_SERVER,
   options = {},
   children 
 }) => {
