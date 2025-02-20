@@ -2,8 +2,9 @@ import path from "path";
 import fs from "fs/promises";
 import { Server } from "socket.io";
 import { v4 as uuidv4 } from 'uuid';
-import { DeviceStatus, DeviceType,  ExperimentType } from "../types/experiment";
+import { DeviceStatus, DeviceType,  ExperimentStatusType,  ExperimentType, LogType, PossibleLogTypes } from "../types/experiment";
 import { AvailableCommandsType } from "../types/sockets";
+import { v4 } from 'uuid';
 
 
 
@@ -12,13 +13,115 @@ type DeviceCommandType = {
   data: ExperimentType
 }
 
+
+export class DeviceConnection{
+  public readonly id: string;
+  private readonly io: Server;
+  public isExperimentOngoing: boolean
+  public experimentData : null | ExperimentType
+ 
+  constructor(io: Server, deviceID: string){
+    this.io = io
+    this.id = deviceID
+    this.isExperimentOngoing = false
+    this.experimentData = null
+  }
+
+  
+  startExperiment = (params: ExperimentType)=>{
+      console.log("Start the Experiment")
+      const createdAt =  new Date().toISOString()
+      this.isExperimentOngoing = true
+      this.experimentData = {
+        ...params,
+        createdAt,
+        status: "running",
+        logs: []
+    }
+      this.updateExperimentLog({type:"info",  desc:"Experiment started", location:"Device"})
+      updateClientsExperimentData(true, {createdAt})
+     
+  }
+  
+  pauseExperiment = ()=>{
+      console.log("Pause the Experiment")
+      this.experimentData!.status = "paused"
+      
+      this.io.to('web_clients').emit("experiment_status", {
+          isExperimentOngoing: true,
+          status: "paused"
+      })
+      this.updateExperimentLog({type:"info",  desc:"Experiment paused", location:"Device"})
+  }
+  
+  resumeExperiment = ()=>{
+      console.log("Resume the Experiment")
+      this.experimentData!.status = "running"
+      this.io.to('web_clients').emit("experiment_status", {
+          isExperimentOngoing: true,
+          status: "running"
+      })
+      this.updateExperimentLog({type:"info", desc:"Experiment resumed", location:"Device"})
+  }
+  
+  stopExperiment = ()=>{
+      this.io.to('web_clients').emit('sensor_data', {
+          locations: this.experimentData!.locations.map(l=>{
+              return{
+                  id: l.id, 
+                  data: []
+              }
+          }),
+      });
+      this.isExperimentOngoing = false,
+      this.experimentData = null
+      this.updateExperimentLog("info", "Experiment ended", "Device")
+      updateClientsExperimentData(false, {
+          duration: 0
+      })
+  }
+
+  updateExperimentLog({type, desc, location}: Partial<LogType>){
+    if(this.experimentData && this.experimentData.logs){
+      const log = {
+          id: v4(),
+          type, 
+          desc, 
+          createdAt: new Date().toISOString(),
+          location
+      }
+      this.experimentData.logs.push(log)
+      this.io.to('web_clients').emit("update_experiment_log",  this.experimentData.logs)
+    }
+  }
+
+  updateExperimentalData(sensorData: {data: {id: string, x: number, y: number}[]}){
+    if (this.isExperimentOngoing) {
+      // Broadcast sensor data to all web clients
+      sensorData.data.forEach((l, index) =>{
+          const location = this.experimentData!.locations[index]
+          this.experimentData!.locations[index] = {
+              id: l.id,
+              data: [...location.data, {x: l.x,y: l.y}]
+          }
+      })
+      this.io.to('web_clients').emit('sensor_data', {
+          locations: this.experimentData!.locations,
+          timestamp: new Date().toISOString()
+      });
+  }
+  }
+}
+
 export class DeviceManager {
   private readonly storageFilePath: string;
   private readonly io: Server;
+  private connectedDevices: DeviceConnection[]
 
   constructor(io: Server, storageFilePath: string = './management/devices.json') {
     this.storageFilePath = storageFilePath;
     this.io = io;
+    this.connectedDevices = []
   }
 
   async initialize(): Promise<void> {
@@ -58,13 +161,37 @@ export class DeviceManager {
     }
   }
 
-  async sendDeviceCommand(deviceID: string, data: DeviceCommandType): Promise<void> {
+  async sendDeviceCommand( command: AvailableCommandsType, data: ExperimentType): Promise<void> {
+    const {deviceID} = data
     const device = await this.getDeviceByID(deviceID);
+    const deviceConnection = this.connectedDevices.find(d=>d.id === deviceID)
+
+     if (command === 'startExperiment') {
+            deviceConnection!.startExperiment(data)
+            this.updateDeviceStatus(deviceID, "busy")
+        } else if (command === 'pauseExperiment') {
+            deviceConnection!.pauseExperiment()
+        } else if (command === 'resumeExperiment') {
+            deviceConnection!.resumeExperiment()
+        } else if (command === 'stopExperiment') {
+            deviceConnection!.stopExperiment()
+            this.updateDeviceStatus(deviceID, "ready")
+        }
     if (device?.socketID) {
       this.io.to(device.socketID).emit("command", data);
     }
   }
 
+  getDeviceConnection(deviceID: string){
+    return this.connectedDevices.find(d=>d.id === deviceID)
+  }
+  
+  updateExperimentLog = (deviceID:string, log: {type: PossibleLogTypes, desc: string, location: string})=>{
+    console.log(`Log received: ${log.desc}`)
+    const device = this.getDeviceConnection(deviceID)
+    device!.updateExperimentLog(log)
+    
+}
   async getDeviceByID(deviceID: string): Promise<DeviceType | undefined> {
     const devices = await this.getAllDevices();
     return devices.find(d => d.id === deviceID);
@@ -97,9 +224,10 @@ export class DeviceManager {
     try {
       const devices = await this.loadDevices();
       const timestamp = new Date().toJSON();
-      const deviceExists = devices.findIndex(device => device.id === deviceInfo.id) > -1;
+      const deviceExists = devices.find(device => device.id === deviceInfo.id);
 
       if (deviceExists) {
+        this.connectedDevices.push(new DeviceConnection(this.io, deviceInfo.id))
         return await this.updateDeviceStatus(deviceInfo.id!, "ready", socketID);
       }
 
@@ -114,6 +242,7 @@ export class DeviceManager {
 
       devices.push(newDevice);
       await this.saveDevices(devices);
+      this.connectedDevices.push(new DeviceConnection(this.io, newDevice.id))
       return newDevice;
     } catch (error) {
       console.error('Error registering device:', error);
@@ -137,6 +266,7 @@ export class DeviceManager {
       };
 
       await this.saveDevices(devices);
+
       return devices[deviceIndex];
     } catch (error) {
       console.error('Error updating device status:', error);
@@ -175,6 +305,17 @@ export class DeviceManager {
     }
   }
 
+  disconnectDevice (deviceID: string){
+    const device = this.connectedDevices.find(d=>d.id === deviceID)
+    this.connectedDevices = this.connectedDevices.filter(d => d.id !== deviceID)
+
+    if(device && device!.isExperimentOngoing){
+      this.io.to("web_clients").emit("force_shutdown", device!.experimentData)
+      device.stopExperiment()
+      device.updateExperimentLog("error", "The device was disconnected", "Device")
+    }
+  }
+  
   // Utility method to help with race conditions
   async atomicUpdate<T>(updateFn: (devices: DeviceType[]) => Promise<T>): Promise<T> {
     let retries = 3;

@@ -228,7 +228,7 @@ type FormInputType = {
     label?: string
 }
 
-const FormInput = ({children, description, label}: FormInputType)=>{
+export const FormInput = ({children, description, label}: FormInputType)=>{
     return <div className='flex flex-col gap-2'>
         <p className='text-xs font-bold'>{label}</p>
         {children}
