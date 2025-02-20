@@ -31,7 +31,7 @@ const deviceManager = new DeviceManager(io);
 deviceManager.initialize().catch(console.error);
 
 const updateClientsExperimentData = (isExperimentOngoing: boolean, data: Partial<ExperimentType | null>)=>{
-    io.to('web_clients').emit("experiment_status", {isExperimentOngoing})
+    io.to('web_clients').emit("experiment_status", {isExperimentOngoing, status: experimentStatus.data? experimentStatus.data.status : "ready"})
     io.to('web_clients').emit("experiment_data", data)
 }
 
@@ -74,6 +74,7 @@ const startExperiment = (params: ExperimentType)=>{
         data: {
             ...params,
             createdAt,
+            status: "running",
             logs: []
         }
     }
@@ -84,6 +85,13 @@ const startExperiment = (params: ExperimentType)=>{
 
 const pauseExperiment = ()=>{
     console.log("Pause the Experiment")
+    experimentStatus = {
+        ...experimentStatus,
+       data: {
+            ...experimentStatus.data!,
+            status: "paused",
+        }
+    }
     io.to('web_clients').emit("experiment_status", {
         isExperimentOngoing: true,
         status: "paused"
@@ -98,6 +106,13 @@ const resumeExperiment = ()=>{
         status: "running"
     })
     updateExperimentLog("info", "Experiment resumed", "Device")
+    experimentStatus = {
+        ...experimentStatus,
+       data: {
+            ...experimentStatus.data!,
+            status: "running",
+        }
+    }
 }
 
 const stopExperiment = ()=>{
@@ -265,6 +280,9 @@ io.on('connection', (socket) => {
     socket.on('error', (error) => {
         console.error('Socket error:', error);
         reportErrorToClient(error)
+        if(experimentStatus.isExperimentOngoing){
+            stopExperiment()
+        }
     });
 });
 

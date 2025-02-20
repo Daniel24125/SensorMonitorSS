@@ -112,7 +112,7 @@ const DevicesProvider = ({children}: DevicesProviderProps) => {
 
     const isDeviceOn = React.useCallback((deviceID: string)=>{
         const device = getDeviceByID(deviceID)
-        return device && device.status !== "disconnected"
+        return Boolean(device) && device!.status !== "disconnected"
     }, [isLoading, deviceList])
 
 

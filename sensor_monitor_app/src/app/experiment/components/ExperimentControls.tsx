@@ -5,8 +5,8 @@ import { Pause, Play, StopCircle } from 'lucide-react'
 import React from 'react'
 
 const ExperimentControls = () => {
-  const {data, startExperiment, isExperimentOngoing, stopExperiment, pauseExperiment, resumeExperiment} = useExperiments()
-
+  const {data, startExperiment, isExperimentOngoing, hasAccessToExperiment, stopExperiment, pauseExperiment, resumeExperiment} = useExperiments()
+  console.log("STATUS: ", data)
   return (
     <div className='flex gap-2 '>
       {!isExperimentOngoing ? <ControlButton
@@ -45,14 +45,14 @@ const ControlButton = ({
   Icon: typeof StopCircle,
   className?: string
 })=>{
-  const {isExperimentDeviceOn} = useExperiments()
+  const {hasAccessToExperiment} = useExperiments()
 
   return <TooltipWrapper title={title}>
   <Button className={className} variant="ghost" size="icon" onClick={()=>{
-    if(isExperimentDeviceOn){
+    if(hasAccessToExperiment){
       onClickFn()
     }
-  }} disabled={!isExperimentDeviceOn}
+  }} disabled={!hasAccessToExperiment}
    >
       <Icon/>
   </Button>

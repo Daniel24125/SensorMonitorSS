@@ -28,7 +28,7 @@ export const chartConfig = {
 
 const ExperimentData = () => {
   return (
-    <div className='w-full h-96 border rounded-xl flex overflow-hidden'>
+    <div className='w-full h-96 border rounded-xl flex overflow-hidden shrink-0'>
         <div className='w-3/4 min-w-72 h-full flex flex-col'>
             <ChartHeader/>
             <ChartComponent/>
@@ -91,7 +91,7 @@ export const ChartComponent = ()=>{
 
     return selectedLocation ? isExperimentOngoing ? <ChartContainer 
         config={chartConfig} 
-        className="min-h-[200px] w-full h-full max-h-72">
+        className=" w-full h-full max-h-72">
         <ScatterChart
           margin={{
               top: 20,
