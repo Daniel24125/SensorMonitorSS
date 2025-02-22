@@ -1,10 +1,12 @@
 import path from "path";
 import fs from "fs/promises";
-import { Server } from "socket.io";
+import { Server, Socket } from "socket.io";
 import { v4 as uuidv4 } from 'uuid';
 import { DeviceStatus, DeviceType,  ExperimentStatusType,  ExperimentType, LogType, PossibleLogTypes } from "../types/experiment";
 import { AvailableCommandsType } from "../types/sockets";
 import { v4 } from 'uuid';
+import { updateClientsExperimentData } from "../server";
+import { reportErrorToClient } from "../utils/utils";
 
 
 
@@ -19,14 +21,34 @@ export class DeviceConnection{
   private readonly io: Server;
   public isExperimentOngoing: boolean
   public experimentData : null | ExperimentType
+  private socket: Socket
  
-  constructor(io: Server, deviceID: string){
+  constructor(io: Server, socket: Socket, deviceID: string){
     this.io = io
     this.id = deviceID
     this.isExperimentOngoing = false
     this.experimentData = null
+    this.socket = socket
   }
 
+  registerSocketListenners(){
+    this.socket.on("update_experiment_status", (status)=>{
+      this.experimentData = {
+          ...this.experimentData, 
+          ...status
+      }
+      updateClientsExperimentData(true, status)
+    })
+
+     // Handle errors
+    this.socket.on('error', (error) => {
+      console.error('Socket error:', error);
+      reportErrorToClient(error)
+      if(this.isExperimentOngoing){
+          this.stopExperiment()
+      }
+  });
+  }
   
   startExperiment = (params: ExperimentType)=>{
       console.log("Start the Experiment")
@@ -75,7 +97,7 @@ export class DeviceConnection{
       });
       this.isExperimentOngoing = false,
       this.experimentData = null
-      this.updateExperimentLog("info", "Experiment ended", "Device")
+      this.updateExperimentLog({type:"info", desc:"Experiment ended", location:"Device"})
       updateClientsExperimentData(false, {
           duration: 0
       })
@@ -90,7 +112,7 @@ export class DeviceConnection{
           createdAt: new Date().toISOString(),
           location
       }
-      this.experimentData.logs.push(log)
+      this.experimentData.logs.push(log as LogType)
       this.io.to('web_clients').emit("update_experiment_log",  this.experimentData.logs)
     }
   }
@@ -220,15 +242,15 @@ export class DeviceManager {
     return devices.find(d => d.socketID === socketID);
   }
 
-  async registerDevice(deviceInfo: DeviceType, socketID: string): Promise<DeviceType> {
+  async registerDevice(deviceInfo: DeviceType, socket: Socket): Promise<DeviceType> {
     try {
       const devices = await this.loadDevices();
       const timestamp = new Date().toJSON();
       const deviceExists = devices.find(device => device.id === deviceInfo.id);
 
       if (deviceExists) {
-        this.connectedDevices.push(new DeviceConnection(this.io, deviceInfo.id))
-        return await this.updateDeviceStatus(deviceInfo.id!, "ready", socketID);
+        this.connectedDevices.push(new DeviceConnection(this.io, socket, deviceInfo.id))
+        return await this.updateDeviceStatus(deviceInfo.id!, "ready", socket.id);
       }
 
       const newDevice: DeviceType = {
@@ -237,12 +259,12 @@ export class DeviceManager {
         createdAt: timestamp,
         status: 'ready',
         lastUpdatedAt: timestamp,
-        socketID
+        socketID: socket.id
       };
 
       devices.push(newDevice);
       await this.saveDevices(devices);
-      this.connectedDevices.push(new DeviceConnection(this.io, newDevice.id))
+      this.connectedDevices.push(new DeviceConnection(this.io, socket, deviceInfo.id))
       return newDevice;
     } catch (error) {
       console.error('Error registering device:', error);
@@ -312,7 +334,7 @@ export class DeviceManager {
     if(device && device!.isExperimentOngoing){
       this.io.to("web_clients").emit("force_shutdown", device!.experimentData)
       device.stopExperiment()
-      device.updateExperimentLog("error", "The device was disconnected", "Device")
+      device.updateExperimentLog({type:"error", desc: "The device was disconnected", location: "Device"})
     }
   }
   

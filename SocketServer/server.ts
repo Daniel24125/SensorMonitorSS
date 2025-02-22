@@ -5,7 +5,7 @@ import { v4 } from 'uuid';
 import { createServer } from 'http';
 import { DefaultEventsMap, Server, Socket } from 'socket.io';
 import { DeviceManager } from './management/device_management.js';
-import { DeviceType,  ExperimentType, PossibleLogTypes, UpdateDeviceConfigType } from './types/experiment.js';
+import { DeviceType,  ExperimentType,  UpdateDeviceConfigType } from './types/experiment.js';
 import { CommandDataType, ParseCommandsType } from './types/sockets.js';
 
 const app = express();
@@ -26,7 +26,7 @@ const PORT = process.env.PORT || 8000;
 const deviceManager = new DeviceManager(io);
 deviceManager.initialize().catch(console.error);
 
-const updateClientsExperimentData = (isExperimentOngoing: boolean, data: Partial<ExperimentType | null>)=>{
+export const updateClientsExperimentData = (isExperimentOngoing: boolean, data: Partial<ExperimentType | null>)=>{
     io.to('web_clients').emit("experiment_status", {isExperimentOngoing, status: experimentStatus.data? experimentStatus.data.status : "ready"})
     io.to('web_clients').emit("experiment_data", data)
 }
@@ -57,20 +57,6 @@ const webClientConnection = async (socket: Socket<DefaultEventsMap, DefaultEvent
     // updateClientsExperimentData(experimentStatus.isExperimentOngoing, experimentStatus.data)
 }
 
-// const updateExperimentLog = (type: PossibleLogTypes, desc: string, location: string)=>{
-//     console.log(`Log received: ${desc}`)
-//     if(experimentStatus.data && experimentStatus.data.logs){
-//         const log = {
-//             id: v4(),
-//             type, 
-//             desc, 
-//             createdAt: new Date().toISOString(),
-//             location
-//         }
-//         experimentStatus.data.logs.push(log)
-//         io.to('web_clients').emit("update_experiment_log", experimentStatus.data.logs)
-//     }
-// }
 
 io.on('connection', (socket) => {
     console.log('New connection:', socket.id);
@@ -86,7 +72,7 @@ io.on('connection', (socket) => {
 
     socket.on('get_rpi_config', async (config) => {
         if(config){
-            deviceManager.registerDevice(config, socket.id)
+            deviceManager.registerDevice(config, socket)
             // handleDeviceRegistration(config, config.id, socket.id)
         }else{
             const devices = await deviceManager.getAllDevices()
@@ -154,13 +140,7 @@ io.on('connection', (socket) => {
         device!.updateExperimentalData(sensorData)
     });
 
-    socket.on("update_experiment_status", (status)=>{
-        experimentStatus.data = {
-            ...experimentStatus.data, 
-            ...status
-        }
-        updateClientsExperimentData(true, status)
-    })
+   
 
     socket.on("update_experiment_log", ({deviceID, log})=>{
         deviceManager.updateExperimentLog(deviceID, log)
@@ -176,21 +156,13 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Handle errors
-    socket.on('error', (error) => {
-        console.error('Socket error:', error);
-        reportErrorToClient(error)
-        if(experimentStatus.isExperimentOngoing){
-            stopExperiment()
-        }
-    });
+   
 });
 
 // Health check endpoint
 app.get('/health', (req, res) => {
     res.status(200).json({
-        status: 'healthy',
-        experimentStatus
+        status: 'healthy'
     });
 });
 
