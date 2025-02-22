@@ -78,7 +78,7 @@ export const ProjectProvider = ({
 
   const getProjectByID = React.useCallback((projectID: string) => {
     return projectList.find(p => p.id === projectID) || null;
-  }, [projectsLoading]);
+  }, [projectsLoading, projectList]);
 
   const getProjectList = React.useCallback(async ()=>{
     startTransition(async () => {

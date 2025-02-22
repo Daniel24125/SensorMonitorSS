@@ -28,7 +28,7 @@ const ProjectOptions = ({onClick, project}: {onClick?: ()=>void, project: Projec
                 <FlaskConical/>
                 <span> Start Experiment</span>
             </DropdownMenuItem>
-            <DropdownMenuItem disabled={!isDeviceOn(project.device)} onClick={() =>{
+            <DropdownMenuItem  onClick={() =>{
                 console.log("Export Data")
             }}>
                 <Save/>

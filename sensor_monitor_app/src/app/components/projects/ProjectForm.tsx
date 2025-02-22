@@ -10,6 +10,7 @@ import { deviceIconColors } from '../DeviceWidget'
 import { ProjectType, useProjects } from '@/contexts/projects'
 import { ResponsiveDialog } from '@/components/ui/responsive-dialog'
 import { useToast } from '@/hooks/use-toast'
+import { FormInput } from '@/app/devices/components/SensorDetails'
 
 
 const ProjectForm = () => {
@@ -83,15 +84,17 @@ const ProjectForm = () => {
             />
             <DeviceSelection form={form} setForm={setForm} />
             {form.device !== "" && <ConfigurationSelection form={form} setForm={setForm}/>}
-            <Input
-                placeholder='Data aquisition interval'
-                id="dataAquisitionInterval"
-                name="dataAquisitionInterval"
-                required
-                type='number'
-                onChange={handleInputChange}
-                value={form.dataAquisitionInterval}
-            />
+            <FormInput label='Data aquisition interval' description='Period of time, in seconds,to aquire data points'>
+                <Input
+                    placeholder='Data aquisition interval'
+                    id="dataAquisitionInterval"
+                    name="dataAquisitionInterval"
+                    required
+                    type='number'
+                    onChange={handleInputChange}
+                    value={form.dataAquisitionInterval}
+                />
+            </FormInput>
             <Button  disabled={isLoading}>
                 {isLoading ? <LoadingSpinner/>: "Submit"}
             </Button>

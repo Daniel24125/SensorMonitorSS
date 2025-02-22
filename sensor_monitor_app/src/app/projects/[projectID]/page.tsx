@@ -1,3 +1,4 @@
+"use client"
 
 import React from 'react'
 import ProjectHeader from './components/ProjectHeader'
@@ -5,7 +6,7 @@ import ProjectExperiments from './components/ProjectExperiments'
 import { ProjectDetailsProvider } from '@/contexts/projectDetails'
 import Loading from '@/app/components/Loading'
 
-const Page = async ({params}: {params: Promise<{ projectID: string }>}) => {
+const Page = ({params}: {params: Promise<{ projectID: string }>}) => {
     const [projectID, setProjectID] = React.useState<null | string>(null)
   
     React.useEffect(()=>{
@@ -21,7 +22,7 @@ const Page = async ({params}: {params: Promise<{ projectID: string }>}) => {
 
 
     return (<ProjectDetailsProvider projectID={projectID}>
-        <div className='w-full flex-col pt-10 h-full'>
+        <div className='w-full flex-col pt-10 h-[calc(100%-100px)]'>
             <ProjectHeader/>
             <ProjectExperiments/>
         </div>

@@ -24,6 +24,7 @@ interface ExperimentGeneralData{
     logs?: LogType[]
     createdAt?: string, 
 }
+type ExperimentStatus = "ready" | "paused" | "running"
 
 export interface ExperimentType extends ExperimentGeneralData{
     id?: string,
@@ -32,6 +33,7 @@ export interface ExperimentType extends ExperimentGeneralData{
     dataAquisitionInterval: number,
     configurationID: string,
     userID: string,
+    status: ExperimentStatus,
     locations: LocationChartDataType[],
   } 
 

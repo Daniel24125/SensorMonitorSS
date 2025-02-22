@@ -8,7 +8,7 @@ const ProjectExperimentData = () => {
     const {selectedLocation} = useProjectDetails()
 
 
-    return <ChartContainer config={chartConfig} className="min-h-[200px] w-full h-1/2" >
+    return <ChartContainer config={chartConfig} className="min-h-[200px] w-full h-[300px]" >
     <ScatterChart
         margin={{
             top: 20,

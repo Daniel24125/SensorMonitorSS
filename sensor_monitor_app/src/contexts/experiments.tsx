@@ -22,9 +22,11 @@ export type LocationChartDataType = {
     data: ExperimentDataType[]
 }
 
-type LogType = {
+export type LogSeverityType = "error" | "info" | "warning"
+
+export type LogType = {
     id: string, 
-    type: "error" | "info" | "warning",
+    type: LogSeverityType,
     desc: string, 
     createdAt: string, 
     location: string
@@ -68,6 +70,7 @@ interface ExperimentContextType {
     pauseExperiment: ()=>void
     resumeExperiment: ()=>void
     stopExperiment: ()=>void
+    hasAccessToExperiment: boolean
 }
 
 
@@ -90,14 +93,13 @@ export const ExperimentProvider = ({
     const [isExperimentOngoing, setIsExperimentOngoing] = React.useState(false)
     const [isExperimentLoading, setIsExperimentLoading] = React.useState(false)
     const [selectedLocation, setSelectedLocation] = React.useState<null | DeviceLocationType>(null)
-    const {getProjectByID, isLoading, getProjectList} = useProjects()
+    const {getProjectByID, isLoading, getProjectList, projectList} = useProjects()
     const {deviceList, getConfigurationByID, isDeviceOn} = useDevices()
     const {user} = useUser()
     const {toast} = useToast()
     const {isConnected,emit, on} = useSocket()
     const {setOptions, setOpen} = useWarningDialog()
 
-  
     React.useEffect(()=>{
         if(isConnected){
             on<ExperimentType>("experiment_data", receivedData =>{
@@ -143,9 +145,17 @@ export const ExperimentProvider = ({
 
     const isExperimentDeviceOn = React.useMemo(()=>{
         if(!data) return false
-        const project = getProjectByID(data!.projectID)
+        if(projectList.length === 0) return false
+        const project = getProjectByID(data.projectID)
         return (project && isDeviceOn(project!.device)) as boolean
-    },[data, deviceList])
+    },[data, deviceList, projectList])
+    
+
+    const hasAccessToExperiment = React.useMemo(()=>{
+        return Boolean(user) && Boolean(isExperimentDeviceOn) && (!isExperimentOngoing || data!.userID === user!.sub)
+    },[isExperimentDeviceOn, isExperimentOngoing, user, data])
+   
+
 
     const registerProject = React.useCallback((projectID: string)=>{
         const projectData = getProjectByID(projectID)
@@ -218,6 +228,11 @@ export const ExperimentProvider = ({
                     }
                 })
                 setOpen(false)
+                toast({
+                    title: "Experiment",
+                    description: "Your experiment was successfuly stopped.",
+                    variant: "default"
+                })
             }
         })
         setOpen(true)
@@ -239,7 +254,8 @@ export const ExperimentProvider = ({
         stopExperiment,
         isExperimentLoading,
         setIsExperimentLoading,
-        resumeExperiment
+        resumeExperiment,
+        hasAccessToExperiment
     }
 
     if(isLoading) return <Loading/>

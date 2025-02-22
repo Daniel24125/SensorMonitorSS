@@ -28,7 +28,7 @@ export const chartConfig = {
 
 const ExperimentData = () => {
   return (
-    <div className='w-full h-96 border rounded-xl flex overflow-hidden'>
+    <div className='w-full h-96 border rounded-xl flex overflow-hidden shrink-0'>
         <div className='w-3/4 min-w-72 h-full flex flex-col'>
             <ChartHeader/>
             <ChartComponent/>
@@ -91,7 +91,7 @@ export const ChartComponent = ()=>{
 
     return selectedLocation ? isExperimentOngoing ? <ChartContainer 
         config={chartConfig} 
-        className="min-h-[200px] w-full h-full max-h-72">
+        className=" w-full h-full max-h-72">
         <ScatterChart
           margin={{
               top: 20,
@@ -132,7 +132,7 @@ export const LocationListComponent = ({showIcon=true}: LocationListPropsTyep)=>{
         const lastSensorData = l.data.length > 0 ? l.data[l.data.length - 1].y: null
         const isActive = selectedLocation && selectedLocation.id === l.id
         const configuration = getConfigurationByID(data.deviceID, data.configurationID)
-        const location = configuration?.locations.find(loc=>loc.id === l.id)!
+        const location = configuration!.locations.find(loc=>loc.id === l.id)!
         return <div key={l.id} onClick={()=>{
             if(isExperimentDeviceOn && isExperimentOngoing){
                 setSelectedLocation(location)

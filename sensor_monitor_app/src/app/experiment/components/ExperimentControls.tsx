@@ -45,14 +45,14 @@ const ControlButton = ({
   Icon: typeof StopCircle,
   className?: string
 })=>{
-  const {isExperimentDeviceOn} = useExperiments()
+  const {hasAccessToExperiment} = useExperiments()
 
   return <TooltipWrapper title={title}>
   <Button className={className} variant="ghost" size="icon" onClick={()=>{
-    if(isExperimentDeviceOn){
+    if(hasAccessToExperiment){
       onClickFn()
     }
-  }} disabled={!isExperimentDeviceOn}
+  }} disabled={!hasAccessToExperiment}
    >
       <Icon/>
   </Button>
