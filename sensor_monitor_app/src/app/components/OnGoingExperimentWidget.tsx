@@ -30,7 +30,6 @@ const OnGoingExperimentWidget = () => {
 
 const OnGoingExperimentData = ()=>{
   const {data} = useExperiments()
-  console.log(data)
   const time = React.useMemo(()=>{
     return data? data.duration : 0
   },[data])
