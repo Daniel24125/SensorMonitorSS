@@ -6,24 +6,24 @@ import { useRouter } from 'next/navigation'
 import { useExperiments } from '@/contexts/experiments'
 import { useDevices } from '@/contexts/devices'
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import SelectProjectTemplate from '../experiment/components/SelectExperimentProject'
-import ExperimentControls from '../experiment/components/ExperimentControls'
-import { ChartComponent, LocationListComponent } from '../experiment/components/ExperimentData'
+import SelectProjectTemplate from '../experiment/[deviceID]/components/SelectExperimentProject'
+import ExperimentControls from '../experiment/[deviceID]/components/ExperimentControls'
+import { ChartComponent, LocationListComponent } from '../experiment/[deviceID]/components/ExperimentData'
 import { getformatedExperimentTime } from '@/lib/utils'
 import CircularProgress from '@/components/ui/circular-progress'
 
 const OnGoingExperimentWidget = () => {
   const router = useRouter()
-  const {isExperimentOngoing} = useExperiments()
+  const {data} = useExperiments()
   return (
-    <WidgetCard title='On going Experiment' className='w-full' secondaryAction={<>
+    <WidgetCard title='Ongoing Experiments' className='w-full' secondaryAction={<>
       <Button onClick={()=>{
         router.push("/experiment")
       }} size="icon" variant="ghost">
           <ExternalLink/>
       </Button>
     </>}>
-        {isExperimentOngoing ? <OnGoingExperimentData/> : <NotOngoingExperiment/>}
+        {data ? <OnGoingExperimentData/> : <NotOngoingExperiment/>}
     </WidgetCard>
   )
 }

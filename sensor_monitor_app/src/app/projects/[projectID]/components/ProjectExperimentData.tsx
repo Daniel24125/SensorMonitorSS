@@ -1,4 +1,4 @@
-import { chartConfig } from '@/app/experiment/components/ExperimentData'
+import { chartConfig } from '@/app/experiment/[deviceID]/components/ExperimentData'
 import { ChartContainer } from '@/components/ui/chart'
 import { useProjectDetails } from '@/contexts/projectDetails'
 import React from 'react'

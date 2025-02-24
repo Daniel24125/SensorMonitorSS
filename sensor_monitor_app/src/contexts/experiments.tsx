@@ -60,8 +60,6 @@ interface ExperimentContextType {
     isExperimentLoading: boolean
     setIsExperimentLoading: React.Dispatch<React.SetStateAction<boolean>>
     setData: React.Dispatch<React.SetStateAction< null | ExperimentType>>
-    isExperimentOngoing: boolean
-    setIsExperimentOngoing: React.Dispatch<React.SetStateAction<boolean>>
     registerProject: (projectID: string) => void
     selectedLocation: DeviceLocationType | null,
     setSelectedLocation: React.Dispatch<React.SetStateAction<DeviceLocationType | null>>
@@ -90,7 +88,6 @@ export const ExperimentProvider = ({
   children 
 }:{children: React.ReactNode})=>{
     const [data, setData] = React.useState<null | ExperimentType>(null)
-    const [isExperimentOngoing, setIsExperimentOngoing] = React.useState(false)
     const [isExperimentLoading, setIsExperimentLoading] = React.useState(false)
     const [selectedLocation, setSelectedLocation] = React.useState<null | DeviceLocationType>(null)
     const {getProjectByID, isLoading, getProjectList, projectList} = useProjects()
@@ -122,7 +119,6 @@ export const ExperimentProvider = ({
             })
     
             on<{isExperimentOngoing: boolean, status: ExperimentStatus}>("experiment_status", expStatus =>{
-                setIsExperimentOngoing(expStatus.isExperimentOngoing)
                 setData(prev=>prev ? {
                     ...prev, 
                     status: expStatus.status ? expStatus.status : "running"
@@ -152,8 +148,8 @@ export const ExperimentProvider = ({
     
 
     const hasAccessToExperiment = React.useMemo(()=>{
-        return Boolean(user) && Boolean(isExperimentDeviceOn) && (!isExperimentOngoing || data!.userID === user!.sub)
-    },[isExperimentDeviceOn, isExperimentOngoing, user, data])
+        return Boolean(user) && Boolean(isExperimentDeviceOn) && (!data || data!.userID === user!.sub)
+    },[isExperimentDeviceOn, user, data])
    
 
 
@@ -243,8 +239,6 @@ export const ExperimentProvider = ({
     const value: ExperimentContextType = {
         data,
         setData,
-        isExperimentOngoing,
-        setIsExperimentOngoing,
         registerProject,
         selectedLocation,
         setSelectedLocation,
@@ -260,6 +254,15 @@ export const ExperimentProvider = ({
 
     if(isLoading) return <Loading/>
     return <ExperimentContext.Provider value={value}>
-        {children}
+        <ExperimentComponent>
+            {children}
+        </ExperimentComponent>
     </ExperimentContext.Provider>
+    
+}
+
+
+
+const ExperimentComponent = ({children}: {children: React.ReactNode})=>{
+    return children
 }

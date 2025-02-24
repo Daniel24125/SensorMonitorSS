@@ -2,11 +2,9 @@ import path from "path";
 import fs from "fs/promises";
 import { Server, Socket } from "socket.io";
 import { v4 as uuidv4 } from 'uuid';
-import { DeviceStatus, DeviceType,  ExperimentStatusType,  ExperimentType, LogType, PossibleLogTypes } from "../types/experiment";
+import { DeviceStatus, DeviceType,   ExperimentType, PossibleLogTypes } from "../types/experiment";
 import { AvailableCommandsType } from "../types/sockets";
-import { v4 } from 'uuid';
-import { updateClientsExperimentData } from "../server";
-import { reportErrorToClient } from "../utils/utils";
+import { DeviceConnection } from "./device.js";
 
 
 
@@ -15,125 +13,6 @@ type DeviceCommandType = {
   data: ExperimentType
 }
 
-
-export class DeviceConnection{
-  public readonly id: string;
-  private readonly io: Server;
-  public isExperimentOngoing: boolean
-  public experimentData : null | ExperimentType
-  private socket: Socket
- 
-  constructor(io: Server, socket: Socket, deviceID: string){
-    this.io = io
-    this.id = deviceID
-    this.isExperimentOngoing = false
-    this.experimentData = null
-    this.socket = socket
-  }
-
-  registerSocketListenners(){
-    this.socket.on("update_experiment_status", (status)=>{
-      this.experimentData = {
-          ...this.experimentData, 
-          ...status
-      }
-      updateClientsExperimentData(true, status)
-    })
-
-     // Handle errors
-    this.socket.on('error', (error) => {
-      console.error('Socket error:', error);
-      reportErrorToClient(error)
-      if(this.isExperimentOngoing){
-          this.stopExperiment()
-      }
-  });
-  }
-  
-  startExperiment = (params: ExperimentType)=>{
-      console.log("Start the Experiment")
-      const createdAt =  new Date().toISOString()
-      this.isExperimentOngoing = true
-      this.experimentData = {
-        ...params,
-        createdAt,
-        status: "running",
-        logs: []
-    }
-      this.updateExperimentLog({type:"info",  desc:"Experiment started", location:"Device"})
-      updateClientsExperimentData(true, {createdAt})
-     
-  }
-  
-  pauseExperiment = ()=>{
-      console.log("Pause the Experiment")
-      this.experimentData!.status = "paused"
-      
-      this.io.to('web_clients').emit("experiment_status", {
-          isExperimentOngoing: true,
-          status: "paused"
-      })
-      this.updateExperimentLog({type:"info",  desc:"Experiment paused", location:"Device"})
-  }
-  
-  resumeExperiment = ()=>{
-      console.log("Resume the Experiment")
-      this.experimentData!.status = "running"
-      this.io.to('web_clients').emit("experiment_status", {
-          isExperimentOngoing: true,
-          status: "running"
-      })
-      this.updateExperimentLog({type:"info", desc:"Experiment resumed", location:"Device"})
-  }
-  
-  stopExperiment = ()=>{
-      this.io.to('web_clients').emit('sensor_data', {
-          locations: this.experimentData!.locations.map(l=>{
-              return{
-                  id: l.id, 
-                  data: []
-              }
-          }),
-      });
-      this.isExperimentOngoing = false,
-      this.experimentData = null
-      this.updateExperimentLog({type:"info", desc:"Experiment ended", location:"Device"})
-      updateClientsExperimentData(false, {
-          duration: 0
-      })
-  }
-
-  updateExperimentLog({type, desc, location}: Partial<LogType>){
-    if(this.experimentData && this.experimentData.logs){
-      const log = {
-          id: v4(),
-          type, 
-          desc, 
-          createdAt: new Date().toISOString(),
-          location
-      }
-      this.experimentData.logs.push(log as LogType)
-      this.io.to('web_clients').emit("update_experiment_log",  this.experimentData.logs)
-    }
-  }
-
-  updateExperimentalData(sensorData: {data: {id: string, x: number, y: number}[]}){
-    if (this.isExperimentOngoing) {
-      // Broadcast sensor data to all web clients
-      sensorData.data.forEach((l, index) =>{
-          const location = this.experimentData!.locations[index]
-          this.experimentData!.locations[index] = {
-              id: l.id,
-              data: [...location.data, {x: l.x,y: l.y}]
-          }
-      })
-      this.io.to('web_clients').emit('sensor_data', {
-          locations: this.experimentData!.locations,
-          timestamp: new Date().toISOString()
-      });
-  }
-  }
-}
 
 export class DeviceManager {
   private readonly storageFilePath: string;
@@ -145,6 +24,8 @@ export class DeviceManager {
     this.io = io;
     this.connectedDevices = []
   }
+
+
 
   async initialize(): Promise<void> {
     try {
@@ -202,6 +83,10 @@ export class DeviceManager {
     if (device?.socketID) {
       this.io.to(device.socketID).emit("command", data);
     }
+  }
+
+  getUserOngoingExperiments(userID: string){
+    return this.connectedDevices.filter(d=>d.experimentData && d.experimentData.userID === userID)
   }
 
   getDeviceConnection(deviceID: string){

@@ -4,13 +4,13 @@ import React from 'react'
 import {  useSearchParams } from 'next/navigation';
 import { useExperiments } from '@/contexts/experiments';
 import { useProjects } from '@/contexts/projects';
-import ExperimentControls from './components/ExperimentControls';
-import ExperimentData from './components/ExperimentData';
+import ExperimentControls from './[deviceID]/components/ExperimentControls';
+import ExperimentData from './[deviceID]/components/ExperimentData';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';
 import { TooltipWrapper } from '@/components/ui/tooltip';
 import { Button } from '@/components/ui/button';
 import { CircleMinus, MoreVertical } from 'lucide-react';
-import SelectProjectTemplate from './components/SelectExperimentProject';
+import SelectProjectTemplate from './[deviceID]/components/SelectExperimentProject';
 import { getformatedExperimentTime } from '@/lib/utils';
 import ProjectExperimentLogs from '../projects/[projectID]/components/logs/ProjectExperimentLogs';
 
@@ -27,6 +27,7 @@ const ExperimentPage = () => {
     },[isLoading])
 
     if(!data?.projectID) return <SelectProjectTemplate/>
+    
     return (<div className='w-full h-full flex flex-col py-5 gap-7'>
             <ExperimentHeader/>
             <ExperimentData/>

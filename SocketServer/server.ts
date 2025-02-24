@@ -26,10 +26,6 @@ const PORT = process.env.PORT || 8000;
 const deviceManager = new DeviceManager(io);
 deviceManager.initialize().catch(console.error);
 
-export const updateClientsExperimentData = (isExperimentOngoing: boolean, data: Partial<ExperimentType | null>)=>{
-    io.to('web_clients').emit("experiment_status", {isExperimentOngoing, status: experimentStatus.data? experimentStatus.data.status : "ready"})
-    io.to('web_clients').emit("experiment_data", data)
-}
 
 const parseCommands: ParseCommandsType = async (data)=>{
     const { command, params } = data;
@@ -73,7 +69,6 @@ io.on('connection', (socket) => {
     socket.on('get_rpi_config', async (config) => {
         if(config){
             deviceManager.registerDevice(config, socket)
-            // handleDeviceRegistration(config, config.id, socket.id)
         }else{
             const devices = await deviceManager.getAllDevices()
             socket.emit('get_connected_devices', devices);
@@ -134,18 +129,6 @@ io.on('connection', (socket) => {
        parseCommands(data)
     });
 
-    // Handle sensor data from RPi
-    socket.on('sensor_data', (sensorID: string, sensorData: {data: {id: string, x: number, y: number}[]}) => {
-        const device =  deviceManager.getDeviceConnection(sensorID)
-        device!.updateExperimentalData(sensorData)
-    });
-
-   
-
-    socket.on("update_experiment_log", ({deviceID, log})=>{
-        deviceManager.updateExperimentLog(deviceID, log)
-    })
-  
     // Handle disconnection
     socket.on('disconnect', async () => {
         console.log("Client Disconnected")
