@@ -23,11 +23,13 @@ export class DeviceConnection{
   
     registerSocketListenners(){
       console.log("Regestering Socket listenners for the device")
+      
       this.socket.on("update_experiment_status", (status)=>{
         this.experimentData = {
             ...this.experimentData, 
             ...status
         }
+        this.io.to(this.id).emit("experiment_data", status)
         // updateClientsExperimentData(true, status)
       })
   
@@ -38,7 +40,6 @@ export class DeviceConnection{
       // Handle sensor data from RPi
       this.socket.on('sensor_data', (sensorData: {deviceID: string, data: {id: string, x: number, y: number}[]}) => {
         if(sensorData.deviceID === this.id){
-          console.log("Data received")
           this.updateExperimentalData(sensorData)
         }
       });
@@ -107,7 +108,7 @@ export class DeviceConnection{
     }
   
     updateExperimentLog({type, desc, location}: Partial<LogType>){
-      if(this.experimentData && this.experimentData.logs){
+      if(this.experimentData && this.experimentData.logs ){
         const log = {
           id: v4(),
           type, 
@@ -126,6 +127,7 @@ export class DeviceConnection{
         // Broadcast sensor data to all web clients
         sensorData.data.forEach((l, index) =>{
             const location = this.experimentData!.locations[index]
+            if(!location) return 
             this.experimentData!.locations[index] = {
                 id: l.id,
                 data: [...location.data, {x: l.x,y: l.y}]

@@ -6,7 +6,7 @@ import ExperimentOptions from './ExperimentOptions'
 
 const ExperimentHeader = ({deviceID}:{deviceID: string}) => {
     const {experiment} = useExperiment(deviceID)
-
+    
     const formatedTime = React.useMemo(()=>{
       if(!experiment) return  "00:00:00"
       return getformatedExperimentTime(experiment.duration)

@@ -84,9 +84,23 @@ interface ExperimentContextType {
     hasAccessToExperiment: (deviceID: string) => boolean,
 }
 
-
+type ExperimentHookType = {
+    experiment: ExperimentType | null,
+    isLoading: boolean,
+    selectedLocation: DeviceLocationType | null,
+    setSelectedLocation: (location: DeviceLocationType | null) => void,
+    isDeviceOn: boolean,
+    startExperiment: () => void,
+    pauseExperiment: () => void,
+    resumeExperiment: () => void,
+    stopExperiment: () => void,
+    hasAccess: boolean,
+    isExperimentOngoing: boolean
+} 
 // Create context with type
 const ExperimentContext = React.createContext<ExperimentContextType | null>(null);
+
+
 
 // Custom hook to use socket context with type safety
 export const useExperiments = (): ExperimentContextType => {
@@ -99,19 +113,7 @@ export const useExperiments = (): ExperimentContextType => {
 
 
 // Hook to get a specific experiment
-export const useExperiment = (deviceID: string): {
-    experiment: ExperimentType | null,
-    isLoading: boolean,
-    selectedLocation: DeviceLocationType | null,
-    setSelectedLocation: (location: DeviceLocationType | null) => void,
-    isDeviceOn: boolean,
-    startExperiment: () => void,
-    pauseExperiment: () => void,
-    resumeExperiment: () => void,
-    stopExperiment: () => void,
-    hasAccess: boolean,
-    isExperimentOngoing: boolean
-} => {
+export const useExperiment = (deviceID: string): ExperimentHookType => {
     const {
         getExperiment,
         isExperimentLoading,
@@ -165,6 +167,7 @@ export const ExperimentProvider = ({
                 if(!receivedData) return 
                 const deviceID = receivedData.deviceID;
                 setExperiment(deviceID, receivedData)
+
             })
     
             on<{deviceID: string, logs: LogType[]}>("update_experiment_log", payload => {
