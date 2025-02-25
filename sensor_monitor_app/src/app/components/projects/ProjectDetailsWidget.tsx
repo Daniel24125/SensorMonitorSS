@@ -66,7 +66,7 @@ const ProjectDetails = () => {
           <h3 className='text-lg text-accent font-bold'>No experimental data to display</h3>
           <Button disabled={!isDeviceOn(selectedProject.device)} onClick={()=>{
             if(isDeviceOn(selectedProject.device)){
-              router.push(`/experiment?projectID=${selectedProject.id}`)
+              router.push(`/experiment/${selectedProject.device}?projectID=${selectedProject.id}`)
             }
           }}>Start a new experiment</Button>
         </>}/>}

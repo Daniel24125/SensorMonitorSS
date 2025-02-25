@@ -8,12 +8,6 @@ import { DeviceConnection } from "./device.js";
 
 
 
-type DeviceCommandType = {
-  cmd: AvailableCommandsType,
-  data: ExperimentType
-}
-
-
 export class DeviceManager {
   private readonly storageFilePath: string;
   private readonly io: Server;
@@ -64,24 +58,33 @@ export class DeviceManager {
     }
   }
 
-  async sendDeviceCommand( command: AvailableCommandsType, data: ExperimentType): Promise<void> {
+  async sendDeviceCommand(userSocket: Socket, command: AvailableCommandsType, data: ExperimentType): Promise<void> {
     const {deviceID} = data
     const device = await this.getDeviceByID(deviceID);
     const deviceConnection = this.connectedDevices.find(d=>d.id === deviceID)
+    if(!deviceConnection) return 
+    if (command === 'startExperiment') {
+      deviceConnection!.startExperiment(data)
+      this.updateDeviceStatus(deviceID, "busy")
+      userSocket.join(deviceID)
+      userSocket.emit("experiment_data", deviceConnection!.experimentData)
+      
+    } else if (command === 'pauseExperiment') {
+      deviceConnection!.pauseExperiment()
+    } else if (command === 'resumeExperiment') {
+      deviceConnection!.resumeExperiment()
+    } else if (command === 'stopExperiment') {
+      deviceConnection!.stopExperiment()
+      this.updateDeviceStatus(deviceID, "ready")
+      userSocket.leave(deviceID)
 
-     if (command === 'startExperiment') {
-            deviceConnection!.startExperiment(data)
-            this.updateDeviceStatus(deviceID, "busy")
-        } else if (command === 'pauseExperiment') {
-            deviceConnection!.pauseExperiment()
-        } else if (command === 'resumeExperiment') {
-            deviceConnection!.resumeExperiment()
-        } else if (command === 'stopExperiment') {
-            deviceConnection!.stopExperiment()
-            this.updateDeviceStatus(deviceID, "ready")
-        }
+    }
+    //Send command to the device
     if (device?.socketID) {
-      this.io.to(device.socketID).emit("command", data);
+      this.io.to(device.socketID).emit("command", {
+        cmd: command,
+        data
+      });
     }
   }
 

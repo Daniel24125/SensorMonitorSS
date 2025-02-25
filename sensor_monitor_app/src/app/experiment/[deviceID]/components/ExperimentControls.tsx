@@ -1,11 +1,11 @@
 import { Button } from '@/components/ui/button'
 import { TooltipWrapper } from '@/components/ui/tooltip'
-import { useExperiments } from '@/contexts/experiments'
+import { useExperiment, useExperiments } from '@/contexts/experiments'
 import { Pause, Play, StopCircle } from 'lucide-react'
 import React from 'react'
 
-const ExperimentControls = () => {
-  const {data, startExperiment, isExperimentOngoing, stopExperiment, pauseExperiment, resumeExperiment} = useExperiments()
+const ExperimentControls = ({deviceID}: {deviceID: string}) => {
+  const {startExperiment, isExperimentOngoing, hasAccess,stopExperiment, pauseExperiment, resumeExperiment} = useExperiment(deviceID)
 
   return (
     <div className='flex gap-2 '>
@@ -13,21 +13,25 @@ const ExperimentControls = () => {
         title='Start monitoring'
         onClickFn={startExperiment}
         Icon={Play}
+        hasAccessToExperiment={hasAccess}
       /> : <>
-        {data?.status === "running" ? <ControlButton
+        {isExperimentOngoing ? <ControlButton
           title='Pause monitoring'
           onClickFn={pauseExperiment}
           Icon={Pause}
+          hasAccessToExperiment={hasAccess}
           className='bg-yellow-500'
         /> : <ControlButton
         title='Resume monitoring'
         onClickFn={resumeExperiment}
         Icon={Play}
+        hasAccessToExperiment={hasAccess}
       />}
         <ControlButton
           title='Stop monitoring'
           onClickFn={stopExperiment}
           Icon={StopCircle}
+          hasAccessToExperiment={hasAccess}
         /> 
       </>}
     </div>
@@ -38,14 +42,15 @@ const ControlButton = ({
   title, 
   onClickFn, 
   Icon,
+  hasAccessToExperiment,
   className
 }:{
   title: string, 
   onClickFn: ()=>void, 
   Icon: typeof StopCircle,
+  hasAccessToExperiment: boolean,
   className?: string
 })=>{
-  const {hasAccessToExperiment} = useExperiments()
 
   return <TooltipWrapper title={title}>
   <Button className={className} variant="ghost" size="icon" onClick={()=>{

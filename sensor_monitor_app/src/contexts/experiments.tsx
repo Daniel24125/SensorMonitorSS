@@ -49,26 +49,39 @@ export interface ExperimentType extends ExperimentGeneralData{
     configurationID: string,
     userID: string,
     locations: LocationChartDataType[],
-  } 
+} 
 
+// Updated to store multiple experiments
+type ExperimentsStateType = {
+    [deviceID: string]: ExperimentType | null
+}
 
+// Selected location state by device
+type SelectedLocationsStateType = {
+    [deviceID: string]: DeviceLocationType | null
+}
 
+// Loading state by device
+type LoadingStateType = {
+    [deviceID: string]: boolean
+}
 
-// Define types for the socket context
+// Define types for the experiment context
 interface ExperimentContextType {
-    data: null | ExperimentType,
-    isExperimentLoading: boolean
-    setIsExperimentLoading: React.Dispatch<React.SetStateAction<boolean>>
-    setData: React.Dispatch<React.SetStateAction< null | ExperimentType>>
-    registerProject: (projectID: string) => void
-    selectedLocation: DeviceLocationType | null,
-    setSelectedLocation: React.Dispatch<React.SetStateAction<DeviceLocationType | null>>
-    isExperimentDeviceOn: boolean
-    startExperiment: ()=>void
-    pauseExperiment: ()=>void
-    resumeExperiment: ()=>void
-    stopExperiment: ()=>void
-    hasAccessToExperiment: boolean
+    experiments: ExperimentsStateType,
+    isExperimentLoading: (deviceID: string) => boolean,
+    setExperimentLoading: (deviceID: string, loading: boolean) => void,
+    getExperiment: (deviceID: string) => ExperimentType | null,
+    setExperiment: (deviceID: string, data: Partial<ExperimentType>) => void
+    registerProject: (projectID: string) => void,
+    getSelectedLocation: (deviceID: string) => DeviceLocationType | null,
+    setSelectedLocation: (deviceID: string, location: DeviceLocationType | null) => void,
+    isExperimentDeviceOn: (deviceID: string) => boolean,
+    startExperiment: (deviceID: string) => void,
+    pauseExperiment: (deviceID: string) => void,
+    resumeExperiment: (deviceID: string) => void,
+    stopExperiment: (deviceID: string) => void,
+    hasAccessToExperiment: (deviceID: string) => boolean,
 }
 
 
@@ -84,101 +97,163 @@ export const useExperiments = (): ExperimentContextType => {
   return context;
 };
 
+
+// Hook to get a specific experiment
+export const useExperiment = (deviceID: string): {
+    experiment: ExperimentType | null,
+    isLoading: boolean,
+    selectedLocation: DeviceLocationType | null,
+    setSelectedLocation: (location: DeviceLocationType | null) => void,
+    isDeviceOn: boolean,
+    startExperiment: () => void,
+    pauseExperiment: () => void,
+    resumeExperiment: () => void,
+    stopExperiment: () => void,
+    hasAccess: boolean,
+    isExperimentOngoing: boolean
+} => {
+    const {
+        getExperiment,
+        isExperimentLoading,
+        getSelectedLocation,
+        setSelectedLocation: setContextSelectedLocation,
+        isExperimentDeviceOn,
+        startExperiment: startContextExperiment,
+        pauseExperiment: pauseContextExperiment,
+        resumeExperiment: resumeContextExperiment,
+        stopExperiment: stopContextExperiment,
+        hasAccessToExperiment
+    } = useExperiments();
+
+    const experiment = getExperiment(deviceID)
+    const isExperimentOngoing = React.useMemo(()=>{
+        return Boolean(experiment) && experiment!.status === "running"
+    },[experiment])
+
+    return {
+        experiment,
+        isLoading: isExperimentLoading(deviceID),
+        selectedLocation: getSelectedLocation(deviceID),
+        setSelectedLocation: (location) => setContextSelectedLocation(deviceID, location),
+        isDeviceOn: isExperimentDeviceOn(deviceID),
+        startExperiment: () => startContextExperiment(deviceID),
+        pauseExperiment: () => pauseContextExperiment(deviceID),
+        resumeExperiment: () => resumeContextExperiment(deviceID),
+        stopExperiment: () => stopContextExperiment(deviceID),
+        hasAccess: hasAccessToExperiment(deviceID),
+        isExperimentOngoing
+    };
+};
+
+
 export const ExperimentProvider = ({ 
   children 
 }:{children: React.ReactNode})=>{
-    const [data, setData] = React.useState<null | ExperimentType>(null)
-    const [isExperimentLoading, setIsExperimentLoading] = React.useState(false)
-    const [selectedLocation, setSelectedLocation] = React.useState<null | DeviceLocationType>(null)
+    const [experiments, setExperiments] = React.useState<ExperimentsStateType>({});
+    const [loadingState, setLoadingState] = React.useState<LoadingStateType>({});
+    const [selectedLocations, setSelectedLocations] = React.useState<SelectedLocationsStateType>({});
+    
     const {getProjectByID, isLoading, getProjectList, projectList} = useProjects()
     const {deviceList, getConfigurationByID, isDeviceOn} = useDevices()
     const {user} = useUser()
     const {toast} = useToast()
-    const {isConnected,emit, on} = useSocket()
+    const {isConnected, emit, on} = useSocket()
     const {setOptions, setOpen} = useWarningDialog()
-
     React.useEffect(()=>{
         if(isConnected){
             on<ExperimentType>("experiment_data", receivedData =>{
                 if(!receivedData) return 
-                if(receivedData.projectID){
-                    setData(receivedData)
-                }else{
-                    setData(prev=>prev ? {
-                        ...prev, 
-                        ...receivedData
-                    } : null)
-                }
+                const deviceID = receivedData.deviceID;
+                setExperiment(deviceID, receivedData)
             })
     
-            on<LogType[]>("update_experiment_log", logs =>{
-                setData(prev=>prev ? {
-                    ...prev, 
-                    logs
-                } : null)
-            })
-    
-            on<{isExperimentOngoing: boolean, status: ExperimentStatus}>("experiment_status", expStatus =>{
-                setData(prev=>prev ? {
-                    ...prev, 
-                    status: expStatus.status ? expStatus.status : "running"
-                } : null)
-            })
-            on<ExperimentType>("force_shutdown", receivedData =>{
-                console.log("Force shutdow")
-                createExperiment(receivedData)
-                getProjectList()
-            })
+            on<{deviceID: string, logs: LogType[]}>("update_experiment_log", payload => {
+                const { deviceID, logs } = payload;
+                setExperiment(deviceID, {logs})
+            });
+
+            on<{deviceID: string, isExperimentOngoing: boolean, status: ExperimentStatus}>("experiment_status", payload => {
+                const { deviceID, status } = payload;
+                setExperiment(deviceID, {
+                    status: status || "running"
+                })
+            });
+            
+            on<ExperimentType>("force_shutdown", receivedData => {
+                console.log("Force shutdown");
+                createExperiment(receivedData);
+                getProjectList();
+            });
         }
     }, [isConnected])
 
-    React.useEffect(()=>{
-        if(data && !selectedLocation){
-            const configuration = getConfigurationByID(data.deviceID,data.configurationID)
-            setSelectedLocation(configuration!.locations[0])
-        }
-    },[data])
+    React.useEffect(() => {
+        // Set initial locations for experiments that have data but no selected location
+        Object.entries(experiments).forEach(([deviceID, experimentData]) => {
+            if (experimentData && !selectedLocations[deviceID]) {
+                const configuration = getConfigurationByID(experimentData.deviceID, experimentData.configurationID);
+                if (configuration && configuration.locations.length > 0) {
+                    setSelectedLocations(prev => ({
+                        ...prev,
+                        [deviceID]: configuration.locations[0]
+                    }));
+                }
+            }
+        });
+    }, [experiments, deviceList]);
 
-    const isExperimentDeviceOn = React.useMemo(()=>{
-        if(!data) return false
-        if(projectList.length === 0) return false
-        const project = getProjectByID(data.projectID)
-        return (project && isDeviceOn(project!.device)) as boolean
-    },[data, deviceList, projectList])
+    const isExperimentDeviceOn = React.useCallback((deviceID: string): boolean => {
+        const experimentData = experiments[deviceID];
+        if (!experimentData) return false;
+        if (projectList.length === 0) return false;
+        
+        const project = getProjectByID(experimentData.projectID);
+        return (project && isDeviceOn(project.device)) as boolean;
+    }, [experiments, deviceList, projectList]);
     
-
-    const hasAccessToExperiment = React.useMemo(()=>{
-        return Boolean(user) && Boolean(isExperimentDeviceOn) && (!data || data!.userID === user!.sub)
-    },[isExperimentDeviceOn, user, data])
+    const hasAccessToExperiment = React.useCallback((deviceID: string): boolean => {
+        const experimentData = experiments[deviceID];
+        return Boolean(user) && 
+               Boolean(isExperimentDeviceOn(deviceID)) && 
+               (!experimentData || experimentData.userID === user!.sub);
+    }, [isExperimentDeviceOn, user, experiments]);
    
-
-
     const registerProject = React.useCallback((projectID: string)=>{
         const projectData = getProjectByID(projectID)
         if(projectData){
             const configuration = getConfigurationByID(projectData.device, projectData.configuration)
             if(configuration){
-                setData({
-                    userID: user!.sub,
-                    deviceID: projectData.device,
-                    dataAquisitionInterval: projectData.dataAquisitionInterval,
-                    projectID,
-                    duration: 0,
-                    status: "ready",
-                    configurationID: configuration.id,
-                    locations: configuration!.locations.map(l=>{
-                        return {
+                const deviceID = projectData.device;
+                setExperiments(prev => ({
+                    ...prev,
+                    [deviceID]: {
+                        userID: user!.sub,
+                        deviceID,
+                        dataAquisitionInterval: projectData.dataAquisitionInterval,
+                        projectID,
+                        duration: 0,
+                        status: "ready",
+                        configurationID: configuration.id,
+                        locations: configuration.locations.map(l => ({
                             id: l.id,
                             data: []
-                        }
-                    })
-                })
+                        }))
+                    }
+                }));
+                 // Set the first location as selected
+                 if (configuration.locations.length > 0) {
+                    setSelectedLocations(prev => ({
+                        ...prev,
+                        [deviceID]: configuration.locations[0]
+                    }));
+                }
             }
+            
         }
-    },[isLoading])
+    },[isLoading, user])
 
-    const startExperiment = React.useCallback(()=>{
-        if(!isExperimentDeviceOn){
+    const startExperiment = React.useCallback((deviceID: string)=>{
+        if(!isExperimentDeviceOn(deviceID)){
             toast({
                 title: "Device no connected",
                 description: "The device is currently not connected. Please check the connection and try again later.",
@@ -188,31 +263,28 @@ export const ExperimentProvider = ({
         }
         emit("user_command", {
             command: "startExperiment", 
-            params: data
+            params: experiments[deviceID]
         })
-        setData(prev=>prev ? {
-            ...prev, 
-            status: "running"
-        } : null)
+        updateExperimentalData(deviceID, { status: "running"})
+    },[experiments, isExperimentDeviceOn])
     
-
-    },[data])
-    
-    const pauseExperiment = React.useCallback(()=>{
+    const pauseExperiment = React.useCallback((deviceID: string) => {
         emit("user_command", {
-            command: "pauseExperiment", 
-            params: data
-        })
-    },[data])
+            command: "pauseExperiment",
+            params: experiments[deviceID]
+        });
+    }, [experiments]);
 
-    const resumeExperiment = React.useCallback(()=>{
+    const resumeExperiment = React.useCallback((deviceID: string) => {
         emit("user_command", {
-            command: "resumeExperiment", 
-            params: data
-        })
-    },[data])
+            command: "resumeExperiment",
+            params: experiments[deviceID]
+        });
+    }, [experiments]);
 
-    const stopExperiment = React.useCallback(()=>{
+    const stopExperiment = React.useCallback((deviceID: string)=>{
+        const experimentData = experiments[deviceID];
+        if (!experimentData) return;
         setOptions({
             title: "Stop the experiment",
             description: "Stopping the experiment is not reversible!",
@@ -220,7 +292,7 @@ export const ExperimentProvider = ({
                 emit("user_command", {
                     command: "stopExperiment",
                     params: {
-                        deviceID: data!.deviceID
+                        deviceID
                     }
                 })
                 setOpen(false)
@@ -229,27 +301,62 @@ export const ExperimentProvider = ({
                     description: "Your experiment was successfuly stopped.",
                     variant: "default"
                 })
+                createExperiment(experimentData)
+                getProjectList()
             }
         })
         setOpen(true)
-        createExperiment(data!)
-        getProjectList()
-    },[data])
+    },[experiments])
+
+    // Helper functions for context
+    const getExperiment = (deviceID: string): ExperimentType | null => 
+        experiments[deviceID] || null;
+        
+    const setExperiment = React.useCallback((deviceID: string, data: Partial<ExperimentType>)=>{
+        setExperiments(prev => ({
+            ...prev,
+            [deviceID]: prev[deviceID] ? {
+                ...prev[deviceID]!,
+                ...data
+            } : null
+        }));
+    },[])
+    
+    const isExperimentLoading = (deviceID: string): boolean => 
+        loadingState[deviceID] || false;
+        
+    const setExperimentLoading = (deviceID: string, loading: boolean) => {
+        setLoadingState(prev => ({
+            ...prev,
+            [deviceID]: loading
+        }));
+    };
+    
+    const getSelectedLocation = (deviceID: string): DeviceLocationType | null => 
+        selectedLocations[deviceID] || null;
+    
+    const setSelectedLocation = (deviceID: string, location: DeviceLocationType | null) => {
+        setSelectedLocations(prev => ({
+            ...prev,
+            [deviceID]: location
+        }));
+    };
 
     const value: ExperimentContextType = {
-        data,
-        setData,
+        experiments,
+        isExperimentLoading,
+        setExperimentLoading,
+        getExperiment,
+        setExperiment,
         registerProject,
-        selectedLocation,
+        getSelectedLocation,
         setSelectedLocation,
         isExperimentDeviceOn,
         startExperiment,
         pauseExperiment,
         stopExperiment,
-        isExperimentLoading,
-        setIsExperimentLoading,
         resumeExperiment,
-        hasAccessToExperiment
+        hasAccessToExperiment,
     }
 
     if(isLoading) return <Loading/>

@@ -1,6 +1,5 @@
 import { Server, Socket } from "socket.io";
 import { ExperimentType, LogType } from "../types/experiment";
-import { updateClientsExperimentData } from "../server.js";
 import { reportErrorToClient } from "../utils/utils.js";
 import { v4 } from "uuid";
 
@@ -19,16 +18,17 @@ export class DeviceConnection{
       this.experimentData = null
       this.socket = socket
       this.socket.join(deviceID);
-  
+      this.registerSocketListenners()
     }
   
     registerSocketListenners(){
+      console.log("Regestering Socket listenners for the device")
       this.socket.on("update_experiment_status", (status)=>{
         this.experimentData = {
             ...this.experimentData, 
             ...status
         }
-        updateClientsExperimentData(true, status)
+        // updateClientsExperimentData(true, status)
       })
   
       this.socket.on("update_experiment_log", (log)=>{
@@ -36,8 +36,11 @@ export class DeviceConnection{
       })
       
       // Handle sensor data from RPi
-      this.socket.on('sensor_data', (sensorID: string, sensorData: {data: {id: string, x: number, y: number}[]}) => {
-        this.updateExperimentalData(sensorData)
+      this.socket.on('sensor_data', (sensorData: {deviceID: string, data: {id: string, x: number, y: number}[]}) => {
+        if(sensorData.deviceID === this.id){
+          console.log("Data received")
+          this.updateExperimentalData(sensorData)
+        }
       });
   
       // Handle errors
@@ -61,7 +64,7 @@ export class DeviceConnection{
           logs: []
       }
         this.updateExperimentLog({type:"info",  desc:"Experiment started", location:"Device"})
-        updateClientsExperimentData(true, {createdAt})
+        // updateClientsExperimentData(true, {createdAt})
        
     }
     
@@ -98,22 +101,23 @@ export class DeviceConnection{
         this.isExperimentOngoing = false,
         this.experimentData = null
         this.updateExperimentLog({type:"info", desc:"Experiment ended", location:"Device"})
-        updateClientsExperimentData(false, {
-            duration: 0
-        })
+        // updateClientsExperimentData(false, {
+        //     duration: 0
+        // })
     }
   
     updateExperimentLog({type, desc, location}: Partial<LogType>){
       if(this.experimentData && this.experimentData.logs){
         const log = {
-            id: v4(),
-            type, 
-            desc, 
-            createdAt: new Date().toISOString(),
-            location
+          id: v4(),
+          type, 
+          desc, 
+          createdAt: new Date().toISOString(),
+          location
         }
         this.experimentData.logs.push(log as LogType)
-        this.io.to('web_clients').emit("update_experiment_log",  this.experimentData.logs)
+        this.io.to(this.experimentData.deviceID).emit("update_experiment_log",  this.experimentData.logs)
+        console.log("New log added to the log stack.")
       }
     }
   
@@ -127,11 +131,11 @@ export class DeviceConnection{
                 data: [...location.data, {x: l.x,y: l.y}]
             }
         })
-        this.io.to('web_clients').emit('sensor_data', {
+        this.io.to(this.id).emit('sensor_data', {
             locations: this.experimentData!.locations,
             timestamp: new Date().toISOString()
         });
-    }
+      }
     }
   }
   

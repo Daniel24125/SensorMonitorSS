@@ -1,12 +1,12 @@
-import {   reportErrorToClient, validateCommand } from './utils/utils.js';
+import {   parseCommands, reportErrorToClient, webClientConnection } from './utils/utils.js';
 import 'dotenv/config';
 import express from 'express';
 import { v4 } from 'uuid';
 import { createServer } from 'http';
-import { DefaultEventsMap, Server, Socket } from 'socket.io';
+import { Server} from 'socket.io';
 import { DeviceManager } from './management/device_management.js';
-import { DeviceType,  ExperimentType,  UpdateDeviceConfigType } from './types/experiment.js';
-import { CommandDataType, ParseCommandsType } from './types/sockets.js';
+import { DeviceType,  UpdateDeviceConfigType } from './types/experiment.js';
+import { CommandDataType } from './types/sockets.js';
 
 const app = express();
 const http = createServer(app);
@@ -23,40 +23,12 @@ const PORT = process.env.PORT || 8000;
 
 
 
-const deviceManager = new DeviceManager(io);
+export const deviceManager = new DeviceManager(io);
 deviceManager.initialize().catch(console.error);
-
-
-const parseCommands: ParseCommandsType = async (data)=>{
-    const { command, params } = data;
-    // Validate command
-    if (!validateCommand(command, params)) {
-        reportErrorToClient({message: 'Invalid command or parameters'});
-        return 
-    }
-
-    console.log(`Command received: ${command}`);
-
-    // Handle experiment-related commands
-    // deviceManager.sendDeviceCommand(deviceID, {
-    //     cmd: command, 
-    //     data: experimentStatus.data!
-    // })
-    deviceManager.sendDeviceCommand(command,params)
-}
-
-const webClientConnection = async (socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any> )=>{
-    console.log('Web client registered:', socket.id);
-    socket.join('web_clients');
-    const devices = await deviceManager.getAllDevices()
-    socket.emit('get_connected_devices', devices);
-    // updateClientsExperimentData(experimentStatus.isExperimentOngoing, experimentStatus.data)
-}
-
 
 io.on('connection', (socket) => {
     console.log('New connection:', socket.id);
-    // Register client type
+
     socket.on('register_client', async (clientType: "rpi" | "web") => {
         if (clientType === 'rpi') {
             console.log('RPi registered:', socket.id);
@@ -126,7 +98,7 @@ io.on('connection', (socket) => {
             })
             return;
         }
-       parseCommands(data)
+       parseCommands(socket, data)
     });
 
     // Handle disconnection
