@@ -129,7 +129,7 @@ export const useExperiment = (deviceID: string): ExperimentHookType => {
 
     const experiment = getExperiment(deviceID)
     const isExperimentOngoing = React.useMemo(()=>{
-        return Boolean(experiment) && experiment!.status === "running"
+        return Boolean(experiment) && experiment!.status !== "ready"
     },[experiment])
 
     return {
@@ -166,6 +166,7 @@ export const ExperimentProvider = ({
             on<ExperimentType>("experiment_data", receivedData =>{
                 if(!receivedData) return 
                 const deviceID = receivedData.deviceID;
+                console.log(deviceID)
                 setExperiment(deviceID, receivedData)
 
             })

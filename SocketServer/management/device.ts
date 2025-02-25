@@ -29,7 +29,7 @@ export class DeviceConnection{
             ...this.experimentData, 
             ...status
         }
-        this.io.to(this.id).emit("experiment_data", status)
+        this.sendDataToClient("experiment_data", status)
         // updateClientsExperimentData(true, status)
       })
   
@@ -53,6 +53,13 @@ export class DeviceConnection{
         }
       });
     }
+
+    sendDataToClient(channel:string, data: Partial<ExperimentType>){
+      this.io.to(this.id).emit(channel, {
+        deviceID: this.id,
+        ...data
+      })
+    }
     
     startExperiment = (params: ExperimentType)=>{
         console.log("Start the Experiment")
@@ -65,7 +72,6 @@ export class DeviceConnection{
           logs: []
       }
         this.updateExperimentLog({type:"info",  desc:"Experiment started", location:"Device"})
-        // updateClientsExperimentData(true, {createdAt})
        
     }
     
@@ -73,8 +79,8 @@ export class DeviceConnection{
         console.log("Pause the Experiment")
         this.experimentData!.status = "paused"
         
-        this.io.to('web_clients').emit("experiment_status", {
-            isExperimentOngoing: true,
+        this.io.to(this.id).emit("experiment_status", {
+          deviceID: this.id,
             status: "paused"
         })
         this.updateExperimentLog({type:"info",  desc:"Experiment paused", location:"Device"})
@@ -83,15 +89,15 @@ export class DeviceConnection{
     resumeExperiment = ()=>{
         console.log("Resume the Experiment")
         this.experimentData!.status = "running"
-        this.io.to('web_clients').emit("experiment_status", {
-            isExperimentOngoing: true,
-            status: "running"
+        this.io.to(this.id).emit("experiment_status", {
+          deviceID: this.id,
+          status: "running"
         })
         this.updateExperimentLog({type:"info", desc:"Experiment resumed", location:"Device"})
     }
     
     stopExperiment = ()=>{
-        this.io.to('web_clients').emit('sensor_data', {
+        this.io.to(this.id).emit('sensor_data', {
             locations: this.experimentData!.locations.map(l=>{
                 return{
                     id: l.id, 
@@ -133,6 +139,7 @@ export class DeviceConnection{
                 data: [...location.data, {x: l.x,y: l.y}]
             }
         })
+
         this.io.to(this.id).emit('sensor_data', {
             locations: this.experimentData!.locations,
             timestamp: new Date().toISOString()

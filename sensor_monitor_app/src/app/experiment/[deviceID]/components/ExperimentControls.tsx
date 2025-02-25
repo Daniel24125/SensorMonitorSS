@@ -5,7 +5,7 @@ import { Pause, Play, StopCircle } from 'lucide-react'
 import React from 'react'
 
 const ExperimentControls = ({deviceID}: {deviceID: string}) => {
-  const {startExperiment, isExperimentOngoing, hasAccess,stopExperiment, pauseExperiment, resumeExperiment} = useExperiment(deviceID)
+  const {experiment, startExperiment, isExperimentOngoing, hasAccess, stopExperiment, pauseExperiment, resumeExperiment} = useExperiment(deviceID)
 
   return (
     <div className='flex gap-2 '>
@@ -15,7 +15,7 @@ const ExperimentControls = ({deviceID}: {deviceID: string}) => {
         Icon={Play}
         hasAccessToExperiment={hasAccess}
       /> : <>
-        {isExperimentOngoing ? <ControlButton
+        {experiment!.status === "running" ? <ControlButton
           title='Pause monitoring'
           onClickFn={pauseExperiment}
           Icon={Pause}
