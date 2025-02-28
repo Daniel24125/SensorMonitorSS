@@ -123,7 +123,10 @@ export class DeviceConnection{
           location
         }
         this.experimentData.logs.push(log as LogType)
-        this.io.to(this.experimentData.deviceID).emit("update_experiment_log",  this.experimentData.logs)
+        this.io.to(this.experimentData.deviceID).emit("update_experiment_log",  {
+          logs: this.experimentData.logs, 
+          deviceID: this.experimentData.deviceID
+        })
         console.log("New log added to the log stack.")
       }
     }

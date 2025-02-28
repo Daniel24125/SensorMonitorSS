@@ -166,13 +166,13 @@ export const ExperimentProvider = ({
             on<ExperimentType>("experiment_data", receivedData =>{
                 if(!receivedData) return 
                 const deviceID = receivedData.deviceID;
-                console.log(deviceID)
                 setExperiment(deviceID, receivedData)
 
             })
     
             on<{deviceID: string, logs: LogType[]}>("update_experiment_log", payload => {
                 const { deviceID, logs } = payload;
+                console.log(payload)
                 setExperiment(deviceID, {logs})
             });
 

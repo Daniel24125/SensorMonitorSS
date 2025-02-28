@@ -21,7 +21,7 @@ const ExperimentTemplate = ({deviceID}: {deviceID: string}) => {
     },[isLoading])
 
     if(!experiment?.projectID) return <SelectProjectTemplate/>
-    
+
     return (<div className='w-full h-full flex flex-col py-5 gap-7'>
             <ExperimentHeader deviceID={deviceID}/>
             <ExperimentData deviceID={deviceID}/>

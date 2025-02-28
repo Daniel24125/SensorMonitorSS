@@ -22,7 +22,7 @@ const ProjectOptions = ({onClick, project}: {onClick?: ()=>void, project: Projec
         {project && <DropdownMenuContent align="end">
             <DropdownMenuItem disabled={!isDeviceOn(project.device)} onClick={() =>{
                 if(isDeviceOn(project.device)){
-                    router.push(`/experiment/${project.device}`)
+                    router.push(`/experiment/${project.device}?projectID=${project.id}`)
                 }
             }}>
                 <FlaskConical/>

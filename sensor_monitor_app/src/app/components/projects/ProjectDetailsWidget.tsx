@@ -183,7 +183,7 @@ export const ExperimentCard = ({
     'w-full p-2 rounded-xl flex flex-col bg-secondary-background border-2 border-secondary-background hover:border-2 hover:border-[#0984E3] cursor-pointer',
     className
   )}>
-    <p className='text-sm font-bold'>{experiment.id}</p>
+    <p className='text-xs font-bold'>{experiment.id}</p>
     <p className='text-xs text-accent'>{moment(experiment.createdAt).format("DD/MM/YYYY - hh:mm a")}</p>
   </div>
 }
