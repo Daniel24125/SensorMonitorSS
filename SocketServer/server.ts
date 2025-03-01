@@ -38,6 +38,16 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on("get_experiment_data", (userID: string)=>{
+       const experiments = deviceManager.getUserOngoingExperiments(userID)
+       
+       experiments.forEach(e=>{
+            const id = e.id
+            socket.join(id)
+        })
+        socket.emit("initial_data_update", experiments.map(e=>e.experimentData))
+    })
+
     socket.on('get_rpi_config', async (config) => {
         if(config){
             deviceManager.registerDevice(config, socket)

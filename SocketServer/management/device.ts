@@ -29,8 +29,7 @@ export class DeviceConnection{
             ...this.experimentData, 
             ...status
         }
-        this.sendDataToClient("experiment_data", status)
-        // updateClientsExperimentData(true, status)
+        this.sendDataToClient("experiment_data", this.experimentData!)
       })
   
       this.socket.on("update_experiment_log", (log)=>{

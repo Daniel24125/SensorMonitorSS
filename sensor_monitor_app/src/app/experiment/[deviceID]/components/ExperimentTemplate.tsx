@@ -10,15 +10,20 @@ import ProjectExperimentLogs from '@/app/projects/[projectID]/components/logs/Pr
 const ExperimentTemplate = ({deviceID}: {deviceID: string}) => {
     const searchParams = useSearchParams();
     const projectID = searchParams.get('projectID');
-    const {experiment} = useExperiment(deviceID)
+    const {experiment, isLoading: isExperimentLoading} = useExperiment(deviceID)
+    const {isChecking, experiments} = useExperiments()
     const {registerProject} = useExperiments()
     const {isLoading} = useProjects()
 
+    const loading = React.useMemo(()=> isLoading || isExperimentLoading ,[isLoading, isExperimentLoading])
+
     React.useEffect(()=>{
-        if(projectID && !isLoading){
-            registerProject(projectID)
+        if(projectID && !loading && !isChecking && experiments){
+            if(Object.entries(experiments).length === 0){
+                registerProject(projectID)
+            }
         }
-    },[isLoading])
+    },[loading, isChecking, experiments])
 
     if(!experiment?.projectID) return <SelectProjectTemplate/>
 

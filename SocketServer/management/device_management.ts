@@ -19,8 +19,6 @@ export class DeviceManager {
     this.connectedDevices = []
   }
 
-
-
   async initialize(): Promise<void> {
     try {
       // Create directory if it doesn't exist
@@ -99,9 +97,9 @@ export class DeviceManager {
   updateExperimentLog = (deviceID:string, log: {type: PossibleLogTypes, desc: string, location: string})=>{
     console.log(`Log received: ${log.desc}`)
     const device = this.getDeviceConnection(deviceID)
-    device!.updateExperimentLog(log)
-    
-}
+    device!.updateExperimentLog(log)  
+  }
+
   async getDeviceByID(deviceID: string): Promise<DeviceType | undefined> {
     const devices = await this.getAllDevices();
     return devices.find(d => d.id === deviceID);
