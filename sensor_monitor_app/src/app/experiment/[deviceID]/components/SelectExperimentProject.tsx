@@ -7,7 +7,7 @@ import React from 'react'
 
 const SelectProjectTemplate = ()=>{
     const {projectList} = useProjects()
-    const {registerProject, data} = useExperiments()
+    const {registerProject} = useExperiments()
     const {isDeviceOn} = useDevices()
     
     const handleChange = (value: string)=>{
@@ -17,7 +17,6 @@ const SelectProjectTemplate = ()=>{
     return <div className='w-full h-full flex justify-center items-center'>
         <Select
             onValueChange={handleChange} 
-            value={data?.projectID}
             required 
         >
             <SelectTrigger className='h-auto max-w-72'>

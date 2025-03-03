@@ -3,9 +3,9 @@ import WidgetCard from './ui/WidgetCard'
 import { Button } from '@/components/ui/button'
 import { ExternalLink, Play } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { ExperimentType, useExperiment, useExperiments } from '@/contexts/experiments'
+import {  useExperiment, useExperiments } from '@/contexts/experiments'
 import { useDevices } from '@/contexts/devices'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription,  DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import SelectProjectTemplate from '../experiment/[deviceID]/components/SelectExperimentProject'
 import ExperimentControls from '../experiment/[deviceID]/components/ExperimentControls'
 import { ChartComponent, LocationListComponent } from '../experiment/[deviceID]/components/ExperimentData'
@@ -31,7 +31,6 @@ const OnGoingExperimentWidget = () => {
     }
   },[experiments])
 
-  console.log(experiments)
 
   return (
     <WidgetCard title='Ongoing Experiments' className='w-full' secondaryAction={<>
@@ -124,7 +123,6 @@ const SelectProjectDialog = ({
   open: boolean 
   setOpen: React.Dispatch<React.SetStateAction<boolean>>
 })=>{
-  const {data, startExperiment} = useExperiments()
 
   return <Dialog open={open} onOpenChange={(o)=>setOpen(o)}>
     <DialogContent className="sm:max-w-[425px]">
@@ -135,14 +133,6 @@ const SelectProjectDialog = ({
         </DialogDescription>
       </DialogHeader>
       <SelectProjectTemplate/>
-      <DialogFooter>
-        <Button disabled={!data || !data.projectID} variant={"ghost"} className='text-primary' onClick={()=>{
-         if(data && data.projectID){
-          startExperiment()
-         }
-      }}>Start experiment</Button>
-        <Button variant={"ghost"} onClick={()=>setOpen(false)} >Cancel</Button>
-      </DialogFooter>
     </DialogContent>
   </Dialog>
 }
