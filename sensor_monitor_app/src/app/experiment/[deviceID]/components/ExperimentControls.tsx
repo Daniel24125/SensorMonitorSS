@@ -8,7 +8,7 @@ const ExperimentControls = ({deviceID}: {deviceID: string}) => {
   const {experiment, startExperiment, isExperimentOngoing, hasAccess, stopExperiment, pauseExperiment, resumeExperiment} = useExperiment(deviceID)
 
   return (
-    <div className='flex gap-2 '>
+    <div className='flex gap-2'>
       {!isExperimentOngoing ? <ControlButton
         title='Start monitoring'
         onClickFn={startExperiment}

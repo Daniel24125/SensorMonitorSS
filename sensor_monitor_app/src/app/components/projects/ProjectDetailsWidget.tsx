@@ -3,7 +3,7 @@ import WidgetCard from '../ui/WidgetCard'
 import { useProjects } from '@/contexts/projects'
 import moment from 'moment'
 import { Button } from '@/components/ui/button'
-import { ExperimentType, LocationChartDataType } from '@/contexts/experiments'
+import { ExperimentType, LocationChartDataType, useExperiment } from '@/contexts/experiments'
 import { useRouter } from 'next/navigation'
 import ProjectOptions from './ProjectOptions'
 import DeviceBadge from '@/app/devices/components/DeviceBadge'
@@ -20,6 +20,7 @@ import { useToast } from '@/hooks/use-toast'
 
 const ProjectDetails = () => {
   const {selectedProject} = useProjects()
+  const {isExperimentOngoing} = useExperiment(selectedProject!.device)
   const {isDeviceOn} = useDevices()
   const [selectedExperiment, setSelectedExperiment] = React.useState<ExperimentType | null>(null)
   const router = useRouter()
@@ -64,7 +65,7 @@ const ProjectDetails = () => {
       <SelectedExperimentDetails selectedExperiment={selectedExperiment}/>
       </>: <NoDataToDisplay title={<>
           <h3 className='text-lg text-accent font-bold'>No experimental data to display</h3>
-          <Button disabled={!isDeviceOn(selectedProject.device)} onClick={()=>{
+          <Button disabled={!isDeviceOn(selectedProject.device) || isExperimentOngoing} onClick={()=>{
             if(isDeviceOn(selectedProject.device)){
               router.push(`/experiment/${selectedProject.device}?projectID=${selectedProject.id}`)
             }
@@ -110,8 +111,6 @@ const SelectedExperimentDetails = ({selectedExperiment}: {selectedExperiment: Ex
   </div> : <NoDataToDisplay title={<h3 className='text-lg text-accent font-bold'>No experiment selected</h3>}/>
 }
 
-
-
 const SelectedExperimentLocationSelection = ({selectedLocation, selectedExperiment, setSelectedLocation}:
   {
     selectedLocation: LocationChartDataType
@@ -149,7 +148,6 @@ const SelectedExperimentLocationSelection = ({selectedLocation, selectedExperime
   </Select>
 }
 
-
 const SelectedExperimentData = ({selectedLocation}: {selectedLocation: LocationChartDataType})=>{
   return <ChartContainer config={chartConfig} className="w-full h-3/4 " >
     <ScatterChart
@@ -170,7 +168,6 @@ const SelectedExperimentData = ({selectedLocation}: {selectedLocation: LocationC
     </ScatterChart>
     </ChartContainer>
 }
-
 
 export const ExperimentCard = ({
   experiment, className, onClick}
