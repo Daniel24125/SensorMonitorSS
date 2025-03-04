@@ -96,14 +96,14 @@ export class DeviceConnection{
     }
     
     stopExperiment = ()=>{
-        this.io.to(this.id).emit('sensor_data', {
-            locations: this.experimentData!.locations.map(l=>{
-                return{
-                    id: l.id, 
-                    data: []
-                }
-            }),
-        });
+        // this.io.to(this.id).emit('sensor_data', {
+        //     locations: this.experimentData!.locations.map(l=>{
+        //         return{
+        //             id: l.id, 
+        //             data: []
+        //         }
+        //     }),
+        // });
         this.isExperimentOngoing = false,
         this.experimentData = null
         this.updateExperimentLog({type:"info", desc:"Experiment ended", location:"Device"})

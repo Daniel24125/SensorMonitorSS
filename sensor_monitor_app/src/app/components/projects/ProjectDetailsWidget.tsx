@@ -26,7 +26,7 @@ const ProjectDetails = () => {
   const router = useRouter()
 
   React.useEffect(()=>{
-    if(!selectedProject || !selectedProject.experiments || selectedProject.experiments?.length === 0 || selectedExperiment ) return 
+    if(!selectedProject || !selectedProject.experiments || selectedProject.experiments?.length === 0 ) return 
     setSelectedExperiment(selectedProject!.experiments![0])
   },[selectedProject])
 

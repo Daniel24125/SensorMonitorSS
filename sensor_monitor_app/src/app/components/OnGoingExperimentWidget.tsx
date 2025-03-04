@@ -15,47 +15,56 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { TooltipWrapper } from '@/components/ui/tooltip'
 
 const OnGoingExperimentWidget = () => {
-  const router = useRouter()
   const {experiments} = useExperiments()
   const [selectedExperiment, setSelectedExperiment] = React.useState<null | string>(null)
 
   const hasExperimenstsOngoing = React.useMemo(()=>{
     const values = Object.values(experiments || {})
-    return values.length > 0 && selectedExperiment && values.find(v=>v !== null)
+    return experiments && selectedExperiment &&  values.length > 0 && values.find(v=>v !== null)
   },[experiments, selectedExperiment])
 
   React.useEffect(()=>{
-    if(experiments){
-      const id = Object.keys(experiments)[0]
+    if(experiments && !selectedExperiment){
+      const id = Object.keys(experiments!)[0]
       setSelectedExperiment(id)
     }
-  },[experiments])
-
+  },[experiments, selectedExperiment])
 
   return (
     <WidgetCard title='Ongoing Experiments' className='w-full' secondaryAction={<>
-      {hasExperimenstsOngoing && <div className='flex w-full items-center gap-2 justify-end'>
-        <Tabs value={selectedExperiment || ""}>
-          <TabsList className="w-full">
-            {Object.keys(experiments!).map(id=>{
-              return <TabsTrigger onClick={()=>setSelectedExperiment(id)} key={id} value={id}>{id}</TabsTrigger>
-            })}
-          </TabsList>
-        </Tabs>
-        <TooltipWrapper title="Open experiment page">
-          <Button size={"icon"} variant={"outline"} onClick={()=>{
-            router.push(`/experiment/${experiments![selectedExperiment!]!.deviceID}?projectID=${experiments![selectedExperiment!]!.projectID}`)
-          }}>
-              <ExternalLink/>
-          </Button>
-        </TooltipWrapper>
-      </div>}
+      {hasExperimenstsOngoing && <OngoingExperimentHeader selectedExperiment={selectedExperiment!} setSelectedExperiment={setSelectedExperiment}/>}
     </>}>
         {hasExperimenstsOngoing ? <OnGoingExperimentData selectedExperiment={selectedExperiment!}/> : <NotOngoingExperiment/>}
     </WidgetCard>
   )
 }
 
+const OngoingExperimentHeader = ({selectedExperiment, setSelectedExperiment}:
+  {
+    selectedExperiment: string,
+    setSelectedExperiment: React.Dispatch<React.SetStateAction<string | null>>
+  })=>{
+    const {experiments} = useExperiments()
+    const router = useRouter()
+
+    return <div className='flex w-full items-center gap-2 justify-end'>
+      <Tabs value={selectedExperiment || ""}>
+        <TabsList className="w-full">
+          {Object.keys(experiments!).map(id=>{
+            if(!id) return
+            return <TabsTrigger onClick={()=>setSelectedExperiment(id)} key={id} value={id}>{id}</TabsTrigger>
+          })}
+        </TabsList>
+      </Tabs>
+      <TooltipWrapper title="Open experiment page">
+        <Button size={"icon"} variant={"outline"} onClick={()=>{
+          router.push(`/experiment/${experiments![selectedExperiment!]!.deviceID}?projectID=${experiments![selectedExperiment!]!.projectID}`)
+        }}>
+            <ExternalLink/>
+        </Button>
+      </TooltipWrapper>
+    </div>
+}
 
 
 const OnGoingExperimentData = ({selectedExperiment}:{selectedExperiment: string})=>{
@@ -65,6 +74,7 @@ const OnGoingExperimentData = ({selectedExperiment}:{selectedExperiment: string}
     return experiment? experiment.duration : 0
   },[experiment])
   
+  if(!experiment) return 
   return <div className='w-full h-[calc(100%-55px)] flex justify-between'>
     <div className='h-full flex flex-col w-1/5 min-w-40 max-w-44 justify-between shrink-0'>
       <div className='w-full h-full bg-card rounded-2xl shrink-0 flex flex-col items-center justify-center gap-5'>

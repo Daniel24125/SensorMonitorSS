@@ -86,7 +86,7 @@ interface ExperimentContextType {
 }
 
 type ExperimentHookType = {
-    experiment: ExperimentType | null,
+    experiment: ExperimentType | null | undefined,
     isLoading: boolean,
     selectedLocation: DeviceLocationType | null,
     setSelectedLocation: (location: DeviceLocationType | null) => void,
@@ -153,7 +153,7 @@ export const ExperimentProvider = ({
   children 
 }:{children: React.ReactNode})=>{
     const {deviceList, getConfigurationByID, isDeviceOn} = useDevices()
-    const [experiments, setExperiments] = React.useState<ExperimentsStateType | null>(null);
+    const [experiments, setExperiments] = React.useState<ExperimentsStateType | null >(null);
     const {getProjectByID, isLoading, getProjectList, projectList} = useProjects()
     const [loadingState, setLoadingState] = React.useState<LoadingStateType>(deviceList.reduce((acc: LoadingStateType, item: DeviceType) => {
         acc[item.id ] = true;
@@ -224,8 +224,10 @@ export const ExperimentProvider = ({
         return () => {
             // Remove all event listeners
             off("experiment_data");
+            off("sensor_data");
             off("update_experiment_log");
             off("experiment_status");
+            off("initial_data_update");
             off("force_shutdown");
         };
     }, [isConnected, user])
@@ -355,21 +357,31 @@ export const ExperimentProvider = ({
         setOpen(true)
     },[experiments])
 
+
+    
     // Helper functions for context
     const getExperiment = (deviceID: string): ExperimentType | null => 
         experiments && experiments[deviceID] || null;
         
-    const setExperiment = (deviceID: string, data: Partial<ExperimentType> | null)=>{
+    const setExperiment = (deviceID: string, data: Partial<ExperimentType> | null )=>{
         setExperiments(prev => {
+            if (!prev) {
+                return data ? { [deviceID]: data as ExperimentType } : {};
+            }
+    
+            if (!data) {
+                const { [deviceID]: experimentToRemove, ...remainingExperiments } = prev;
+                return remainingExperiments;
+            }
+            
             return prev?{
                 ...prev,
-                [deviceID]: !data ? data: prev[deviceID] 
+                [deviceID]: prev[deviceID] 
                     ? { ...prev[deviceID]!, ...data }
                     : (('deviceID' in data) ? data as ExperimentType : null)
             }:{};
         });
     }
-    
     const isExperimentLoading = (deviceID: string): boolean => 
         loadingState[deviceID] || false;
         
