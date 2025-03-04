@@ -143,6 +143,7 @@ export class DeviceConnection{
         })
 
         this.io.to(this.id).emit('sensor_data', {
+            deviceID: this.id,
             locations: this.experimentData!.locations,
             timestamp: new Date().toISOString()
         });

@@ -38,7 +38,7 @@ const OnGoingExperimentWidget = () => {
         <Tabs value={selectedExperiment || ""}>
           <TabsList className="w-full">
             {Object.keys(experiments!).map(id=>{
-              return <TabsTrigger key={id} value={id}>{id}</TabsTrigger>
+              return <TabsTrigger onClick={()=>setSelectedExperiment(id)} key={id} value={id}>{id}</TabsTrigger>
             })}
           </TabsList>
         </Tabs>

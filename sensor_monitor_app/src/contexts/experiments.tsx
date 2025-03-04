@@ -191,6 +191,11 @@ export const ExperimentProvider = ({
                 setIsChecking(false)
             })
 
+            on<{deviceID: string, locations: LocationChartDataType[], timestamp: string}>("sensor_data",data=>{
+                const {deviceID} = data
+                setExperiment(deviceID, {locations: data.locations})
+            })
+
             on<ExperimentType>("experiment_data", receivedData =>{
                 if(!receivedData) return 
                 const deviceID = receivedData.deviceID;

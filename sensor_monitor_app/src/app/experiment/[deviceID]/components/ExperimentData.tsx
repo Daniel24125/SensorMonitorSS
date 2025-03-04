@@ -4,12 +4,12 @@ import { ChartConfig,ChartContainer} from '@/components/ui/chart'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { TooltipWrapper } from '@/components/ui/tooltip'
 import { useDevices } from '@/contexts/devices'
-import {  LocationChartDataType, useExperiment, useExperiments } from '@/contexts/experiments'
-import { useSocket } from '@/contexts/socket'
+import { useExperiment } from '@/contexts/experiments'
 import { cn } from '@/lib/utils'
 import { CircleCheck, CircleMinus, MapPin } from 'lucide-react'
 import React from 'react'
-import {   ScatterChart,
+import { 
+    ScatterChart,
     Scatter,
     XAxis,
     YAxis,
@@ -65,16 +65,7 @@ const ChartHeader = ({deviceID}:{deviceID: string})=>{
 
 export const ChartComponent = ({deviceID}:{deviceID: string})=>{
     const {selectedLocation, isExperimentOngoing, experiment} = useExperiment(deviceID)
-    const {setExperiment} = useExperiments()
-    const {on} = useSocket()
-    
-    React.useEffect(()=>{
-        on<{locations: LocationChartDataType[], timestamp: string}>("sensor_data",data=>{
-            setExperiment(deviceID, {locations: data.locations})
-        })
-      
-    }, [])
-
+  
 
     const chartData = React.useMemo(()=>{
         if(!selectedLocation) return []
@@ -125,7 +116,8 @@ export const LocationListComponent = ({showIcon=true, deviceID}: LocationListPro
     const {experiment, selectedLocation, setSelectedLocation, isDeviceOn, isExperimentOngoing} = useExperiment(deviceID)
     const {getConfigurationByID} = useDevices()
 
-    return experiment?.locations.map(l=>{
+    if(!experiment) return 
+    return experiment!.locations.map(l=>{
         const lastSensorData = l.data.length > 0 ? l.data[l.data.length - 1].y: null
         const isActive = selectedLocation && selectedLocation.id === l.id
         const configuration = getConfigurationByID(deviceID, experiment.configurationID)
