@@ -1,3 +1,4 @@
+import { Socket } from "socket.io"
 import { ExperimentType } from "./experiment"
 
 
@@ -7,7 +8,7 @@ export type CommandDataType = {
     params: ExperimentType
 }
 
-export type ParseCommandsType =  (data: CommandDataType) =>void
+export type ParseCommandsType =  (socket: Socket, data: CommandDataType) =>void
 
 
 export type ErrorType = {

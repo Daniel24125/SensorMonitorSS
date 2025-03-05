@@ -1,6 +1,7 @@
 
-import { io } from "../server.js";
-import { ErrorType, ValidateCommandType, ValidCommandsType } from "../types/sockets.js";
+import { DefaultEventsMap, Socket } from "socket.io";
+import { deviceManager, io } from "../server.js";
+import { ErrorType, ParseCommandsType, ValidateCommandType, ValidCommandsType } from "../types/sockets.js";
 
 const validCommands = {
     // 'valve': (params: CommandParamsType) => params.valveId && typeof params.state === 'boolean',
@@ -33,3 +34,23 @@ export const reportErrorToClient = (error: ErrorType ) => {
     });
 }
 
+export const parseCommands: ParseCommandsType = async (socket, data)=>{
+    const { command, params } = data;
+    // Validate command
+    if (!validateCommand(command, params)) {
+        reportErrorToClient({message: 'Invalid command or parameters'});
+        return 
+    }
+    console.log(`Command received: ${command}`);
+    deviceManager.sendDeviceCommand(socket,command,params)
+}
+
+
+
+export const webClientConnection = async (socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any> )=>{
+    console.log('Web client registered:', socket.id);
+    socket.join('web_clients');
+    const devices = await deviceManager.getAllDevices()
+    socket.emit('get_connected_devices', devices);
+    // updateClientsExperimentData(experimentStatus.isExperimentOngoing, experimentStatus.data)
+}

@@ -3,7 +3,7 @@ import WidgetCard from '../ui/WidgetCard'
 import { useProjects } from '@/contexts/projects'
 import moment from 'moment'
 import { Button } from '@/components/ui/button'
-import { ExperimentType, LocationChartDataType } from '@/contexts/experiments'
+import { ExperimentType, LocationChartDataType, useExperiment } from '@/contexts/experiments'
 import { useRouter } from 'next/navigation'
 import ProjectOptions from './ProjectOptions'
 import DeviceBadge from '@/app/devices/components/DeviceBadge'
@@ -11,7 +11,7 @@ import { useDevices } from '@/contexts/devices'
 import { cn } from '@/lib/utils'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { ChartContainer } from '@/components/ui/chart'
-import { chartConfig } from '@/app/experiment/components/ExperimentData'
+import { chartConfig } from '@/app/experiment/[deviceID]/components/ExperimentData'
 import { CartesianGrid, Label, Scatter, ScatterChart, Tooltip, XAxis, YAxis } from 'recharts'
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { deleteExperiment } from '@/actions/experiments'
@@ -20,12 +20,13 @@ import { useToast } from '@/hooks/use-toast'
 
 const ProjectDetails = () => {
   const {selectedProject} = useProjects()
+  const {isExperimentOngoing} = useExperiment(selectedProject!.device)
   const {isDeviceOn} = useDevices()
   const [selectedExperiment, setSelectedExperiment] = React.useState<ExperimentType | null>(null)
   const router = useRouter()
 
   React.useEffect(()=>{
-    if(!selectedProject || !selectedProject.experiments || selectedProject.experiments?.length === 0 || selectedExperiment ) return 
+    if(!selectedProject || !selectedProject.experiments || selectedProject.experiments?.length === 0 ) return 
     setSelectedExperiment(selectedProject!.experiments![0])
   },[selectedProject])
 
@@ -64,9 +65,9 @@ const ProjectDetails = () => {
       <SelectedExperimentDetails selectedExperiment={selectedExperiment}/>
       </>: <NoDataToDisplay title={<>
           <h3 className='text-lg text-accent font-bold'>No experimental data to display</h3>
-          <Button disabled={!isDeviceOn(selectedProject.device)} onClick={()=>{
+          <Button disabled={!isDeviceOn(selectedProject.device) || isExperimentOngoing} onClick={()=>{
             if(isDeviceOn(selectedProject.device)){
-              router.push(`/experiment?projectID=${selectedProject.id}`)
+              router.push(`/experiment/${selectedProject.device}?projectID=${selectedProject.id}`)
             }
           }}>Start a new experiment</Button>
         </>}/>}
@@ -110,8 +111,6 @@ const SelectedExperimentDetails = ({selectedExperiment}: {selectedExperiment: Ex
   </div> : <NoDataToDisplay title={<h3 className='text-lg text-accent font-bold'>No experiment selected</h3>}/>
 }
 
-
-
 const SelectedExperimentLocationSelection = ({selectedLocation, selectedExperiment, setSelectedLocation}:
   {
     selectedLocation: LocationChartDataType
@@ -149,7 +148,6 @@ const SelectedExperimentLocationSelection = ({selectedLocation, selectedExperime
   </Select>
 }
 
-
 const SelectedExperimentData = ({selectedLocation}: {selectedLocation: LocationChartDataType})=>{
   return <ChartContainer config={chartConfig} className="w-full h-3/4 " >
     <ScatterChart
@@ -171,7 +169,6 @@ const SelectedExperimentData = ({selectedLocation}: {selectedLocation: LocationC
     </ChartContainer>
 }
 
-
 export const ExperimentCard = ({
   experiment, className, onClick}
   : {
@@ -183,7 +180,7 @@ export const ExperimentCard = ({
     'w-full p-2 rounded-xl flex flex-col bg-secondary-background border-2 border-secondary-background hover:border-2 hover:border-[#0984E3] cursor-pointer',
     className
   )}>
-    <p className='text-sm font-bold'>{experiment.id}</p>
+    <p className='text-xs font-bold'>{experiment.id}</p>
     <p className='text-xs text-accent'>{moment(experiment.createdAt).format("DD/MM/YYYY - hh:mm a")}</p>
   </div>
 }

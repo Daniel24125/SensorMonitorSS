@@ -8,7 +8,7 @@ type CircularProgressPropsType = {
 }
 
 const CircularProgress = ({size="md", progress, label}: CircularProgressPropsType) => {
-  return <div className="flex items-center justify-center h-full">
+  return <div className="flex items-center justify-center">
   <div className={cn(
     "relative",
     size === "sm" ? "w-24 h-24":"",

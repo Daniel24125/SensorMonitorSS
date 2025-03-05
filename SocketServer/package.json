@@ -16,7 +16,7 @@
   "main": "dist/server.js",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 1",
-    "dev": "tsc && nodemon server.js",
+    "dev": "tsc && nodemon",
     "start": "node dist/server.js",
     "build": "tsc",
     "lint": "eslint . --ext .ts"

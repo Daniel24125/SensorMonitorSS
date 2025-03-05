@@ -1,12 +1,12 @@
-import {   reportErrorToClient, validateCommand } from './utils/utils.js';
+import {   parseCommands, reportErrorToClient, webClientConnection } from './utils/utils.js';
 import 'dotenv/config';
 import express from 'express';
 import { v4 } from 'uuid';
 import { createServer } from 'http';
-import { DefaultEventsMap, Server, Socket } from 'socket.io';
+import { Server} from 'socket.io';
 import { DeviceManager } from './management/device_management.js';
-import { DeviceType,  ExperimentType, PossibleLogTypes, UpdateDeviceConfigType } from './types/experiment.js';
-import { CommandDataType, ParseCommandsType } from './types/sockets.js';
+import { DeviceType,  UpdateDeviceConfigType } from './types/experiment.js';
+import { CommandDataType } from './types/sockets.js';
 
 const app = express();
 const http = createServer(app);
@@ -23,58 +23,12 @@ const PORT = process.env.PORT || 8000;
 
 
 
-const deviceManager = new DeviceManager(io);
+export const deviceManager = new DeviceManager(io);
 deviceManager.initialize().catch(console.error);
-
-const updateClientsExperimentData = (isExperimentOngoing: boolean, data: Partial<ExperimentType | null>)=>{
-    io.to('web_clients').emit("experiment_status", {isExperimentOngoing, status: experimentStatus.data? experimentStatus.data.status : "ready"})
-    io.to('web_clients').emit("experiment_data", data)
-}
-
-const parseCommands: ParseCommandsType = async (data)=>{
-    const { command, params } = data;
-    // Validate command
-    if (!validateCommand(command, params)) {
-        reportErrorToClient({message: 'Invalid command or parameters'});
-        return 
-    }
-
-    console.log(`Command received: ${command}`);
-
-    // Handle experiment-related commands
-    // deviceManager.sendDeviceCommand(deviceID, {
-    //     cmd: command, 
-    //     data: experimentStatus.data!
-    // })
-    deviceManager.sendDeviceCommand(command,params)
-}
-
-const webClientConnection = async (socket: Socket<DefaultEventsMap, DefaultEventsMap, DefaultEventsMap, any> )=>{
-    console.log('Web client registered:', socket.id);
-    socket.join('web_clients');
-    const devices = await deviceManager.getAllDevices()
-    socket.emit('get_connected_devices', devices);
-    // updateClientsExperimentData(experimentStatus.isExperimentOngoing, experimentStatus.data)
-}
-
-// const updateExperimentLog = (type: PossibleLogTypes, desc: string, location: string)=>{
-//     console.log(`Log received: ${desc}`)
-//     if(experimentStatus.data && experimentStatus.data.logs){
-//         const log = {
-//             id: v4(),
-//             type, 
-//             desc, 
-//             createdAt: new Date().toISOString(),
-//             location
-//         }
-//         experimentStatus.data.logs.push(log)
-//         io.to('web_clients').emit("update_experiment_log", experimentStatus.data.logs)
-//     }
-// }
 
 io.on('connection', (socket) => {
     console.log('New connection:', socket.id);
-    // Register client type
+
     socket.on('register_client', async (clientType: "rpi" | "web") => {
         if (clientType === 'rpi') {
             console.log('RPi registered:', socket.id);
@@ -84,10 +38,19 @@ io.on('connection', (socket) => {
         }
     });
 
+    socket.on("get_experiment_data", (userID: string)=>{
+       const experiments = deviceManager.getUserOngoingExperiments(userID)
+       
+       experiments.forEach(e=>{
+            const id = e.id
+            socket.join(id)
+        })
+        socket.emit("initial_data_update", experiments.map(e=>e.experimentData))
+    })
+
     socket.on('get_rpi_config', async (config) => {
         if(config){
-            deviceManager.registerDevice(config, socket.id)
-            // handleDeviceRegistration(config, config.id, socket.id)
+            deviceManager.registerDevice(config, socket)
         }else{
             const devices = await deviceManager.getAllDevices()
             socket.emit('get_connected_devices', devices);
@@ -145,27 +108,9 @@ io.on('connection', (socket) => {
             })
             return;
         }
-       parseCommands(data)
+       parseCommands(socket, data)
     });
 
-    // Handle sensor data from RPi
-    socket.on('sensor_data', (sensorID: string, sensorData: {data: {id: string, x: number, y: number}[]}) => {
-        const device =  deviceManager.getDeviceConnection(sensorID)
-        device!.updateExperimentalData(sensorData)
-    });
-
-    socket.on("update_experiment_status", (status)=>{
-        experimentStatus.data = {
-            ...experimentStatus.data, 
-            ...status
-        }
-        updateClientsExperimentData(true, status)
-    })
-
-    socket.on("update_experiment_log", ({deviceID, log})=>{
-        deviceManager.updateExperimentLog(deviceID, log)
-    })
-  
     // Handle disconnection
     socket.on('disconnect', async () => {
         console.log("Client Disconnected")
@@ -176,21 +121,13 @@ io.on('connection', (socket) => {
         }
     });
 
-    // Handle errors
-    socket.on('error', (error) => {
-        console.error('Socket error:', error);
-        reportErrorToClient(error)
-        if(experimentStatus.isExperimentOngoing){
-            stopExperiment()
-        }
-    });
+   
 });
 
 // Health check endpoint
 app.get('/health', (req, res) => {
     res.status(200).json({
-        status: 'healthy',
-        experimentStatus
+        status: 'healthy'
     });
 });
 

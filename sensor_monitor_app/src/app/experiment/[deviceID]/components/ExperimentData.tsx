@@ -4,12 +4,12 @@ import { ChartConfig,ChartContainer} from '@/components/ui/chart'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { TooltipWrapper } from '@/components/ui/tooltip'
 import { useDevices } from '@/contexts/devices'
-import {  LocationChartDataType, useExperiments } from '@/contexts/experiments'
-import { useSocket } from '@/contexts/socket'
+import { useExperiment } from '@/contexts/experiments'
 import { cn } from '@/lib/utils'
 import { CircleCheck, CircleMinus, MapPin } from 'lucide-react'
 import React from 'react'
-import {   ScatterChart,
+import { 
+    ScatterChart,
     Scatter,
     XAxis,
     YAxis,
@@ -26,24 +26,24 @@ export const chartConfig = {
     }
   } satisfies ChartConfig
 
-const ExperimentData = () => {
+const ExperimentData = ({deviceID}:{deviceID: string}) => {
   return (
     <div className='w-full h-96 border rounded-xl flex overflow-hidden shrink-0'>
         <div className='w-3/4 min-w-72 h-full flex flex-col'>
-            <ChartHeader/>
-            <ChartComponent/>
+            <ChartHeader deviceID={deviceID}/>
+            <ChartComponent deviceID={deviceID}/>
         </div>
         <ScrollArea className='w-1/4 min-w-32  h-full  bg-card py-2'>
             <div className='w-full h-full flex flex-col '>
-                <LocationListComponent/>
+                <LocationListComponent deviceID={deviceID}/>
             </div>
         </ScrollArea>
     </div>
   )
 }
 
-const ChartHeader = ()=>{
-    const {selectedLocation, isExperimentOngoing} = useExperiments()
+const ChartHeader = ({deviceID}:{deviceID: string})=>{
+    const {selectedLocation, isExperimentOngoing} = useExperiment(deviceID)
 
     return selectedLocation && <div className='w-full flex justify-between items-center py-2 px-4'>
         <h5 className='text-location font-bold text-lg'>{selectedLocation.name}</h5>
@@ -63,30 +63,17 @@ const ChartHeader = ()=>{
     </div>
 }
 
-export const ChartComponent = ()=>{
-    const {selectedLocation, isExperimentOngoing, setData, data} = useExperiments()
-    const {on} = useSocket()
-    
-    React.useEffect(()=>{
-        on<{locations: LocationChartDataType[], timestamp: string}>("sensor_data",data=>{
-            setData(prev=>{
-                if(!prev) return null
-                return {
-                    ...prev,
-                    locations: data.locations
-                }
-            })
-        })
-      
-    }, [])
+export const ChartComponent = ({deviceID}:{deviceID: string})=>{
+    const {selectedLocation, isExperimentOngoing, experiment} = useExperiment(deviceID)
+  
 
     const chartData = React.useMemo(()=>{
         if(!selectedLocation) return []
-        const locationsData = data?.locations.find(l=>l.id === selectedLocation!.id)
+        const locationsData = experiment!.locations.find(l=>l.id === selectedLocation!.id)
         
         if(!locationsData) return []
         return locationsData!.data
-    }, [data, selectedLocation])
+    }, [experiment, selectedLocation])
 
 
     return selectedLocation ? isExperimentOngoing ? <ChartContainer 
@@ -121,20 +108,22 @@ const NoExperimentOngoingComponent = ()=>{
 }
 
 type LocationListPropsTyep={
-    showIcon?: boolean
+    showIcon?: boolean,
+    deviceID: string
 }
 
-export const LocationListComponent = ({showIcon=true}: LocationListPropsTyep)=>{
-    const {data, selectedLocation, setSelectedLocation, isExperimentDeviceOn, isExperimentOngoing} = useExperiments()
+export const LocationListComponent = ({showIcon=true, deviceID}: LocationListPropsTyep)=>{
+    const {experiment, selectedLocation, setSelectedLocation, isDeviceOn, isExperimentOngoing} = useExperiment(deviceID)
     const {getConfigurationByID} = useDevices()
 
-    return data?.locations.map(l=>{
+    if(!experiment) return 
+    return experiment!.locations.map(l=>{
         const lastSensorData = l.data.length > 0 ? l.data[l.data.length - 1].y: null
         const isActive = selectedLocation && selectedLocation.id === l.id
-        const configuration = getConfigurationByID(data.deviceID, data.configurationID)
+        const configuration = getConfigurationByID(deviceID, experiment.configurationID)
         const location = configuration!.locations.find(loc=>loc.id === l.id)!
         return <div key={l.id} onClick={()=>{
-            if(isExperimentDeviceOn && isExperimentOngoing){
+            if(isDeviceOn && isExperimentOngoing){
                 setSelectedLocation(location)
             }
         }} className='w-full hover:bg-slate-950 flex justify-between px-4 py-2 cursor-pointer items-center gap-2'>

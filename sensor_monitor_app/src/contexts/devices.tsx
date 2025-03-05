@@ -7,6 +7,7 @@ import { ProjectProvider } from './projects';
 import WarningDialogProvider from './warning';
 import { useUser } from '@auth0/nextjs-auth0';
 import { ExperimentProvider } from './experiments';
+import Loading from '@/app/components/Loading';
 
 export interface User {
     sub: string;
@@ -101,6 +102,7 @@ interface DevicesProviderProps {
 const DevicesProvider = ({children}: DevicesProviderProps) => {
     const [deviceList, setDeviceList] = React.useState<DeviceType[]>([])
     const [selectedDevice, setSelectedDevice] = React.useState<null | DeviceType>(null)
+    const [devicesLoading, setDevicesLoading] = React.useState<boolean>(true)
     const {on, emit, isConnected} = useSocket()
     const { toast } = useToast()
     const { isLoading} = useUser()
@@ -115,13 +117,14 @@ const DevicesProvider = ({children}: DevicesProviderProps) => {
         return Boolean(device) && device!.status !== "disconnected"
     }, [isLoading, deviceList])
 
-
     const getConfigurationByID = React.useCallback((deviceID: string, configurationID: string)=>{
         const device = getDeviceByID(deviceID)
         if(!device) return null
         const list = device.configurations.find(c=>c.id === configurationID)
         return list
     }, [isLoading, deviceList])
+
+    const loading = React.useMemo(()=> isLoading || devicesLoading,[isLoading, devicesLoading])
 
     const value: DeviceContextType = {
         deviceList,
@@ -145,6 +148,7 @@ const DevicesProvider = ({children}: DevicesProviderProps) => {
                         })
                     }
                 }
+            setDevicesLoading(false)
             })
 
             on<DeviceErrorType>("error", (err)=>{
@@ -172,7 +176,7 @@ const DevicesProvider = ({children}: DevicesProviderProps) => {
         }
     }, [deviceList])
 
-  
+    if(loading) return <Loading/>
     return <DevicesContext.Provider value={value}>
         <WarningDialogProvider>
             <ProjectProvider>

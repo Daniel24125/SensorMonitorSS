@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { useDevices } from '@/contexts/devices'
+import { useExperiment } from '@/contexts/experiments'
 import { ProjectType, useProjects } from '@/contexts/projects'
 import { useWarningDialog } from '@/contexts/warning'
 import { Edit, FlaskConical, MoreHorizontal, Save, Trash2 } from 'lucide-react'
@@ -9,6 +10,7 @@ import React from 'react'
 
 const ProjectOptions = ({onClick, project}: {onClick?: ()=>void, project: ProjectType}) => {
     const {setOpen, setEdit, handleDeleteProject} = useProjects()
+    const {isExperimentOngoing} = useExperiment(project.device)
     const {isDeviceOn} = useDevices()
     const {setOptions, setOpen: setOpenWarning} = useWarningDialog()
     const router = useRouter()
@@ -20,9 +22,9 @@ const ProjectOptions = ({onClick, project}: {onClick?: ()=>void, project: Projec
             </Button>
         </DropdownMenuTrigger>
         {project && <DropdownMenuContent align="end">
-            <DropdownMenuItem disabled={!isDeviceOn(project.device)} onClick={() =>{
+            <DropdownMenuItem disabled={!isDeviceOn(project.device) || isExperimentOngoing} onClick={() =>{
                 if(isDeviceOn(project.device)){
-                    router.push(`/experiment?projectID=${project.id}`)
+                    router.push(`/experiment/${project.device}?projectID=${project.id}`)
                 }
             }}>
                 <FlaskConical/>

@@ -3,54 +3,95 @@ import WidgetCard from './ui/WidgetCard'
 import { Button } from '@/components/ui/button'
 import { ExternalLink, Play } from 'lucide-react'
 import { useRouter } from 'next/navigation'
-import { useExperiments } from '@/contexts/experiments'
+import {  useExperiment, useExperiments } from '@/contexts/experiments'
 import { useDevices } from '@/contexts/devices'
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
-import SelectProjectTemplate from '../experiment/components/SelectExperimentProject'
-import ExperimentControls from '../experiment/components/ExperimentControls'
-import { ChartComponent, LocationListComponent } from '../experiment/components/ExperimentData'
+import { Dialog, DialogContent, DialogDescription,  DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import SelectProjectTemplate from '../experiment/[deviceID]/components/SelectExperimentProject'
+import ExperimentControls from '../experiment/[deviceID]/components/ExperimentControls'
+import { ChartComponent, LocationListComponent } from '../experiment/[deviceID]/components/ExperimentData'
 import { getformatedExperimentTime } from '@/lib/utils'
 import CircularProgress from '@/components/ui/circular-progress'
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { TooltipWrapper } from '@/components/ui/tooltip'
 
 const OnGoingExperimentWidget = () => {
-  const router = useRouter()
-  const {isExperimentOngoing} = useExperiments()
+  const {experiments} = useExperiments()
+  const [selectedExperiment, setSelectedExperiment] = React.useState<null | string>(null)
+
+  const hasExperimenstsOngoing = React.useMemo(()=>{
+    const values = Object.values(experiments || {})
+    return experiments && selectedExperiment &&  values.length > 0 && values.find(v=>v !== null)
+  },[experiments, selectedExperiment])
+
+  React.useEffect(()=>{
+    if(experiments && !selectedExperiment){
+      const id = Object.keys(experiments!)[0]
+      setSelectedExperiment(id)
+    }
+  },[experiments, selectedExperiment])
+
   return (
-    <WidgetCard title='On going Experiment' className='w-full' secondaryAction={<>
-      <Button onClick={()=>{
-        router.push("/experiment")
-      }} size="icon" variant="ghost">
-          <ExternalLink/>
-      </Button>
+    <WidgetCard title='Ongoing Experiments' className='w-full' secondaryAction={<>
+      {hasExperimenstsOngoing && <OngoingExperimentHeader selectedExperiment={selectedExperiment!} setSelectedExperiment={setSelectedExperiment}/>}
     </>}>
-        {isExperimentOngoing ? <OnGoingExperimentData/> : <NotOngoingExperiment/>}
+        {hasExperimenstsOngoing ? <OnGoingExperimentData selectedExperiment={selectedExperiment!}/> : <NotOngoingExperiment/>}
     </WidgetCard>
   )
 }
 
-const OnGoingExperimentData = ()=>{
-  const {data} = useExperiments()
-  console.log(data)
+const OngoingExperimentHeader = ({selectedExperiment, setSelectedExperiment}:
+  {
+    selectedExperiment: string,
+    setSelectedExperiment: React.Dispatch<React.SetStateAction<string | null>>
+  })=>{
+    const {experiments} = useExperiments()
+    const router = useRouter()
+
+    return <div className='flex w-full items-center gap-2 justify-end'>
+      <Tabs value={selectedExperiment || ""}>
+        <TabsList className="w-full">
+          {Object.keys(experiments!).map(id=>{
+            if(!id) return
+            return <TabsTrigger onClick={()=>setSelectedExperiment(id)} key={id} value={id}>{id}</TabsTrigger>
+          })}
+        </TabsList>
+      </Tabs>
+      <TooltipWrapper title="Open experiment page">
+        <Button size={"icon"} variant={"outline"} onClick={()=>{
+          router.push(`/experiment/${experiments![selectedExperiment!]!.deviceID}?projectID=${experiments![selectedExperiment!]!.projectID}`)
+        }}>
+            <ExternalLink/>
+        </Button>
+      </TooltipWrapper>
+    </div>
+}
+
+
+const OnGoingExperimentData = ({selectedExperiment}:{selectedExperiment: string})=>{
+  const {experiment} = useExperiment(selectedExperiment)
+  
   const time = React.useMemo(()=>{
-    return data? data.duration : 0
-  },[data])
+    return experiment? experiment.duration : 0
+  },[experiment])
+  
+  if(!experiment) return 
   return <div className='w-full h-[calc(100%-55px)] flex justify-between'>
     <div className='h-full flex flex-col w-1/5 min-w-40 max-w-44 justify-between shrink-0'>
-      <div className='w-full h-full bg-card rounded-2xl shrink-0 flex flex-col items-center'>
+      <div className='w-full h-full bg-card rounded-2xl shrink-0 flex flex-col items-center justify-center gap-5'>
       <CircularProgress size="md"
         progress={
           (time%60)/60 
         } label={
           getformatedExperimentTime(time, false)
         }/>
-        <ExperimentControls/>
+        <ExperimentControls deviceID={experiment!.deviceID}/>
       </div>
       {/* <div className='flex justify-center items-center w-full h-10 bg-card shrink rounded-2xl'>
       </div> */}
     </div>
-    <ChartComponent/>
+    <ChartComponent deviceID={experiment!.deviceID}/>
     <div className='flex flex-col h-full justify-center'>
-      <LocationListComponent  showIcon={false}/>
+      <LocationListComponent deviceID={experiment!.deviceID}  showIcon={false}/>
     </div>
   </div>
 }
@@ -92,7 +133,6 @@ const SelectProjectDialog = ({
   open: boolean 
   setOpen: React.Dispatch<React.SetStateAction<boolean>>
 })=>{
-  const {data, startExperiment} = useExperiments()
 
   return <Dialog open={open} onOpenChange={(o)=>setOpen(o)}>
     <DialogContent className="sm:max-w-[425px]">
@@ -103,14 +143,6 @@ const SelectProjectDialog = ({
         </DialogDescription>
       </DialogHeader>
       <SelectProjectTemplate/>
-      <DialogFooter>
-        <Button disabled={!data || !data.projectID} variant={"ghost"} className='text-primary' onClick={()=>{
-         if(data && data.projectID){
-          startExperiment()
-         }
-      }}>Start experiment</Button>
-        <Button variant={"ghost"} onClick={()=>setOpen(false)} >Cancel</Button>
-      </DialogFooter>
     </DialogContent>
   </Dialog>
 }
