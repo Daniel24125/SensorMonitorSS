@@ -1,6 +1,6 @@
 import { Button } from '@/components/ui/button'
 import { TooltipWrapper } from '@/components/ui/tooltip'
-import { useExperiment, useExperiments } from '@/contexts/experiments'
+import { useExperiment } from '@/contexts/experiments'
 import { Pause, Play, StopCircle } from 'lucide-react'
 import React from 'react'
 

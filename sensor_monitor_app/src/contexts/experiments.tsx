@@ -318,14 +318,14 @@ export const ExperimentProvider = ({
     const pauseExperiment = React.useCallback((deviceID: string) => {
         emit("user_command", {
             command: "pauseExperiment",
-            params: experiments[deviceID]
+            params: experiments![deviceID]
         });
     }, [experiments]);
 
     const resumeExperiment = React.useCallback((deviceID: string) => {
         emit("user_command", {
             command: "resumeExperiment",
-            params: experiments[deviceID]
+            params: experiments![deviceID]
         });
     }, [experiments]);
 
@@ -371,6 +371,7 @@ export const ExperimentProvider = ({
     
             if (!data) {
                 const { [deviceID]: experimentToRemove, ...remainingExperiments } = prev;
+                console.log("removing experiment: ", experimentToRemove)
                 return remainingExperiments;
             }
             
