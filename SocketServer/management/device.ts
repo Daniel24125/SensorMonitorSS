@@ -24,6 +24,13 @@ export class DeviceConnection{
     registerSocketListenners(){
       console.log("Regestering Socket listenners for the device")
       
+
+      this.socket.on("get_ongoing_experiment_data", (data)=>{
+        this.experimentData = data
+        console.log(data)
+        this.sendDataToClient("experiment_data", this.experimentData!)
+      })
+
       this.socket.on("update_experiment_status", (status)=>{
         this.experimentData = {
             ...this.experimentData, 
@@ -70,7 +77,6 @@ export class DeviceConnection{
           status: "running",
           logs: []
       }
-        // this.updateExperimentLog({type:"info",  desc:"Experiment started", location:"Device"})
        
     }
     
@@ -95,20 +101,9 @@ export class DeviceConnection{
     }
     
     stopExperiment = ()=>{
-        // this.io.to(this.id).emit('sensor_data', {
-        //     locations: this.experimentData!.locations.map(l=>{
-        //         return{
-        //             id: l.id, 
-        //             data: []
-        //         }
-        //     }),
-        // });
         this.isExperimentOngoing = false,
         this.experimentData = null
         this.updateExperimentLog({type:"info", desc:"Experiment ended", location:"Device"})
-        // updateClientsExperimentData(false, {
-        //     duration: 0
-        // })
     }
   
     updateExperimentLog({type, desc, location}: Partial<LogType>){
@@ -120,7 +115,7 @@ export class DeviceConnection{
           createdAt: new Date().toISOString(),
           location
         }
-        this.experimentData.logs.push(log as LogType)
+        this.experimentData.logs.unshift(log as LogType)
         this.io.to(this.experimentData.deviceID).emit("update_experiment_log",  {
           logs: this.experimentData.logs, 
           deviceID: this.experimentData.deviceID
