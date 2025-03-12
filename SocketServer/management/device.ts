@@ -77,7 +77,6 @@ export class DeviceConnection{
     pauseExperiment = ()=>{
         console.log("Pause the Experiment")
         this.experimentData!.status = "paused"
-        
         this.io.to(this.id).emit("experiment_status", {
           deviceID: this.id,
             status: "paused"

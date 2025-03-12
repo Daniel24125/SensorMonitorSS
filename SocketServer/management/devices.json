@@ -34,14 +34,14 @@
         "lastUpdatedAt": "2025-01-24T14:17:06.732Z"
       }
     ],
-    "lastUpdatedAt": "2025-03-04T17:12:14.196Z",
-    "socketID": "oEyQeI6MD1USseQEAAAK"
+    "lastUpdatedAt": "2025-03-12T12:43:46.537Z",
+    "socketID": "bI9lgXm5R--2tAnoAABo"
   },
   {
     "id": "3735ddca-c421-446c-b8e4-lspkdnvpkpskion3n",
     "name": "pH Monitor Device 2",
     "createdAt": "2025-03-03T10:54:15.736Z",
-    "status": "ready",
+    "status": "disconnected",
     "configurations": [
       {
         "id": "eb90fc2d-8b47-4ce7-b0f5-sdvsdvsd2234gf",
@@ -72,7 +72,7 @@
         "lastUpdatedAt": "2025-01-24T14:17:06.732Z"
       }
     ],
-    "lastUpdatedAt": "2025-03-04T17:08:14.095Z",
+    "lastUpdatedAt": "2025-03-11T18:34:09.995Z",
     "socketID": "rpComdWmIZzZFO1cAAAI"
   }
 ]

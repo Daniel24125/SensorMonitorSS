@@ -60,7 +60,7 @@ export const createExperiment: CreateExperimentType = async (data) =>{
         if(!session){
            throw new Error("You must be logged in to create an experiment")   
         }
-        await addDoc(collectionRef, data)
+        // await addDoc(collectionRef, data)
         revalidatePath("/") 
         return true
     } catch(error){
