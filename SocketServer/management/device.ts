@@ -70,7 +70,7 @@ export class DeviceConnection{
           status: "running",
           logs: []
       }
-        this.updateExperimentLog({type:"info",  desc:"Experiment started", location:"Device"})
+        // this.updateExperimentLog({type:"info",  desc:"Experiment started", location:"Device"})
        
     }
     
