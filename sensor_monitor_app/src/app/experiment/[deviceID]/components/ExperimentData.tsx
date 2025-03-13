@@ -60,14 +60,13 @@ const PumpControls = ({deviceID}:{deviceID: string})=>{
     const {emit, on} = useSocket()
 
     React.useEffect(()=>{
-        on("update_pump_status", (data: {deviceID: string, location: DeviceLocationType, pump: "acidic" | "alkaline", status: boolean})=>{
+        on("update_pump_status", (data: {deviceID: string, pump: "acidic" | "alkaline", status: boolean})=>{
             if(selectedLocation){
-                console.log("UPDATE STATUS", data)
-                // expSetSelectedLocation(data.deviceID, {
-                //     ...selectedLocation, 
-                //     isAcidPumping: data.pump === "acidic" ? data.status : selectedLocation!.isAcidPumping,
-                //     isBasePumping: data.pump === "alkaline" ? data.status : selectedLocation!.isBasePumping
-                // })
+                expSetSelectedLocation(data.deviceID, {
+                    ...selectedLocation, 
+                    isAcidPumping: data.pump === "acidic" ? data.status : selectedLocation!.isAcidPumping,
+                    isBasePumping: data.pump === "alkaline" ? data.status : selectedLocation!.isBasePumping
+                })
             }
         })
     },[])
