@@ -52,5 +52,4 @@ export const webClientConnection = async (socket: Socket<DefaultEventsMap, Defau
     socket.join('web_clients');
     const devices = await deviceManager.getAllDevices()
     socket.emit('get_connected_devices', devices);
-    // updateClientsExperimentData(experimentStatus.isExperimentOngoing, experimentStatus.data)
 }

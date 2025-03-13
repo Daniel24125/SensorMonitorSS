@@ -39,9 +39,9 @@ io.on('connection', (socket) => {
     });
 
     socket.on("get_experiment_data", (userID: string)=>{
-       const experiments = deviceManager.getUserOngoingExperiments(userID)
-       
-       experiments.forEach(e=>{
+        const experiments = deviceManager.getUserOngoingExperiments(userID)
+        experiments.forEach(e=>{
+           console.log("Retrieving ongoing experiments")
             const id = e.id
             socket.join(id)
         })

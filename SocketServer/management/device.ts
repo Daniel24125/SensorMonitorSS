@@ -24,11 +24,11 @@ export class DeviceConnection{
     registerSocketListenners(){
       console.log("Regestering Socket listenners for the device")
       
-
       this.socket.on("get_ongoing_experiment_data", (data)=>{
+        console.log("Receiving data from ongoing experiment...")
         this.experimentData = data
-        console.log(data)
         this.sendDataToClient("experiment_data", this.experimentData!)
+        this.isExperimentOngoing = true
       })
 
       this.socket.on("update_experiment_status", (status)=>{
@@ -39,9 +39,7 @@ export class DeviceConnection{
         this.sendDataToClient("experiment_data", this.experimentData!)
       })
   
-      this.socket.on("update_experiment_log", (log)=>{
-        this.updateExperimentLog(log)
-      })
+      this.socket.on("update_experiment_log", this.updateExperimentLog)
       
       // Handle sensor data from RPi
       this.socket.on('sensor_data', (sensorData: {deviceID: string, data: {id: string, x: number, y: number}[]}) => {
