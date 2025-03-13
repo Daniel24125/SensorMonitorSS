@@ -1,5 +1,5 @@
 import { Server, Socket } from "socket.io";
-import { ExperimentType, LogType } from "../types/experiment";
+import { DeviceLocationType, ExperimentType, LogType } from "../types/experiment";
 import { reportErrorToClient } from "../utils/utils.js";
 import { v4 } from "uuid";
 
@@ -40,7 +40,14 @@ export class DeviceConnection{
       })
   
       this.socket.on("update_experiment_log", this.updateExperimentLog)
-      
+   
+      this.socket.on('update_pump_status', (pumpData: {deviceID: string, location: DeviceLocationType, pump: "acidic" | "alkaline", status: boolean}) => {
+        console.log("Sending pump status to client")
+        if(pumpData.deviceID === this.id){
+          this.io.to("web_clients").emit("update_pump_status", pumpData)
+        }
+      });
+
       // Handle sensor data from RPi
       this.socket.on('sensor_data', (sensorData: {deviceID: string, data: {id: string, x: number, y: number}[]}) => {
         if(sensorData.deviceID === this.id){

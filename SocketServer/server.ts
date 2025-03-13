@@ -5,7 +5,7 @@ import { v4 } from 'uuid';
 import { createServer } from 'http';
 import { Server} from 'socket.io';
 import { DeviceManager } from './management/device_management.js';
-import { DeviceType,  UpdateDeviceConfigType } from './types/experiment.js';
+import { DeviceLocationType, DeviceType,  UpdateDeviceConfigType } from './types/experiment.js';
 import { CommandDataType } from './types/sockets.js';
 
 const app = express();
@@ -98,6 +98,10 @@ io.on('connection', (socket) => {
         }
 
     })
+
+    socket.on('toggle_pump', (pumpData: {deviceID: string, selectedLocation: DeviceLocationType,  pump: "acid" | "alkaline"}) => {
+        io.to(pumpData.deviceID).emit("toggle_pump", pumpData)
+    });
 
     // Handle commands from web client
     socket.on('user_command', (data: CommandDataType) => {

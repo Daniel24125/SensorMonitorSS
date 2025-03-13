@@ -3,8 +3,9 @@ import { Button } from '@/components/ui/button'
 import { ChartConfig,ChartContainer} from '@/components/ui/chart'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { TooltipWrapper } from '@/components/ui/tooltip'
-import { useDevices } from '@/contexts/devices'
-import { useExperiment } from '@/contexts/experiments'
+import { DeviceLocationType, useDevices } from '@/contexts/devices'
+import { useExperiment, useExperiments } from '@/contexts/experiments'
+import { useSocket } from '@/contexts/socket'
 import { cn } from '@/lib/utils'
 import { CircleCheck, CircleMinus, MapPin } from 'lucide-react'
 import React from 'react'
@@ -43,24 +44,71 @@ const ExperimentData = ({deviceID}:{deviceID: string}) => {
 }
 
 const ChartHeader = ({deviceID}:{deviceID: string})=>{
-    const {selectedLocation, isExperimentOngoing} = useExperiment(deviceID)
+    const {selectedLocation} = useExperiment(deviceID)
 
     return selectedLocation && <div className='w-full flex justify-between items-center py-2 px-4'>
         <h5 className='text-location font-bold text-lg'>{selectedLocation.name}</h5>
         <div className='flex items-center'>
-            <TooltipWrapper title="Open valve">
-                <Button disabled={!isExperimentOngoing} className="text-primary" variant={"ghost"} size="icon">
-                    <CircleCheck/>
-                </Button>
-            </TooltipWrapper>
-            <TooltipWrapper title="Close valve">
-                <Button disabled={!isExperimentOngoing} className='text-destructive' variant={"ghost"} size="icon">
-                    <CircleMinus/>
-                </Button>
-            </TooltipWrapper>
-            <div className='w-3 h-3 bg-accent rounded-full ml-2'></div>
+            <PumpControls deviceID={deviceID}/>
         </div>
     </div>
+}
+
+const PumpControls = ({deviceID}:{deviceID: string})=>{
+    const {isDeviceOn, selectedLocation, setSelectedLocation} = useExperiment(deviceID)
+    const {setSelectedLocation: expSetSelectedLocation} = useExperiments()
+    const {emit, on} = useSocket()
+
+    React.useEffect(()=>{
+        on("update_pump_status", (data: {deviceID: string, location: DeviceLocationType, pump: "acidic" | "alkaline", status: boolean})=>{
+            if(selectedLocation){
+                console.log("UPDATE STATUS", data)
+                // expSetSelectedLocation(data.deviceID, {
+                //     ...selectedLocation, 
+                //     isAcidPumping: data.pump === "acidic" ? data.status : selectedLocation!.isAcidPumping,
+                //     isBasePumping: data.pump === "alkaline" ? data.status : selectedLocation!.isBasePumping
+                // })
+            }
+        })
+    },[])
+
+    console.log(selectedLocation)
+    return <>
+    <TooltipWrapper title="Acidic Pump">
+        <Button onClick={()=>{
+            emit("toggle_pump",{
+                deviceID,
+                selectedLocation,
+                pump: "acid",
+            })
+            if(selectedLocation){
+                setSelectedLocation({
+                    ...selectedLocation, 
+                    isAcidPumping: !selectedLocation!.isAcidPumping
+                })
+            }
+        }} disabled={!isDeviceOn} className={`${selectedLocation?.isAcidPumping ? "text-yellow-400" : "text-gray-500"}`} variant={"ghost"} size="icon">
+            ACP
+        </Button>
+    </TooltipWrapper>
+    <TooltipWrapper title="Alkaline Pump">
+        <Button onClick={()=>{
+            emit("toggle_pump",{
+                deviceID,
+                selectedLocation,
+                pump: "alkaline"
+            })
+            if(selectedLocation){
+                setSelectedLocation({
+                    ...selectedLocation, 
+                    isBasePumping: !selectedLocation!.isBasePumping
+                })
+            }
+        }} disabled={!isDeviceOn} className={`${selectedLocation?.isBasePumping ? "text-blue-500" : "text-gray-500"}`} variant={"ghost"} size="icon">
+            ALP
+        </Button>
+    </TooltipWrapper>
+    </>
 }
 
 export const ChartComponent = ({deviceID}:{deviceID: string})=>{

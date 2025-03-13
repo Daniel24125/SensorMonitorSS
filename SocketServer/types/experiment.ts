@@ -71,7 +71,9 @@ export type DeviceLocationType ={
     id: string, 
     name: string, 
     createdAt: string, 
-    updatedAt?: string 
+    updatedAt?: string, 
+    isAcidPumping?: boolean
+    isBasePumping?: boolean
     updatedBy: string, 
     sensors: PhSensorType[]
 }
