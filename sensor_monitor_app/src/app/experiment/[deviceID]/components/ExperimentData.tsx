@@ -3,11 +3,11 @@ import { Button } from '@/components/ui/button'
 import { ChartConfig,ChartContainer} from '@/components/ui/chart'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { TooltipWrapper } from '@/components/ui/tooltip'
-import { DeviceLocationType, useDevices } from '@/contexts/devices'
+import { useDevices } from '@/contexts/devices'
 import { useExperiment, useExperiments } from '@/contexts/experiments'
 import { useSocket } from '@/contexts/socket'
 import { cn } from '@/lib/utils'
-import { CircleCheck, CircleMinus, MapPin } from 'lucide-react'
+import { MapPin } from 'lucide-react'
 import React from 'react'
 import { 
     ScatterChart,
