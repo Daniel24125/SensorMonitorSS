@@ -241,7 +241,11 @@ export const ExperimentProvider = ({
                 if (configuration && configuration.locations.length > 0) {
                     setSelectedLocations(prev => ({
                         ...prev,
-                        [deviceID]: configuration.locations[0]
+                        [deviceID]: {
+                            ...configuration.locations[0],
+                            isAcidPumping: false, 
+                            isBasePumping: false
+                        }
                     }));
                 }
             }
@@ -290,7 +294,11 @@ export const ExperimentProvider = ({
                  if (configuration.locations.length > 0) {
                     setSelectedLocations(prev => ({
                         ...prev,
-                        [deviceID]: configuration.locations[0]
+                        [deviceID]: {
+                            ...configuration.locations[0],
+                            isAcidPumping: false, 
+                            isBasePumping: false
+                        }
                     }));
                 }
             }

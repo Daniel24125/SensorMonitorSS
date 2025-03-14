@@ -71,7 +71,7 @@ const PumpControls = ({deviceID}:{deviceID: string})=>{
         })
     },[])
 
-    console.log(selectedLocation)
+
     return <>
     <TooltipWrapper title="Acidic Pump">
         <Button onClick={()=>{

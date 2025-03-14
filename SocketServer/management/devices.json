@@ -20,13 +20,16 @@
                 "mode": "acidic",
                 "margin": 0.1,
                 "maxValveTimeOpen": 30,
-                "targetPh": 7,
+                "targetPh": "3",
                 "devicePort": "i4",
                 "checkInterval": 10,
                 "configurationID": "eb90fc2d-8b47-4ce7-b0f5-0ae2b988856c",
                 "locationID": "51cfd5b7-2053-4d75-9c88-eb2d63bd99d5",
                 "id": "097f8867-87f4-4821-8d35-40ce5ff1fa52",
-                "createdAt": "2025-02-20T10:33:30.410Z"
+                "createdAt": "2025-02-20T10:33:30.410Z",
+                "sensorID": "097f8867-87f4-4821-8d35-40ce5ff1fa52",
+                "lastUpdatedAt": "2025-03-14T14:38:56.057Z",
+                "phMonitorFrequency": "30"
               }
             ]
           }
@@ -34,8 +37,8 @@
         "lastUpdatedAt": "2025-01-24T14:17:06.732Z"
       }
     ],
-    "lastUpdatedAt": "2025-03-13T18:22:13.706Z",
-    "socketID": "9nSB7m4IE__FJFKSAAAs"
+    "lastUpdatedAt": "2025-03-14T15:08:51.743Z",
+    "socketID": "dTdqcTegoboz06a_AABf"
   },
   {
     "id": "3735ddca-c421-446c-b8e4-lspkdnvpkpskion3n",
@@ -72,7 +75,7 @@
         "lastUpdatedAt": "2025-01-24T14:17:06.732Z"
       }
     ],
-    "lastUpdatedAt": "2025-03-13T17:25:52.847Z",
+    "lastUpdatedAt": "2025-03-14T13:24:58.887Z",
     "socketID": "rpComdWmIZzZFO1cAAAI"
   }
 ]

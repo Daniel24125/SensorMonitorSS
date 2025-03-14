@@ -29,6 +29,7 @@ export type PhSensorType = {
     mode:PhSensorModeType
     margin: number 
     maxValveTimeOpen: number 
+    phMonitorFrequency: number
     targetPh: number 
     devicePort: DevicePortType
     checkInterval: number

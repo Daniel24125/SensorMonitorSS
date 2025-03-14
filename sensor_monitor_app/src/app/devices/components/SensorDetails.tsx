@@ -10,7 +10,7 @@ import { NoSensorIlustration } from '@/components/ui/ilustrations'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useConfigurations } from '@/hooks/use-configurations';
 import { Badge } from '@/components/ui/badge'
-import { Calendar, ChevronsUpDown, CircleFadingArrowUp, Clock2, Edit, MoreVertical, Plug2, ShieldCheck, Trash } from 'lucide-react'
+import { Calendar, ChevronsUpDown, CircleFadingArrowUp, Clock2, Edit, MoreVertical, Plug2, Repeat, ShieldCheck, Trash } from 'lucide-react'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 import { TooltipWrapper } from '@/components/ui/tooltip'
 import { useDeleteConfig } from '@/hooks/use-delete-config'
@@ -61,6 +61,7 @@ const defaultSensorData: PhSensorType = {
     margin: 0.1,
     maxValveTimeOpen: 30,
     targetPh: 7,
+    phMonitorFrequency: 2,
     devicePort: "i1",
     checkInterval: 10
 }
@@ -160,6 +161,18 @@ export const SensorForm = ()=>{
                             onChange={handleChange}
                         />
                     </FormInput>
+                    <FormInput label='pH Monitor Frequency' description='The period of time to check if the pH is near the target pH value'>
+                        <Input
+                            placeholder='pH Monitor Frequency'
+                            id="phMonitorFrequency"
+                            name="phMonitorFrequency"
+                            value={form.phMonitorFrequency}
+                            required
+                            type='number'
+                            step={1}
+                            onChange={handleChange}
+                        />
+                    </FormInput>
                     <FormInput label='Target pH'>
                         <Input
                             placeholder='Target pH'
@@ -168,7 +181,7 @@ export const SensorForm = ()=>{
                             value={form.targetPh}
                             required
                             type='number'
-                            step={1}
+                            step={0.1}
                             onChange={handleChange}
                         />
                     </FormInput>
@@ -254,7 +267,7 @@ const SingleSensorTemplate = ({sensorData}: {sensorData?:PhSensorType})=>{
     const sensor = React.useMemo<PhSensorType>(()=>{
         return sensorData || selectedData!.sensors[0]
     },[selectedData!.sensors])
-    
+
     return <div className='w-full h-full bg-background rounded-2xl p-6'>
         <header className='w-full flex justify-between items-start mb-5'>
             <div className='flex flex-col gap-2 items-start'>
@@ -268,7 +281,7 @@ const SingleSensorTemplate = ({sensorData}: {sensorData?:PhSensorType})=>{
             </div>
             <div className='flex gap-2'>
                 <TooltipWrapper title="Target pH">
-                    <div className='w-14 h-8 flex justify-center items-center bg-primary rounded-xl cursor-default'>{sensor.targetPh.toFixed(2)}</div>
+                    <div className='w-14 h-8 flex justify-center items-center bg-primary rounded-xl cursor-default'>{Number(sensor.targetPh).toFixed(2)}</div>
                 </TooltipWrapper>
                 <SensorOptions onClick={()=>{setSelectedData(sensor)}}/>
             </div>
@@ -280,9 +293,10 @@ const SingleSensorTemplate = ({sensorData}: {sensorData?:PhSensorType})=>{
         </div>
         <div className='w-full flex justify-between py-6'>
             <SensorPropertieTemplate icon={Clock2} title='Maximum Valve Time' info={`${sensor.maxValveTimeOpen} seconds`} /> 
-            <SensorPropertieTemplate icon={Calendar} title='Sensor registered At' info={moment(sensor.createdAt).format("DD/MM/YYYY - hh:mm a")}/> 
+            <SensorPropertieTemplate icon={Repeat} title='pH Monitor Frequency' info={`Every ${sensor.phMonitorFrequency} seconds`} /> 
         </div>
         <div className='w-full flex justify-between py-6'>
+            <SensorPropertieTemplate icon={Calendar} title='Sensor registered At' info={moment(sensor.createdAt).format("DD/MM/YYYY - hh:mm a")}/> 
             <SensorPropertieTemplate icon={CircleFadingArrowUp} title='Last updated at' info={sensor.updatedAt ? moment(sensor.updatedAt).format("DD/MM/YYYY") : "Never updated"} /> 
         </div>
     </div>

@@ -52,20 +52,6 @@ const DevicePage: NextPage = () => {
           channelContext="configuration"
         />
       </> : <NoSelectedDevice/>}
-    {/* <WidgetCard 
-      secondaryAction={
-        selectedDevice && <>
-          <DeviceConfigurationTabs/>
-        </>
-      } 
-      className='w-full' 
-      title={selectedDevice && <div className="flex flex-col gap-1 h-14">
-        <span className="text-2xl font-bold">{selectedDevice.name} </span>
-        {selectedDevice!.lastUpdatedAt && <span className="text-accent text-sm">Configuration last updated {new Intl.DateTimeFormat().format(new Date(selectedDevice!.lastUpdatedAt))}</span>}
-      </div>} 
-    >
-      
-    </WidgetCard> */}
   </ConfigurationContext.Provider> 
 }
 
