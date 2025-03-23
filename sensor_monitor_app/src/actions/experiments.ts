@@ -32,7 +32,6 @@ export const getExperiments: GetExperimentsType = async (projectID) =>{
     } catch (error) {
         return parseError(error as typeof Error | string)
     }
-  
 }
 
 

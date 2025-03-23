@@ -1,6 +1,6 @@
 import React from 'react'
 import WidgetCard from '../ui/WidgetCard'
-import { useProjects } from '@/contexts/projects'
+import { ProjectType, useProjects } from '@/contexts/projects'
 import moment from 'moment'
 import { Button } from '@/components/ui/button'
 import { ExperimentType, LocationChartDataType, useExperiment } from '@/contexts/experiments'
@@ -20,15 +20,6 @@ import { useToast } from '@/hooks/use-toast'
 
 const ProjectDetails = () => {
   const {selectedProject} = useProjects()
-  const {isExperimentOngoing} = useExperiment(selectedProject!.device)
-  const {isDeviceOn} = useDevices()
-  const [selectedExperiment, setSelectedExperiment] = React.useState<ExperimentType | null>(null)
-  const router = useRouter()
-
-  React.useEffect(()=>{
-    if(!selectedProject || !selectedProject.experiments || selectedProject.experiments?.length === 0 ) return 
-    setSelectedExperiment(selectedProject!.experiments![0])
-  },[selectedProject])
 
   return <WidgetCard 
     title={selectedProject ? selectedProject.title :"Project Details"} 
@@ -42,37 +33,54 @@ const ProjectDetails = () => {
       </div>
     }
   >
-    {selectedProject ? <div className='flex w-full flex-1 h-full'>
-      {selectedProject.experiments!.length > 0 ? <>
-      <ScrollArea className='w-52 bg-card h-[calc(100%-60px)] rounded-xl shrink-0'>
-        <div className='flex flex-col  p-2 gap-2'>
-            {selectedProject.experiments?.sort((a,b)=>{
-                const aMiliseconds = moment(a.createdAt).unix()
-                const bMiliseconds = moment(b.createdAt).unix()
-                return bMiliseconds - aMiliseconds
-            }).map(e=>{
-              return <ExperimentCard
-                key={e.id}
-                experiment={e}
-                className={selectedExperiment && selectedExperiment.id === e.id ? "border-2 border-[#0984E3] ": ""}
-                onClick={()=>{
-                  setSelectedExperiment(e)
-                }}
-              />
-            })}
-        </div>
-      </ScrollArea>
-      <SelectedExperimentDetails selectedExperiment={selectedExperiment}/>
-      </>: <NoDataToDisplay title={<>
-          <h3 className='text-lg text-accent font-bold'>No experimental data to display</h3>
-          <Button disabled={!isDeviceOn(selectedProject.device) || isExperimentOngoing} onClick={()=>{
-            if(isDeviceOn(selectedProject.device)){
-              router.push(`/experiment/${selectedProject.device}?projectID=${selectedProject.id}`)
-            }
-          }}>Start a new experiment</Button>
-        </>}/>}
-    </div>: <NoDataToDisplay title={<h3 className='text-lg text-accent font-bold'>No information to display</h3>}/>}
+    {selectedProject ? <ProjectDetailsTemplate/>: <NoDataToDisplay title={<h3 className='text-lg text-accent font-bold'>No information to display</h3>}/>}
   </WidgetCard>
+}
+
+const ProjectDetailsTemplate = ()=>{
+  const {selectedProject} = useProjects()
+  const {isExperimentOngoing} = useExperiment(selectedProject!.device)
+  const {isDeviceOn} = useDevices()
+  const [selectedExperiment, setSelectedExperiment] = React.useState<ExperimentType | null>(null)
+  const router = useRouter()
+  
+  
+  React.useEffect(()=>{
+    if(!selectedProject || !selectedProject.experiments || selectedProject.experiments?.length === 0 ) return 
+    setSelectedExperiment(selectedProject!.experiments![0])
+  },[selectedProject])
+
+
+  return <div className='flex w-full flex-1 h-full'>
+  {selectedProject!.experiments!.length > 0 ? <>
+  <ScrollArea className='w-52 bg-card h-[calc(100%-60px)] rounded-xl shrink-0'>
+    <div className='flex flex-col  p-2 gap-2'>
+        {selectedProject!.experiments?.sort((a,b)=>{
+            const aMiliseconds = moment(a.createdAt).unix()
+            const bMiliseconds = moment(b.createdAt).unix()
+            return bMiliseconds - aMiliseconds
+        }).map(e=>{
+          return <ExperimentCard
+            key={e.id}
+            experiment={e}
+            className={selectedExperiment && selectedExperiment.id === e.id ? "border-2 border-[#0984E3] ": ""}
+            onClick={()=>{
+              setSelectedExperiment(e)
+            }}
+          />
+        })}
+    </div>
+  </ScrollArea>
+  <SelectedExperimentDetails selectedExperiment={selectedExperiment}/>
+  </>: <NoDataToDisplay title={<>
+      <h3 className='text-lg text-accent font-bold'>No experimental data to display</h3>
+      <Button disabled={!isDeviceOn(selectedProject!.device) || isExperimentOngoing} onClick={()=>{
+        if(isDeviceOn(selectedProject!.device)){
+          router.push(`/experiment/${selectedProject!.device}?projectID=${selectedProject!.id}`)
+        }
+      }}>Start a new experiment</Button>
+    </>}/>}
+</div>
 }
 
 const SelectedExperimentDetails = ({selectedExperiment}: {selectedExperiment: ExperimentType | null})=>{

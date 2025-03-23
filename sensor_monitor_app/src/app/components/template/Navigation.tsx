@@ -1,13 +1,15 @@
 "use client"
-import { LayoutDashboard, LucideProps, Menu, RadioReceiver, SquareDashedKanban, X } from 'lucide-react'
+import { LayoutDashboard, LogOut, LucideProps, Menu, RadioReceiver, SquareDashedKanban, X } from 'lucide-react'
 import Link from 'next/link'
-import { usePathname } from 'next/navigation'
+import { usePathname, useRouter } from 'next/navigation'
 import React from 'react'
 import { ThemeToggleButton } from './ThemeToggleButton'
 import { Button } from '@/components/ui/button'
 import { useUser } from '@auth0/nextjs-auth0'
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar'
 import { Skeleton } from '@/components/ui/skeleton'
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
 
 type NavigationButtonType = {
   icon: React.ForwardRefExoticComponent<Omit<LucideProps, "ref"> & React.RefAttributes<SVGSVGElement>>,
@@ -106,15 +108,38 @@ const AccountComponent = ()=>{
   const userInitials = React.useMemo(()=>{
     const words: string[] = (user!.name as string).split(" ") 
     return `${words[0][0].toUpperCase()}${words[words.length-1][0].toUpperCase()}`
-  },[])
+  },[user])
+  
+  if(!user) return <Skeleton className='h-12 w-12 rounded-full' />
   
   return <div className='flex items-center gap-2'>
-    <Avatar>
-      <AvatarImage src={user!.picture}/>
-      <AvatarFallback>{userInitials}</AvatarFallback>
-    </Avatar>
- 
+    <UserSettings>
+      <Avatar>
+        <AvatarImage src={user!.picture}/>
+        <AvatarFallback>{userInitials}</AvatarFallback>
+      </Avatar>
+    </UserSettings>
+     
   </div>
+}
+
+const UserSettings = ({children}:{children: React.ReactNode})=>{
+  const router = useRouter()
+  return  <DropdownMenu>
+  <DropdownMenuTrigger>
+    {children}
+  </DropdownMenuTrigger>
+  <DropdownMenuContent>
+    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+    <DropdownMenuSeparator />
+    <DropdownMenuSeparator />
+        <DropdownMenuItem onClick={()=>router.push("/auth/logout")}>
+          <LogOut />
+          <span>Log out</span>
+        </DropdownMenuItem>
+
+  </DropdownMenuContent>
+</DropdownMenu>
 }
 
 export default Navigation

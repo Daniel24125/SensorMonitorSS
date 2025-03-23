@@ -9,6 +9,7 @@ import { useSocket } from '@/contexts/socket'
 import DashboardCard from '@/components/ui/dashboard-card'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
+import { useUserProfile } from '@/contexts/user'
 
 export const deviceIconColors = {
     "ready": "#2ECC71",
@@ -24,16 +25,20 @@ const DeviceWidget = ({
     showHeaderIcon
 }:DeviceWidgetProps) => {
     const router = useRouter()
-    const {deviceList} = useDevices()
+    const {getDeviceByID, deviceList} = useDevices()
+    const {user} = useUserProfile()
 
+    const userSubscriptions = React.useMemo(()=>{
+        return user!.deviceSubscriptions.map(d=>getDeviceByID(d))
+    },[user, deviceList])
     return (
         <WidgetCard title="Devices" secondaryAction={<>
             {showHeaderIcon && <Button onClick={()=>router.push("/devices")} size="icon" variant="ghost">
                 <ExternalLink/>
             </Button>}
         </>} className={cn('w-80 flex-shrink-0', )}>
-            {deviceList.length > 0 ? <ScrollArea className='w-full h-full flex flex-col gap-5'>
-                {deviceList.map(d=><DeviceCardComponent key={d.id} device={d}/>)}
+            {userSubscriptions!.length > 0 ? <ScrollArea className='w-full h-full flex flex-col gap-5'>
+                {userSubscriptions!.map(d=><DeviceCardComponent key={d!.id} device={d!}/>)}
             </ScrollArea>: <NoDeviceDetected/>}
         </WidgetCard>
     )

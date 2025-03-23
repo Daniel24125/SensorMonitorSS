@@ -7,6 +7,7 @@ import { ThemeProvider } from "@/components/theme-provider";
 import Topbar from "./components/template/topbar/Topbar";
 import { SocketProvider } from "@/contexts/socket";
 import { Toaster } from "@/components/ui/toaster";
+import { UserProfileProvider } from "@/contexts/user";
 
 
 export const metadata: Metadata = {
@@ -28,25 +29,27 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body>
-        <SocketProvider>
-          <ThemeProvider
-              attribute="class"
-              defaultTheme="system"
-              enableSystem
-              disableTransitionOnChange
-            >
-              <main className="bg-background p-3 flex h-screen ">
-                <Navigation/>
-                <div className="w-full flex flex-col h-full">
-                  <Topbar/>
-                  <section  className="flex flex-col items-center justify-start h-[calc(100%-55px)] shrink-1 w-full px-3 relative" >
-                    {children}
-                  </section>
-                </div>
-                <Toaster/>
-              </main>
-          </ThemeProvider>
-        </SocketProvider>
+        <UserProfileProvider>
+          <SocketProvider>
+            <ThemeProvider
+                attribute="class"
+                defaultTheme="system"
+                enableSystem
+                disableTransitionOnChange
+              >
+                <main className="bg-background p-3 flex h-screen ">
+                  <Navigation/>
+                  <div className="w-full flex flex-col h-full">
+                    <Topbar/>
+                    <section  className="flex flex-col items-center justify-start h-[calc(100%-55px)] shrink-1 w-full px-3 relative" >
+                      {children}
+                    </section>
+                  </div>
+                  <Toaster/>
+                </main>
+            </ThemeProvider>
+          </SocketProvider>
+        </UserProfileProvider>
       </body>
     </html>
   );
