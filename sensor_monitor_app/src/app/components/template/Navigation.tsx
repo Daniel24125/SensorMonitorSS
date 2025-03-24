@@ -130,9 +130,9 @@ const UserSettings = ({children}:{children: React.ReactNode})=>{
     {children}
   </DropdownMenuTrigger>
   <DropdownMenuContent>
-    <DropdownMenuLabel>My Account</DropdownMenuLabel>
+    {/* <DropdownMenuLabel>My Account</DropdownMenuLabel>
     <DropdownMenuSeparator />
-    <DropdownMenuSeparator />
+    <DropdownMenuSeparator /> */}
         <DropdownMenuItem onClick={()=>router.push("/auth/logout")}>
           <LogOut />
           <span>Log out</span>
