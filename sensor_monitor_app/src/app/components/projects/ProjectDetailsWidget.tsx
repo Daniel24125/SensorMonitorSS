@@ -1,6 +1,6 @@
 import React from 'react'
 import WidgetCard from '../ui/WidgetCard'
-import { ProjectType, useProjects } from '@/contexts/projects'
+import {  useProjects } from '@/contexts/projects'
 import moment from 'moment'
 import { Button } from '@/components/ui/button'
 import { ExperimentType, LocationChartDataType, useExperiment } from '@/contexts/experiments'

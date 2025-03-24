@@ -137,7 +137,7 @@ const SubscriptionDialog = ({open, setOpen}: {open: boolean, setOpen: React.Disp
                 <Button >{isPending ?  <LoadingSpinner className='w-11 h-11'/> : "Submit"}</Button>
                 <Button onClick={()=>{
                     setDontAsk(true)
-                }} variant={"ghost"}>Don't ask again</Button>
+                }} variant={"ghost"}>Don&apos;t ask again</Button>
             </div>
         </form>
     </ResponsiveDialog>

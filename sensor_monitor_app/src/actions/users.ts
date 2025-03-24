@@ -15,7 +15,7 @@ interface Auth0UserProfile {
     picture?: string;
     sub?: string;
     updated_at?: string;
-    [key: string]: any;
+    [key: string]: unknown;
 }
 
 
