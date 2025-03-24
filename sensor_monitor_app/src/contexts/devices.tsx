@@ -3,10 +3,8 @@
 import React from 'react'
 import { useSocket } from './socket';
 import { useToast } from '@/hooks/use-toast';
-import { ProjectProvider } from './projects';
 import WarningDialogProvider from './warning';
 import { useUser } from '@auth0/nextjs-auth0';
-import { ExperimentProvider } from './experiments';
 import Loading from '@/app/components/Loading';
 
 export interface User {
@@ -182,11 +180,7 @@ const DevicesProvider = ({children}: DevicesProviderProps) => {
     if(loading) return <Loading/>
     return <DevicesContext.Provider value={value}>
         <WarningDialogProvider>
-            <ProjectProvider>
-                <ExperimentProvider>
-                    {children}
-                </ExperimentProvider>
-            </ProjectProvider>
+            {children}
         </WarningDialogProvider>
     </DevicesContext.Provider>
 }

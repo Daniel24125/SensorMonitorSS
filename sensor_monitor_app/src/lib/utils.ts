@@ -3,6 +3,10 @@ import { QuerySnapshot } from "firebase/firestore"
 import { twMerge } from "tailwind-merge"
 
 type ParseFirestoreDataType = <T>(data: QuerySnapshot) => T[]
+export type ErrorType = {
+  data: null,
+  error: string | ErrorConstructor | null
+}
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs))

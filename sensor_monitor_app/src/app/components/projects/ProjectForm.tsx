@@ -11,6 +11,7 @@ import { ProjectType, useProjects } from '@/contexts/projects'
 import { ResponsiveDialog } from '@/components/ui/responsive-dialog'
 import { useToast } from '@/hooks/use-toast'
 import { FormInput } from '@/app/devices/components/SensorDetails'
+import { useUserProfile } from '@/contexts/user'
 
 
 const ProjectForm = () => {
@@ -105,8 +106,8 @@ const ProjectForm = () => {
 }
 
 const DeviceSelection = ({form, setForm}: {form: ProjectType, setForm: React.Dispatch<React.SetStateAction<ProjectType>>})=>{
-    const {deviceList} = useDevices()
-
+    const {getDeviceByID} = useDevices()
+    const {user} = useUserProfile()
     return <>
         <Select onValueChange={value=>{
             setForm(prev=>{
@@ -120,14 +121,15 @@ const DeviceSelection = ({form, setForm}: {form: ProjectType, setForm: React.Dis
                 <SelectValue placeholder="Select device" />
             </SelectTrigger>
             <SelectContent >
-                {deviceList.map(d=>{
-                    const colorStatus = d.status === "disconnected" ? deviceIconColors.disconnected : deviceIconColors[d.status]
-                    return <SelectItem key={d.id} value={d.id}>
+                {user!.deviceSubscriptions.map(deviceID=>{
+                    const d = getDeviceByID(deviceID)
+                    const colorStatus = d!.status === "disconnected" ? deviceIconColors.disconnected : deviceIconColors[d.status]
+                    return <SelectItem key={d!.id} value={d!.id}>
                         <div className='flex items-center gap-2'>
                             <div style={{
                                 backgroundColor: colorStatus
                             }} className='w-3 h-3 rounded-full'></div>
-                            {d.name}
+                            {d!.name}
                         </div>
                     </SelectItem>
                 })}

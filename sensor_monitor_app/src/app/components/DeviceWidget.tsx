@@ -3,13 +3,14 @@ import React from 'react'
 import WidgetCard from './ui/WidgetCard'
 import { DeviceType, useDevices } from '@/contexts/devices'
 import { Button } from '@/components/ui/button'
-import { ExternalLink,  RadioReceiver, ToggleLeft, ToggleRight } from 'lucide-react'
+import { DiamondPlus, ExternalLink,  RadioReceiver, ToggleLeft, ToggleRight } from 'lucide-react'
 import { ScrollArea } from '@/components/ui/scroll-area'
 import { useSocket } from '@/contexts/socket'
 import DashboardCard from '@/components/ui/dashboard-card'
 import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { useUserProfile } from '@/contexts/user'
+import { TooltipWrapper } from '@/components/ui/tooltip'
 
 export const deviceIconColors = {
     "ready": "#2ECC71",
@@ -26,16 +27,20 @@ const DeviceWidget = ({
 }:DeviceWidgetProps) => {
     const router = useRouter()
     const {getDeviceByID, deviceList} = useDevices()
-    const {user} = useUserProfile()
+    const {user, setOpen} = useUserProfile()
 
     const userSubscriptions = React.useMemo(()=>{
         return user!.deviceSubscriptions.map(d=>getDeviceByID(d))
     },[user, deviceList])
+    
     return (
         <WidgetCard title="Devices" secondaryAction={<>
-            {showHeaderIcon && <Button onClick={()=>router.push("/devices")} size="icon" variant="ghost">
-                <ExternalLink/>
-            </Button>}
+            {showHeaderIcon && <div className='flex gap-2 items-center'>
+                <TooltipWrapper title="Subscribe to a device">
+                    <Button onClick={()=>setOpen(true)} size="icon" variant="ghost"><DiamondPlus/></Button>
+                </TooltipWrapper>
+                <Button onClick={()=>router.push("/devices")} size="icon" variant="ghost"><ExternalLink/></Button>
+            </div>}
         </>} className={cn('w-80 flex-shrink-0', )}>
             {userSubscriptions!.length > 0 ? <ScrollArea className='w-full h-full flex flex-col gap-5'>
                 {userSubscriptions!.map(d=><DeviceCardComponent key={d!.id} device={d!}/>)}
@@ -45,14 +50,12 @@ const DeviceWidget = ({
 }
 
 const NoDeviceDetected = ()=>{
-    const {emit} = useSocket()
+    const {setOpen} = useUserProfile()
 
     return <div className='w-full h-full flex justify-center items-center flex-col text-center gap-3'>
         <h4 className='font-bold text-primary text-2xl'>We noticed something!</h4>
-        <h6>No device was detected. Please connect the device.</h6>
-        <Button onClick={()=>{
-            emit("get_rpi_config", null)
-        }}>Retry</Button>
+        <h6>You did not subscribe to any device.</h6>
+        <Button onClick={()=>setOpen(true)}>Subscribe</Button>
     </div>
 }
 

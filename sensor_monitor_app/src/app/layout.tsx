@@ -7,7 +7,6 @@ import { ThemeProvider } from "@/components/theme-provider";
 import Topbar from "./components/template/topbar/Topbar";
 import { SocketProvider } from "@/contexts/socket";
 import { Toaster } from "@/components/ui/toaster";
-import { UserProfileProvider } from "@/contexts/user";
 
 
 export const metadata: Metadata = {
@@ -29,7 +28,6 @@ export default async function RootLayout({
   return (
     <html lang="en">
       <body>
-        <UserProfileProvider>
           <SocketProvider>
             <ThemeProvider
                 attribute="class"
@@ -49,7 +47,6 @@ export default async function RootLayout({
                 </main>
             </ThemeProvider>
           </SocketProvider>
-        </UserProfileProvider>
       </body>
     </html>
   );

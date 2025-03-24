@@ -15,7 +15,7 @@ const collectionRef = collection(db, "projects")
 // Define the return type interface
 export interface ActionResponse<T> {
     data: T | null
-    error?: string | ErrorConstructor
+    error?: string | ErrorConstructor | null
 }
   
 

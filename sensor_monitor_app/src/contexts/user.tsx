@@ -1,14 +1,17 @@
 "use client"
 
-import React, { createContext,  startTransition,  useContext } from 'react';
-import { ProjectType, useProjects } from './projects';
-import { ExperimentType, LocationChartDataType } from './experiments';
-import { DeviceType, useDevices } from './devices';
-import { deleteExperiment } from '@/actions/experiments';
+import React, { createContext,  startTransition,  useContext, useTransition } from 'react';
+import { useDevices } from './devices';
 import { useToast } from '@/hooks/use-toast';
-import { useRouter } from 'next/navigation';
-import { getUser, UserType } from '@/actions/users';
+import { getUser, subscribeToDevice, updateAskToSubscribe, UserType } from '@/actions/users';
 import { useUser } from '@auth0/nextjs-auth0';
+import { ResponsiveDialog } from '@/components/ui/responsive-dialog';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { deviceIconColors } from '@/app/components/DeviceWidget';
+import { Button } from '@/components/ui/button';
+import { LoadingSpinner } from '@/app/components/ui/Icons';
+import { ProjectProvider } from './projects';
+import { ExperimentProvider } from './experiments';
 
 
 
@@ -17,7 +20,10 @@ import { useUser } from '@auth0/nextjs-auth0';
 // Define types for the socket context
 interface UserContextType {
     user: UserType | null;   
-    isLoading: boolean
+    isLoading: boolean;
+    open: boolean;
+    setOpen: React.Dispatch<React.SetStateAction<boolean>>
+    getUserProfile: ()=>void
 }
 
 const UserContext = createContext<UserContextType | null>(null);
@@ -37,6 +43,7 @@ export const UserProfileProvider = ({
     const [user, setUser] = React.useState<UserType | null>(null)
     const {toast} = useToast()
     const [isFetching, setIsFetching] = React.useState(true)
+    const [open, setOpen] = React.useState(false)
 
       React.useEffect(()=>{
         getUserProfile()
@@ -53,24 +60,114 @@ export const UserProfileProvider = ({
            })
          } else {
            setUser(result.data ? result.data : null)
-           
          }
          setIsFetching(false)
        })
      }, [])
 
-     console.log(user)
+
+
     const isLoading = React.useMemo(()=>{
         return isFetching || auth0Loading
     },[isFetching, auth0Loading])
 
     const value: UserContextType = {
         user, 
-        isLoading
+        isLoading,
+        open, 
+        setOpen,
+        getUserProfile
     }
 
     return <UserContext value={value}>
-        {children}
-
+        <ProjectProvider>
+            <ExperimentProvider>
+                {children}
+                {user && <SubscriptionDialog open={open} setOpen={setOpen}/>}
+            </ExperimentProvider>
+        </ProjectProvider>
     </UserContext>
+
+}
+
+const SubscriptionDialog = ({open, setOpen}: {open: boolean, setOpen: React.Dispatch<React.SetStateAction<boolean>>})=>{
+    const {user, getUserProfile} = useUserProfile()
+    const [selectedDevice, setSelectedDevice] = React.useState("")
+    const [dontAsk, setDontAsk] = React.useState(false)
+    const {toast} = useToast()
+    const [isPending, startTransition] = useTransition()
+   
+    React.useEffect(()=>{
+        if(!user) return 
+        if(!user.askedToSubscribe) setOpen(true)
+    },[user])
+
+
+    
+    async function handleSubmit() {
+        startTransition(async () => {
+            const subFunc = !dontAsk ? subscribeToDevice(user!, selectedDevice) : updateAskToSubscribe(user!)
+            const response = await subFunc
+            if(response.error){
+                toast({
+                    title: "Error",
+                    description: response.error as string,
+                    variant: "destructive"
+                })
+            }else{
+                setOpen(false)
+            }
+            getUserProfile()
+        })
+        
+    }
+
+    return <ResponsiveDialog
+        isOpen={open}
+        setIsOpen={setOpen}
+        title='Device Subscriton'
+        description='We notice that you did not subscribe to any device. Please select a device from the list'
+    >
+        <form className='flex flex-col gap-5' action={handleSubmit}>
+            <DeviceSelection
+                value={selectedDevice}
+                onValueChange={(val)=>setSelectedDevice(val)}
+            />
+            <div className='w-full flex justify-end items-center'>
+                <Button >{isPending ?  <LoadingSpinner className='w-11 h-11'/> : "Submit"}</Button>
+                <Button onClick={()=>{
+                    setDontAsk(true)
+                }} variant={"ghost"}>Don't ask again</Button>
+            </div>
+        </form>
+    </ResponsiveDialog>
+}
+
+const DeviceSelection = ({value, onValueChange}: {value: string,onValueChange: (value: string)=> void})=>{
+    const {deviceList} = useDevices()
+    const {user} = useUserProfile()
+
+    const renderedDeviceList = React.useMemo(()=> {
+        return deviceList.filter(d=>!user?.deviceSubscriptions.find(ud => ud === d.id))
+    },[user])
+
+    return <Select disabled={renderedDeviceList.length === 0} onValueChange={onValueChange} required value={value}>
+        <SelectTrigger>
+            <SelectValue placeholder="Select device" />
+        </SelectTrigger>
+        <SelectContent >
+            {renderedDeviceList.map(d=>{
+                const colorStatus = d.status === "disconnected" ? deviceIconColors.disconnected : deviceIconColors[d.status]
+                return <SelectItem key={d.id} value={d.id}>
+                    <div className='flex items-center gap-2'>
+                        <div style={{
+                            backgroundColor: colorStatus
+                        }} className='w-3 h-3 rounded-full'></div>
+                        {d.name}
+                    </div>
+                </SelectItem>
+            })}
+        </SelectContent>
+        {renderedDeviceList.length === 0 && <p>No available device to subscribe</p>}
+    </Select>
 }

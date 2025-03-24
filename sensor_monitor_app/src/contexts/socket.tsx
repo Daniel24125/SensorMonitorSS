@@ -3,6 +3,7 @@
 import React, { createContext, useCallback, useContext, useEffect, useState } from 'react';
 import { Socket, SocketOptions, io } from 'socket.io-client';
 import DevicesProvider from './devices';
+import { UserProfileProvider } from './user';
 
 
 // Define types for the socket context
@@ -157,7 +158,9 @@ export const SocketProvider: React.FC<SocketProviderProps> = ({
   return (
     <SocketContext.Provider value={value}>
         <DevicesProvider>
+          <UserProfileProvider>
             {children}
+          </UserProfileProvider>
         </DevicesProvider>
     </SocketContext.Provider>
   );
