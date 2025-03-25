@@ -22,46 +22,50 @@ export class DeviceConnection{
     }
   
     registerSocketListenners(){
-      console.log("Regestering Socket listenners for the device")
+      console.log("Registering Socket listeners for the device")
+    
+      // Bind methods to preserve context
+      const boundUpdateExperimentLog = this.updateExperimentLog.bind(this);
       
       this.socket.on("get_ongoing_experiment_data", (data)=>{
-        console.log("Receiving data from ongoing experiment...")
-        this.experimentData = data
-        this.sendDataToClient("experiment_data", this.experimentData!)
-        this.isExperimentOngoing = true
-      })
-
-      this.socket.on("update_experiment_status", (status)=>{
-        this.experimentData = {
-            ...this.experimentData, 
-            ...status
-        }
-        this.sendDataToClient("experiment_data", this.experimentData!)
+          console.log("Receiving data from ongoing experiment...")
+          this.experimentData = data
+          this.sendDataToClient("experiment_data", this.experimentData!)
+          this.isExperimentOngoing = true
       })
   
-      this.socket.on("update_experiment_log", this.updateExperimentLog)
+      this.socket.on("update_experiment_status", (status)=>{
+          this.experimentData = {
+              ...this.experimentData, 
+              ...status
+          }
+          this.sendDataToClient("experiment_data", this.experimentData!)
+      })
    
+      // Use the bound method for update_experiment_log
+      this.socket.on("update_experiment_log", boundUpdateExperimentLog)
+     
       this.socket.on('update_pump_status', (pumpData: {deviceID: string, location: DeviceLocationType, pump: "acidic" | "alkaline", status: boolean}) => {
-        console.log("Sending pump status to client")
-        if(pumpData.deviceID === this.id){
-          this.io.to("web_clients").emit("update_pump_status", pumpData)
-        }
+          console.log("Sending pump status to client")
+          if(pumpData.deviceID === this.id){
+              this.io.to("web_clients").emit("update_pump_status", pumpData)
+          }
       });
-
+  
       // Handle sensor data from RPi
       this.socket.on('sensor_data', (sensorData: {deviceID: string, data: {id: string, x: number, y: number}[]}) => {
-        if(sensorData.deviceID === this.id){
-          this.updateExperimentalData(sensorData)
-        }
+          if(sensorData.deviceID === this.id){
+              this.updateExperimentalData(sensorData)
+          }
       });
-  
+    
       // Handle errors
       this.socket.on('error', (error) => {
-        console.error('Socket error:', error);
-        reportErrorToClient(error)
-        if(this.isExperimentOngoing){
-            this.stopExperiment()
-        }
+          console.error('Socket error:', error);
+          reportErrorToClient(error)
+          if(this.isExperimentOngoing){
+              this.stopExperiment()
+          }
       });
     }
 
@@ -74,16 +78,28 @@ export class DeviceConnection{
     
     startExperiment = (params: ExperimentType)=>{
         console.log("Start the Experiment")
+        if (!params) {
+          console.error("No parameters provided to start experiment")
+          return
+      }
         const createdAt =  new Date().toISOString()
         this.isExperimentOngoing = true
         this.experimentData = {
           ...params,
           createdAt,
           status: "running",
-          logs: []
+          logs: params.logs || [], // Ensure logs exists
+          locations: params.locations || [], // Ensure locations exists if not provided
+          deviceID: params.deviceID || this.id // Fallback to device ID
       }
-       
-    }
+      console.log("Experiment Data set:", this.experimentData)
+      // Add initial log
+      this.updateExperimentLog({
+        type: "info", 
+        desc: "Experiment started", 
+        location: "Device"
+      })
+    } 
     
     pauseExperiment = ()=>{
         console.log("Pause the Experiment")
@@ -106,13 +122,18 @@ export class DeviceConnection{
     }
     
     stopExperiment = ()=>{
-        this.isExperimentOngoing = false,
-        this.experimentData = null
-        this.updateExperimentLog({type:"info", desc:"Experiment ended", location:"Device"})
+      console.log("Stop Experiment CALLED")
+     
+      this.isExperimentOngoing = false,
+      this.experimentData = null
+      
+      // Try to add log before nullifying
+      this.updateExperimentLog({type:"info", desc:"Experiment ended", location:"Device"})      
     }
   
     updateExperimentLog({type, desc, location}: Partial<LogType>){
-      if(this.experimentData && this.experimentData.logs ){
+     
+      if(this.experimentData){
         const log = {
           id: v4(),
           type, 
@@ -120,12 +141,15 @@ export class DeviceConnection{
           createdAt: new Date().toISOString(),
           location
         }
+        this.experimentData.logs = this.experimentData.logs || []
         this.experimentData.logs.unshift(log as LogType)
         this.io.to(this.experimentData.deviceID).emit("update_experiment_log",  {
           logs: this.experimentData.logs, 
           deviceID: this.experimentData.deviceID
         })
-        console.log("New log added to the log stack.")
+        console.log("New log added successfully")
+      } else {
+        console.error("Cannot add log - experimentData is undefined or null")
       }
     }
   
