@@ -123,6 +123,7 @@ export const ChartComponent = ({deviceID}:{deviceID: string})=>{
     }, [experiment, selectedLocation])
 
 
+    
     return selectedLocation ? isExperimentOngoing ? <ChartContainer 
         config={chartConfig} 
         className=" w-full h-full max-h-72">

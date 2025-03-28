@@ -1,8 +1,9 @@
 import { Server, Socket } from "socket.io";
-import { DeviceLocationType, ExperimentType, LogType } from "../types/experiment";
+import { DeviceLocationType, ExperimentType, LocationChartDataType, LogType } from "../types/experiment";
 import { reportErrorToClient } from "../utils/utils.js";
 import { v4 } from "uuid";
 
+const MAX_POINTS_PER_LOCATION= 10
 
 export class DeviceConnection{
     public readonly id: string;
@@ -30,13 +31,17 @@ export class DeviceConnection{
       this.socket.on("get_ongoing_experiment_data", (data)=>{
           console.log("Receiving data from ongoing experiment...")
           this.experimentData = data
-          this.sendDataToClient("experiment_data", this.experimentData!)
+          this.sendDataToClient("experiment_data", {
+            ...this.experimentData!, 
+            locations: this.getTrimmedData()
+          })
           this.isExperimentOngoing = true
       })
   
       this.socket.on("update_experiment_status", (status)=>{
           this.experimentData = {
               ...this.experimentData, 
+              locations: this.getTrimmedData(),
               ...status
           }
           this.sendDataToClient("experiment_data", this.experimentData!)
@@ -159,18 +164,29 @@ export class DeviceConnection{
         sensorData.data.forEach((l, index) =>{
             const location = this.experimentData!.locations[index]
             if(!location) return 
+
+              // Add new data point
+              const updatedData = [...location.data, {x: l.x, y: l.y}]
+                
             this.experimentData!.locations[index] = {
                 id: l.id,
-                data: [...location.data, {x: l.x,y: l.y}]
+                data: updatedData
             }
         })
 
         this.io.to(this.id).emit('sensor_data', {
             deviceID: this.id,
-            locations: this.experimentData!.locations,
+            locations: this.getTrimmedData(),
             timestamp: new Date().toISOString()
         });
       }
+    }
+
+    getTrimmedData(){
+      return this.experimentData!.locations.map(location => ({
+        ...location,
+        data: location.data.slice(-MAX_POINTS_PER_LOCATION) // Only send last maxPointsToSend points
+      }))
     }
   }
   
