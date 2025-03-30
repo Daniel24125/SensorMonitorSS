@@ -8,7 +8,7 @@ import { useExperiment, useExperiments } from '@/contexts/experiments'
 import { useSocket } from '@/contexts/socket'
 import { cn } from '@/lib/utils'
 import { MapPin } from 'lucide-react'
-import React, { ReactElement, SVGProps } from 'react'
+import React from 'react'
 import { 
     ScatterChart,
     Scatter,
@@ -122,7 +122,7 @@ export const ChartComponent = ({deviceID}:{deviceID: string})=>{
         return locationsData!.data
     }, [experiment, selectedLocation])
 
-    const renderCustomTick: (value: any, index: number) => string = (value)=>{
+    const renderCustomTick: (value: number) => string = (value)=>{
         
         let seconds: number | string =  Math.floor(value%60)
         let minutes : number | string= Math.floor((value % 3600) / 60)
@@ -138,7 +138,7 @@ export const ChartComponent = ({deviceID}:{deviceID: string})=>{
         if(value >= 3600 && value < 86400) return `${hours}:${minutes}:${seconds}`
 
         if(value >= 60 && value < 3600) return `${minutes}:${seconds}`
-        return value
+        return value.toString()
     }
     
     return selectedLocation ? isExperimentOngoing ? <ChartContainer 
