@@ -3,7 +3,7 @@ import { DeviceLocationType, ExperimentType, LocationChartDataType, LogType } fr
 import { reportErrorToClient } from "../utils/utils.js";
 import { v4 } from "uuid";
 
-const MAX_POINTS_PER_LOCATION= 10
+const MAX_POINTS_PER_LOCATION= 400
 
 export class DeviceConnection{
     public readonly id: string;

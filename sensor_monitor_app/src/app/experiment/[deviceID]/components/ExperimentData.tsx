@@ -8,7 +8,7 @@ import { useExperiment, useExperiments } from '@/contexts/experiments'
 import { useSocket } from '@/contexts/socket'
 import { cn } from '@/lib/utils'
 import { MapPin } from 'lucide-react'
-import React from 'react'
+import React, { ReactElement, SVGProps } from 'react'
 import { 
     ScatterChart,
     Scatter,
@@ -122,7 +122,24 @@ export const ChartComponent = ({deviceID}:{deviceID: string})=>{
         return locationsData!.data
     }, [experiment, selectedLocation])
 
+    const renderCustomTick: (value: any, index: number) => string = (value)=>{
+        
+        let seconds: number | string =  Math.floor(value%60)
+        let minutes : number | string= Math.floor((value % 3600) / 60)
+        let hours: number | string = Math.floor((value % 86400) / 3600)
+        const days: number | string = Math.floor(value / 86400);
+           
+        seconds = seconds <10 ? `0${seconds}` : seconds
+        minutes = minutes <10 ? `0${minutes}` : minutes
+        hours = hours <10 ? `0${hours}` : hours
 
+        if(value >= 86400) return  `${days}:${hours}:${minutes}:${seconds}`
+
+        if(value >= 3600 && value < 86400) return `${hours}:${minutes}:${seconds}`
+
+        if(value >= 60 && value < 3600) return `${minutes}:${seconds}`
+        return value
+    }
     
     return selectedLocation ? isExperimentOngoing ? <ChartContainer 
         config={chartConfig} 
@@ -136,7 +153,13 @@ export const ChartComponent = ({deviceID}:{deviceID: string})=>{
             }}
         >
             <CartesianGrid />
-            <XAxis type="number" dataKey="x" name="Time" unit="s" />
+            <XAxis 
+                type="number" 
+                dataKey="x" 
+                name="Time" 
+                domain={['auto', 'auto']}
+                tickFormatter={renderCustomTick}
+                />
             <YAxis type="number" dataKey="y" name="pH"  />
             <Tooltip cursor={{ strokeDasharray: '3 3' }} />
             <Scatter name="pH Data" data={chartData} fill="#8884d8" line shape="circle" />
