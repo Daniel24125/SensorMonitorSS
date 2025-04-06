@@ -68,9 +68,9 @@ export class DeviceConnection{
       this.socket.on('error', (error) => {
           console.error('Socket error:', error);
           reportErrorToClient(error)
-          if(this.isExperimentOngoing){
-              this.stopExperiment()
-          }
+          // if(this.isExperimentOngoing){
+          //     this.pauseExperiment()
+          // }
       });
     }
 
