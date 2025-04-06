@@ -214,14 +214,15 @@ export class DeviceManager {
   }
 
   disconnectDevice (deviceID: string){
-    const device = this.connectedDevices.find(d=>d.id === deviceID)
-    this.connectedDevices = this.connectedDevices.filter(d => d.id !== deviceID)
+    // const device = this.connectedDevices.find(d=>d.id === deviceID)
+    // this.connectedDevices = this.connectedDevices.filter(d => d.id !== deviceID)
 
-    if(device && device!.isExperimentOngoing){
-      this.io.to("web_clients").emit("force_shutdown", device!.experimentData)
-      device.stopExperiment()
-      device.updateExperimentLog({type:"error", desc: "The device was disconnected", location: "Device"})
-    }
+    // if(device && device!.isExperimentOngoing){
+    //   this.io.to("web_clients").emit("force_shutdown", device!.experimentData)
+    //   device.stopExperiment()
+    //   device.updateExperimentLog({type:"error", desc: "The device was disconnected", location: "Device"})
+    // }
+    console.log("Device disconnected: ", deviceID)
   }
   
   // Utility method to help with race conditions

@@ -128,12 +128,12 @@ export class DeviceConnection{
     
     stopExperiment = ()=>{
       console.log("Stop Experiment CALLED")
+      // Try to add log before nullifying
+      this.updateExperimentLog({type:"info", desc:"Experiment ended", location:"Device"})      
      
       this.isExperimentOngoing = false,
       this.experimentData = null
       
-      // Try to add log before nullifying
-      this.updateExperimentLog({type:"info", desc:"Experiment ended", location:"Device"})      
     }
   
     updateExperimentLog({type, desc, location}: Partial<LogType>){
