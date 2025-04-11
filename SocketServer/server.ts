@@ -130,6 +130,7 @@ io.on('connection', (socket) => {
 
 // Health check endpoint
 app.get('/health', (req, res) => {
+    console.log("\nPing received. Sending health status...\n")
     res.status(200).json({
         status: 'healthy'
     });

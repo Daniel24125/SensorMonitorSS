@@ -3,7 +3,7 @@
     "id": "3735ddca-c421-446c-b8e4-cabf408e9cc4",
     "name": "pH Monitor Device",
     "createdAt": "2025-01-21T10:50:53.003Z",
-    "status": "disconnected",
+    "status": "ready",
     "configurations": [
       {
         "id": "eb90fc2d-8b47-4ce7-b0f5-0ae2b988856c",
@@ -37,8 +37,8 @@
         "lastUpdatedAt": "2025-01-24T14:17:06.732Z"
       }
     ],
-    "lastUpdatedAt": "2025-03-30T13:26:45.019Z",
-    "socketID": "rPc4GZbw3FkTrHCPAAAJ"
+    "lastUpdatedAt": "2025-04-11T22:06:05.156Z",
+    "socketID": "oJtO-AmmOFOQirgUAAAB"
   },
   {
     "id": "3735ddca-c421-446c-b8e4-lspkdnvpkpskion3n",
@@ -75,7 +75,7 @@
         "lastUpdatedAt": "2025-01-24T14:17:06.732Z"
       }
     ],
-    "lastUpdatedAt": "2025-03-30T13:26:45.025Z",
+    "lastUpdatedAt": "2025-04-11T11:12:43.790Z",
     "socketID": "rpComdWmIZzZFO1cAAAI"
   },
   {
@@ -113,7 +113,7 @@
         "lastUpdatedAt": "2025-01-24T14:17:06.732Z"
       }
     ],
-    "lastUpdatedAt": "2025-03-30T13:26:45.026Z",
+    "lastUpdatedAt": "2025-04-11T11:12:43.792Z",
     "socketID": "rpComdWmIZzZFO1cAAAI"
   }
 ]
