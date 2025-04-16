@@ -9,12 +9,12 @@ import { Dialog, DialogContent, DialogDescription,  DialogHeader, DialogTitle } 
 import SelectProjectTemplate from '../experiment/[deviceID]/components/SelectExperimentProject'
 import ExperimentControls from '../experiment/[deviceID]/components/ExperimentControls'
 import { ChartComponent, LocationListComponent } from '../experiment/[deviceID]/components/ExperimentData'
-import { getformatedExperimentTime } from '@/lib/utils'
+import { cn, getformatedExperimentTime } from '@/lib/utils'
 import CircularProgress from '@/components/ui/circular-progress'
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { TooltipWrapper } from '@/components/ui/tooltip'
 
-const OnGoingExperimentWidget = () => {
+const OnGoingExperimentWidget = ({className}: {className?: string}) => {
   const {experiments} = useExperiments()
   const [selectedExperiment, setSelectedExperiment] = React.useState<null | string>(null)
 
@@ -31,7 +31,7 @@ const OnGoingExperimentWidget = () => {
   },[experiments, selectedExperiment])
 
   return (
-    <WidgetCard title='Ongoing Experiments' className='w-full' secondaryAction={<>
+    <WidgetCard title='Ongoing Experiments' className={cn('w-full', className)} secondaryAction={<>
       {hasExperimenstsOngoing && <OngoingExperimentHeader selectedExperiment={selectedExperiment!} setSelectedExperiment={setSelectedExperiment}/>}
     </>}>
         {hasExperimenstsOngoing ? <OnGoingExperimentData selectedExperiment={selectedExperiment!}/> : <NotOngoingExperiment/>}

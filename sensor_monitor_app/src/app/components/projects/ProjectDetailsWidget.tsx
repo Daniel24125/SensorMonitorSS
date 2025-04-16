@@ -18,12 +18,12 @@ import { deleteExperiment } from '@/actions/experiments'
 import ExperimentOptions from '@/app/projects/[projectID]/components/ExperimentOptions'
 import { useToast } from '@/hooks/use-toast'
 
-const ProjectDetails = () => {
+const ProjectDetails = ({className}: {className?: string}) => {
   const {selectedProject} = useProjects()
 
   return <WidgetCard 
     title={selectedProject ? selectedProject.title :"Project Details"} 
-    className='w-full' 
+    className={cn('w-full', className)}
     secondaryAction={
       <div className='flex items-center gap-4'>
         {selectedProject && <DeviceBadge project={selectedProject} />}

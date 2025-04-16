@@ -11,7 +11,7 @@ import { useRouter } from 'next/navigation'
 import { cn } from '@/lib/utils'
 import { ScrollArea } from '@/components/ui/scroll-area'
 
-const ProjectListWidget = () => {
+const ProjectListWidget = ({className}: {className?: string}) => {
   const { isLoading, projectList} = useProjects()
   const router = useRouter()
 
@@ -19,7 +19,7 @@ const ProjectListWidget = () => {
     <Button onClick={()=>router.push("/projects")} size="icon" variant="ghost">
       <ExternalLink/>
   </Button>
-  } className='w-80 flex-shrink-0'>
+  } className={cn('flex-shrink-0', className)}>
     <ScrollArea className='w-full'>
       {isLoading ? <ProjectLoadingCard/> : <ProjectListComponent/>}
     </ScrollArea>

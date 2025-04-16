@@ -19,9 +19,11 @@ export const deviceIconColors = {
 
 type DeviceWidgetProps = {
     showHeaderIcon?: boolean
-    setDevice?: (device: DeviceType)=>void
+    setDevice?: (device: DeviceType)=>void, 
+    className?: string
 }
 const DeviceWidget = ({
+    className,
     showHeaderIcon
 }:DeviceWidgetProps) => {
     const router = useRouter()
@@ -40,7 +42,7 @@ const DeviceWidget = ({
                 </TooltipWrapper>
                 <Button onClick={()=>router.push("/devices")} size="icon" variant="ghost"><ExternalLink/></Button>
             </div>}
-        </>} className={cn('w-80 flex-shrink-0', )}>
+        </>} className={cn('flex-shrink-0', className)}>
             {userSubscriptions!.length > 0 ? <ScrollArea className='w-full h-full flex flex-col gap-5'>
                 {userSubscriptions!.map(d=><DeviceCardComponent key={d!.id} device={d!}/>)}
             </ScrollArea>: <NoDeviceDetected/>}
